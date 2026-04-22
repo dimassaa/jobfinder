@@ -1,8 +1,10 @@
 package com.jobapp.client.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobapp.client.AppContext;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
+import com.jobapp.common.dto.AuthResponse;
 import com.jobapp.client.NetworkService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -11,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.application.Platform;
+import javafx.scene.Parent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +75,7 @@ public class LoginController {
         }
 
         loginButton.setDisable(true);
-        statusLabel.setVisible(false);
+        final String emailForSuccess = email;
 
         new Thread(() -> {
             try {
@@ -93,8 +96,8 @@ public class LoginController {
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
                     if ("OK".equals(response.getStatus())) {
-                        logger.info("Login successful for: {}", email);
-                        showSuccess("Вход выполнен: " + response.getMessage());
+                        logger.info("Login successful for: {}", emailForSuccess);
+                        handleLoginSuccess(response);
                     } else {
                         showError(response.getMessage());
                     }
@@ -115,6 +118,59 @@ public class LoginController {
             loginButton.setDisable(false);
             showSuccess("Login stub - OK");
         });
+    }
+
+    private void handleLoginSuccess(Response response) {
+        if (response.getData() instanceof AuthResponse) {
+            AuthResponse authResponse = (AuthResponse) response.getData();
+            AppContext.setCurrentUserId(authResponse.getUserId());
+            AppContext.setCurrentRole(authResponse.getRole());
+            AppContext.setCurrentEmail(emailField.getText().trim());
+
+            logger.info("Login successful. User: {}, Role: {}", authResponse.getUserId(), authResponse.getRole());
+
+            if ("HR".equals(authResponse.getRole())) {
+                showSuccess("Вход выполнен (HR). Открытие панели работодателя...");
+                switchToHrScene();
+            } else {
+                showSuccess("Вход выполнен (Соискатель). Открытие главного окна...");
+                switchToMainScene();
+            }
+        } else {
+            showSuccess("Вход выполнен: " + response.getMessage());
+        }
+    }
+
+    private void switchToMainScene() {
+        try {
+            logger.info("Switching to main scene for USER");
+            Parent mainRoot = javafx.fxml.FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
+            javafx.scene.Scene scene = new javafx.scene.Scene(mainRoot, 800, 600);
+            javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("JobMatch - Главное окно");
+            stage.setResizable(true);
+            stage.show();
+        } catch (Exception e) {
+            logger.error("Failed to switch to main scene: {}", e.getMessage());
+            showError("Не удалось загрузить главное окно");
+        }
+    }
+
+    private void switchToHrScene() {
+        try {
+            logger.info("Switching to HR scene");
+            Parent hrRoot = javafx.fxml.FXMLLoader.load(getClass().getResource("/fxml/hr_main.fxml"));
+            javafx.scene.Scene scene = new javafx.scene.Scene(hrRoot, 900, 650);
+            javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("JobMatch - Панель работодателя");
+            stage.setResizable(true);
+            stage.show();
+        } catch (Exception e) {
+            logger.error("Failed to switch to HR scene: {}", e.getMessage());
+            showError("Не удалось загрузить панель HR");
+        }
     }
 
     @FXML
