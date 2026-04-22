@@ -1,0 +1,129 @@
+package com.jobapp.server.repository;
+
+import com.jobapp.server.db.DatabaseConfig;
+import com.jobapp.server.model.Company;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class CompanyRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(CompanyRepository.class);
+
+    public Company save(Company company) {
+        String sql = "INSERT INTO companies (user_id, company_name, website, description, created_at, updated_at) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, company.getUserId());
+            stmt.setString(2, company.getCompanyName());
+            stmt.setString(3, company.getWebsite());
+            stmt.setString(4, company.getDescription());
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            stmt.setTimestamp(5, now);
+            stmt.setTimestamp(6, now);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    company.setId(rs.getInt("id"));
+                }
+            }
+            logger.info("Company saved with id: {}", company.getId());
+            return company;
+        } catch (SQLException e) {
+            logger.error("Error saving company: {}", company.getCompanyName(), e);
+            throw new RuntimeException("Failed to save company", e);
+        }
+    }
+
+    public Optional<Company> findById(Integer id) {
+        String sql = "SELECT * FROM companies WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToCompany(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding company by id: {}", id, e);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Company> findByUserId(Integer userId) {
+        String sql = "SELECT * FROM companies WHERE user_id = ?";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToCompany(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding company by user id: {}", userId, e);
+        }
+        return Optional.empty();
+    }
+
+    public List<Company> findAll() {
+        String sql = "SELECT * FROM companies ORDER BY company_name";
+        List<Company> companies = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                companies.add(mapRowToCompany(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching all companies", e);
+        }
+        return companies;
+    }
+
+    public void update(Company company) {
+        String sql = "UPDATE companies SET company_name = ?, website = ?, description = ?, updated_at = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, company.getCompanyName());
+            stmt.setString(2, company.getWebsite());
+            stmt.setString(3, company.getDescription());
+            stmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(5, company.getId());
+
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("Company updated: {}", company.getId());
+            }
+        } catch (SQLException e) {
+            logger.error("Error updating company: {}", company.getId(), e);
+            throw new RuntimeException("Failed to update company", e);
+        }
+    }
+
+    private Company mapRowToCompany(ResultSet rs) throws SQLException {
+        Company company = new Company();
+        company.setId(rs.getInt("id"));
+        company.setUserId(rs.getInt("user_id"));
+        company.setCompanyName(rs.getString("company_name"));
+        company.setWebsite(rs.getString("website"));
+        company.setDescription(rs.getString("description"));
+
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) {
+            company.setCreatedAt(createdAt.toLocalDateTime());
+        }
+        Timestamp updatedAt = rs.getTimestamp("updated_at");
+        if (updatedAt != null) {
+            company.setUpdatedAt(updatedAt.toLocalDateTime());
+        }
+        return company;
+    }
+}
