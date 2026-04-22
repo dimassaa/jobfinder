@@ -2,6 +2,7 @@ package com.jobapp.server;
 
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
+import com.jobapp.server.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,12 @@ public class ClientHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
     private final Socket socket;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
         this.objectMapper = new ObjectMapper();
+        this.userRepository = new UserRepository();
     }
 
     @Override
@@ -70,6 +73,14 @@ public class ClientHandler implements Runnable {
                 break;
             case "LOGIN":
                 response = new Response("OK", "Login stub", null);
+                break;
+            case "TEST_DB":
+                var testUser = userRepository.findByEmail("test@example.com");
+                if (testUser.isPresent()) {
+                    response = new Response("OK", "User found: " + testUser.get().getEmail(), testUser.get());
+                } else {
+                    response = new Response("OK", "No users found in database", null);
+                }
                 break;
             case "EXIT":
                 response = new Response("OK", "Goodbye", null);
