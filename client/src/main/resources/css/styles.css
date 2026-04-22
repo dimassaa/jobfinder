@@ -1,0 +1,116 @@
+.root {
+    -fx-font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    -fx-background-color: #F5F7FA;
+}
+
+.h1 {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: #212121;
+}
+
+.h2 {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-fill: #212121;
+}
+
+.text-secondary {
+    -fx-font-size: 14px;
+    -fx-fill: #757575;
+}
+
+.label-secondary {
+    -fx-font-size: 12px;
+    -fx-fill: #757575;
+}
+
+.label-error {
+    -fx-font-size: 14px;
+    -fx-text-fill: #D32F2F;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-padding: 16px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+.button-primary {
+    -fx-background-color: #1976D2;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.button-primary:hover {
+    -fx-background-color: #2196F3;
+}
+
+.button-primary:disabled {
+    -fx-background-color: #BDBDBD;
+}
+
+.button-secondary {
+    -fx-background-color: white;
+    -fx-text-fill: #1976D2;
+    -fx-border-color: #1976D2;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #E3F2FD;
+}
+
+.button-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1976D2;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 4px;
+}
+
+.button-link:hover {
+    -fx-text-fill: #2196F3;
+    -fx-underline: true;
+}
+
+.text-field, .password-field {
+    -fx-font-size: 14px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-padding: 8px;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #1976D2;
+    -fx-border-width: 2px;
+}
+
+.check-box {
+    -fx-font-size: 14px;
+    -fx-text-fill: #757575;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F5F7FA;
+    -fx-font-weight: bold;
+}
+
+.badge {
+    -fx-background-color: #FF9800;
+    -fx-text-fill: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 2px 6px;
+    -fx-font-size: 11px;
+}
