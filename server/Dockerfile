@@ -6,11 +6,10 @@ WORKDIR /app
 COPY pom.xml .
 COPY common/pom.xml common/
 COPY server/pom.xml server/
+COPY client/pom.xml client/
 
-RUN mvn dependency:go-offline -B
-
-COPY server/src server/src
 COPY common/src common/src
+COPY server/src server/src
 
 RUN mvn clean package -pl server -am -DskipTests
 
