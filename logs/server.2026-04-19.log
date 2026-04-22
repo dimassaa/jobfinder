@@ -1,0 +1,80 @@
+2026-04-19 19:41:36.461 [com.jobapp.server.Server.main()] INFO  com.jobapp.server.Server - Server application started
+2026-04-19 19:44:41.521 [main] INFO  com.jobapp.server.Server - Server application started
+2026-04-19 19:46:37.979 [main] INFO  com.jobapp.server.Server - Server application started
+2026-04-19 19:58:11.774 [main] INFO  com.jobapp.server.Server - Server application started
+2026-04-19 22:15:04.376 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:278)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
+	at com.jobapp.server.Server.start(Server.java:26)
+	at com.jobapp.server.Server.main(Server.java:69)
+2026-04-19 22:15:04.379 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:15:04.380 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-04-19 22:16:06.628 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:278)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
+	at com.jobapp.server.Server.start(Server.java:26)
+	at com.jobapp.server.Server.main(Server.java:69)
+2026-04-19 22:16:06.631 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:16:06.632 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-04-19 22:26:59.898 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:278)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
+	at com.jobapp.server.Server.start(Server.java:26)
+	at com.jobapp.server.Server.main(Server.java:69)
+2026-04-19 22:26:59.900 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:26:59.901 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-04-19 22:28:08.458 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:278)
+	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
+	at com.jobapp.server.Server.start(Server.java:26)
+	at com.jobapp.server.Server.main(Server.java:70)
+2026-04-19 22:28:08.458 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:28:08.458 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-04-19 22:31:47.992 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
+	at com.jobapp.server.Server.start(Server.java:29)
+	at com.jobapp.server.Server.main(Server.java:72)
+2026-04-19 22:31:47.992 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:31:47.992 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-04-19 22:32:09.002 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8080
+java.net.BindException: Address already in use: bind
+	at java.base/sun.nio.ch.Net.bind0(Native Method)
+	at java.base/sun.nio.ch.Net.bind(Net.java:577)
+	at java.base/sun.nio.ch.Net.bind(Net.java:566)
+	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
+	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
+	at com.jobapp.server.Server.start(Server.java:29)
+	at com.jobapp.server.Server.main(Server.java:72)
+2026-04-19 22:32:09.009 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-04-19 22:32:09.009 [main] INFO  com.jobapp.server.Server - Server stopped

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -11,7 +12,7 @@ import java.util.concurrent.Executors;
 
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private static final int PORT = 8080;
+    private static final int PORT = 8081;
     private static final int THREAD_POOL_SIZE = 10;
     private final ExecutorService threadPool;
     private ServerSocket serverSocket;
@@ -23,7 +24,9 @@ public class Server {
 
     public void start() {
         try {
-            serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket();
+            serverSocket.setReuseAddress(true);
+            serverSocket.bind(new InetSocketAddress(PORT));
             running = true;
             logger.info("Server started on port {}", PORT);
             logger.info("Thread pool size: {}", THREAD_POOL_SIZE);
