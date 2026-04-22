@@ -1,5 +1,6 @@
 package com.jobapp.server;
 
+import com.jobapp.server.db.DatabaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,11 +64,13 @@ public class Server {
 
     private void shutdown() {
         logger.info("Shutting down server...");
+        DatabaseConfig.close();
         threadPool.shutdown();
         logger.info("Server stopped");
     }
 
     public static void main(String[] args) {
+        DatabaseConfig.getDataSource();
         Server server = new Server();
         server.start();
     }
