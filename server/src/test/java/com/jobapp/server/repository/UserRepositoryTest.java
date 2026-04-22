@@ -1,12 +1,9 @@
 package com.jobapp.server.repository;
 
-import com.jobapp.server.db.DatabaseConfig;
 import com.jobapp.server.model.User;
 import com.zaxxer.hikari.HikariDataSource;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,23 +22,15 @@ class UserRepositoryTest {
     private Connection mockConnection;
     private PreparedStatement mockStatement;
     private ResultSet mockResultSet;
-    private MockedStatic<DatabaseConfig> mockStatic;
 
     @BeforeEach
     void setUp() throws SQLException {
-        userRepository = new UserRepository();
         mockDataSource = mock(HikariDataSource.class);
         mockConnection = mock(Connection.class);
         mockStatement = mock(PreparedStatement.class);
         mockResultSet = mock(ResultSet.class);
 
-        mockStatic = mockStatic(DatabaseConfig.class);
-        mockStatic.when(DatabaseConfig::getDataSource).thenReturn(mockDataSource);
-    }
-
-    @AfterEach
-    void tearDown() {
-        mockStatic.close();
+        userRepository = new UserRepository(mockDataSource);
     }
 
     @Test

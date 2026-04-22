@@ -8,14 +8,25 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import javax.sql.DataSource;
 
 public class UserRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
+    private DataSource dataSource;
+
+    public UserRepository() {
+        this.dataSource = DatabaseConfig.getDataSource();
+    }
+
+    public UserRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -32,7 +43,7 @@ public class UserRepository {
     public User save(User user) {
         String sql = "INSERT INTO users (email, password_hash, role, name, surname, city, phone, additional_info, is_blocked, blocked_until, created_at, updated_at) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getPasswordHash());
@@ -64,7 +75,7 @@ public class UserRepository {
     public void update(User user) {
         String sql = "UPDATE users SET email = ?, password_hash = ?, role = ?, name = ?, surname = ?, city = ?, phone = ?, " +
                     "additional_info = ?, is_blocked = ?, blocked_until = ?, updated_at = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getPasswordHash());
@@ -91,7 +102,7 @@ public class UserRepository {
 
     public Optional<User> findById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -107,7 +118,7 @@ public class UserRepository {
 
     public void delete(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             int rowsDeleted = stmt.executeUpdate();
@@ -122,7 +133,7 @@ public class UserRepository {
 
     public boolean existsByEmail(String email) {
         String sql = "SELECT 1 FROM users WHERE email = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -136,7 +147,7 @@ public class UserRepository {
 
     public void updatePassword(int userId, String newPasswordHash) {
         String sql = "UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newPasswordHash);
             stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
