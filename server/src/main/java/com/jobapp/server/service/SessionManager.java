@@ -9,8 +9,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionManager.class);
+    private static final SessionManager instance = new SessionManager();
 
     private final ConcurrentHashMap<Integer, PrintWriter> activeSessions = new ConcurrentHashMap<>();
+
+    public static SessionManager getInstance() {
+        return instance;
+    }
+
+    private SessionManager() {
+    }
 
     public void addSession(int userId, PrintWriter out) {
         activeSessions.put(userId, out);
