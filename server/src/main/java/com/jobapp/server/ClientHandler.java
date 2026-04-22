@@ -60,16 +60,22 @@ public class ClientHandler implements Runnable {
 
     private String processMessage(Message msg) throws IOException {
         String command = msg.getCommand();
+        logger.info("Received command: {} from {}", command, socket.getInetAddress());
+
         Response response;
 
-        if ("PING".equalsIgnoreCase(command)) {
-            response = new Response("OK", "PONG", null);
-        } else if ("LOGIN".equalsIgnoreCase(command)) {
-            response = new Response("OK", "Login stub", null);
-        } else if ("EXIT".equalsIgnoreCase(command)) {
-            response = new Response("OK", "Goodbye", null);
-        } else {
-            response = new Response("OK", "Echo: " + command, msg.getData());
+        switch (command != null ? command.toUpperCase() : "") {
+            case "PING":
+                response = new Response("OK", null, "PONG");
+                break;
+            case "LOGIN":
+                response = new Response("OK", "Login stub", null);
+                break;
+            case "EXIT":
+                response = new Response("OK", "Goodbye", null);
+                break;
+            default:
+                response = new Response("OK", "Echo: " + command, msg.getData());
         }
 
         return objectMapper.writeValueAsString(response);
