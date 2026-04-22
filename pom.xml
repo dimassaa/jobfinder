@@ -21,6 +21,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jackson.version>2.16.0</jackson.version>
         <logback.version>1.4.14</logback.version>
+        <postgresql.version>42.7.2</postgresql.version>
+        <hikaricp.version>5.1.0</hikaricp.version>
         <junit.version>5.10.1</junit.version>
     </properties>
 
@@ -35,6 +37,16 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikaricp.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>

@@ -2,3 +2,11 @@
 2026-04-22 19:36:13.104 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
 2026-04-22 19:43:41.042 [main] INFO  com.jobapp.server.Server - Server started on port 8081
 2026-04-22 19:43:41.042 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-22 19:52:52.453 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+2026-04-22 19:52:52.455 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-22 19:57:30.653 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+2026-04-22 19:57:30.654 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-22 20:29:46.296 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+2026-04-22 20:29:46.298 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-22 20:33:54.668 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+2026-04-22 20:33:54.670 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
