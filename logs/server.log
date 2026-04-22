@@ -10,3 +10,10 @@
 2026-04-22 20:29:46.298 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
 2026-04-22 20:33:54.668 [main] INFO  com.jobapp.server.Server - Server started on port 8081
 2026-04-22 20:33:54.670 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-22 21:24:39.172 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-22 21:25:08.798 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-22 21:25:09.000 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@66d3eec0
+2026-04-22 21:25:09.002 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-22 21:25:09.003 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-22 21:25:09.003 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+2026-04-22 21:25:09.003 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
