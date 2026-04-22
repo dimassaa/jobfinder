@@ -42,22 +42,19 @@ public class UserRepository {
 
     public User save(User user) {
         String sql = "INSERT INTO users (email, password_hash, role, name, surname, city, phone, additional_info, is_blocked, blocked_until, created_at, updated_at) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getPasswordHash());
             stmt.setString(3, user.getRole());
-            stmt.setString(4, user.getName());
-            stmt.setString(5, user.getSurname());
-            stmt.setString(6, user.getCity());
-            stmt.setString(7, user.getPhone());
-            stmt.setString(8, user.getAdditionalInfo());
+            setStringOrNull(stmt, 4, user.getName());
+            setStringOrNull(stmt, 5, user.getSurname());
+            setStringOrNull(stmt, 6, user.getCity());
+            setStringOrNull(stmt, 7, user.getPhone());
+            setStringOrNull(stmt, 8, user.getAdditionalInfo());
             stmt.setBoolean(9, user.getIsBlocked() != null ? user.getIsBlocked() : false);
-            stmt.setTimestamp(10, user.getBlockedUntil() != null ? Timestamp.valueOf(user.getBlockedUntil()) : null);
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
-            stmt.setTimestamp(11, now);
-            stmt.setTimestamp(12, now);
+            setTimestampOrNull(stmt, 10, user.getBlockedUntil());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -157,6 +154,22 @@ public class UserRepository {
         } catch (SQLException e) {
             logger.error("Error updating password for user: {}", userId, e);
             throw new RuntimeException("Failed to update password", e);
+        }
+    }
+
+    private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
+        if (value != null) {
+            stmt.setString(index, value);
+        } else {
+            stmt.setNull(index, Types.VARCHAR);
+        }
+    }
+
+    private void setTimestampOrNull(PreparedStatement stmt, int index, LocalDateTime value) throws SQLException {
+        if (value != null) {
+            stmt.setTimestamp(index, Timestamp.valueOf(value));
+        } else {
+            stmt.setNull(index, Types.TIMESTAMP);
         }
     }
 

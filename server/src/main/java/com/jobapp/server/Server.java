@@ -13,13 +13,19 @@ import java.util.concurrent.Executors;
 
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private static final int PORT = 8081;
+    private static final int DEFAULT_PORT = 8081;
     private static final int THREAD_POOL_SIZE = 10;
+    private final int port;
     private final ExecutorService threadPool;
     private ServerSocket serverSocket;
     private volatile boolean running;
 
     public Server() {
+        this(DEFAULT_PORT);
+    }
+
+    public Server(int port) {
+        this.port = port;
         this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     }
 
@@ -27,9 +33,9 @@ public class Server {
         try {
             serverSocket = new ServerSocket();
             serverSocket.setReuseAddress(true);
-            serverSocket.bind(new InetSocketAddress(PORT));
+            serverSocket.bind(new InetSocketAddress(port));
             running = true;
-            logger.info("Server started on port {}", PORT);
+            logger.info("Server started on port {}", port);
             logger.info("Thread pool size: {}", THREAD_POOL_SIZE);
 
             while (running) {
@@ -45,7 +51,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            logger.error("Failed to start server on port {}", PORT, e);
+            logger.error("Failed to start server on port {}", port, e);
         } finally {
             shutdown();
         }
