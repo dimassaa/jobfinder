@@ -142,4 +142,29 @@ class UserRepositoryTest {
 
         assertTrue(exists);
     }
+
+    @Test
+    void testExistsByEmailNotFound() throws SQLException {
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(false);
+
+        boolean exists = userRepository.existsByEmail("nonexistent@example.com");
+
+        assertFalse(exists);
+    }
+
+    @Test
+    void testUpdatePassword() throws SQLException {
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        userRepository.updatePassword(1, "newPasswordHash");
+
+        verify(mockStatement).setString(1, "newPasswordHash");
+        verify(mockStatement).setInt(3, 1);
+        verify(mockStatement).executeUpdate();
+    }
 }
