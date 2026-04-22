@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: jobdb
+      POSTGRES_USER: jobuser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=jobdb
+      - DB_USER=jobuser
+      - DB_PASSWORD=secret
+
+volumes:
+  postgres_data:

@@ -1,0 +1,2 @@
+-- Database initialization script will be added in step 2.1
+-- This is a placeholder for step 1.6 verification
