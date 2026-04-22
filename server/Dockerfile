@@ -20,6 +20,6 @@ WORKDIR /app
 
 COPY --from=build /app/server/target/server-1.0-SNAPSHOT.jar server.jar
 
-EXPOSE 8081
+EXPOSE 8082
 
 ENTRYPOINT ["java", "-jar", "server.jar"]

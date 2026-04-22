@@ -18,10 +18,11 @@ services:
       context: .
       dockerfile: server/Dockerfile
     ports:
-      - "8081:8081"
+      - "${SERVER_PORT:-8082}:8082"
     depends_on:
       - postgres
     environment:
+      - SERVER_PORT=${SERVER_PORT:-8082}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=jobdb

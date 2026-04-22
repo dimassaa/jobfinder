@@ -21,12 +21,29 @@ public class Server {
     private volatile boolean running;
 
     public Server() {
-        this(DEFAULT_PORT);
+        this(parsePortFromEnv());
     }
 
     public Server(int port) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+    }
+
+    private static int parsePortFromEnv() {
+        String envPort = System.getenv("SERVER_PORT");
+        if (envPort != null && !envPort.isBlank()) {
+            try {
+                int port = Integer.parseInt(envPort.trim());
+                if (port > 0 && port < 65536) {
+                    logger.info("Using port from SERVER_PORT env: {}", port);
+                    return port;
+                }
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid SERVER_PORT value: {}, using default", envPort);
+            }
+        }
+        logger.info("Using default port: {}", DEFAULT_PORT);
+        return DEFAULT_PORT;
     }
 
     public void start() {
