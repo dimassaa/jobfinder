@@ -29,6 +29,7 @@ public class ClientHandler implements Runnable {
     private final LoginCommand loginCommand;
     private final RegisterCommand registerCommand;
     private Integer currentUserId;
+    private boolean shouldClose = false;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -47,7 +48,7 @@ public class ClientHandler implements Runnable {
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             String line;
-            while ((line = in.readLine()) != null) {
+            while (!shouldClose && (line = in.readLine()) != null) {
                 logger.info("Received from {}: {}", socket.getInetAddress(), line);
 
                 if ("exit".equalsIgnoreCase(line)) {
@@ -112,6 +113,16 @@ public class ClientHandler implements Runnable {
                 break;
             case "EXIT":
                 response = new Response("OK", "Goodbye", null);
+                shouldClose = true;
+                break;
+            case "LOGOUT":
+                if (currentUserId != null) {
+                    sessionManager.removeSession(currentUserId);
+                    logger.info("User {} logged out", currentUserId);
+                    currentUserId = null;
+                }
+                response = new Response("OK", "Logged out successfully", null);
+                shouldClose = true;
                 break;
             default:
                 response = new Response("OK", "Echo: " + command, msg.getData());
