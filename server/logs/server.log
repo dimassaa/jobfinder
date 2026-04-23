@@ -1770,3 +1770,174 @@ Caused by: java.sql.SQLException: HikariDataSource HikariDataSource (JobFinder-H
 2026-04-23 21:04:39.409 [main] INFO  c.j.server.service.VacancyService - Vacancy updated: 10
 2026-04-23 21:04:39.415 [main] INFO  c.j.server.service.VacancyService - Vacancy closed: 10
 2026-04-23 21:04:39.418 [main] WARN  c.j.server.service.VacancyService - Company not found: 999
+2026-04-23 21:15:26.031 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool reset
+2026-04-23 21:15:26.037 [Thread-1] INFO  com.jobapp.server.Server - Server started on port 43271
+2026-04-23 21:15:26.042 [Thread-1] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-23 21:15:27.049 [Thread-1] INFO  com.jobapp.server.Server - New connection from /127.0.0.1
+2026-04-23 21:15:27.087 [Thread-1] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-23 21:15:27.655 [Thread-1] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@70935aab
+2026-04-23 21:15:27.665 [Thread-1] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-23 21:15:27.666 [Thread-1] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-23 21:15:27.856 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"REGISTER","data":{"email":"integrationtest1776968127552@test.com","password":"testPassword123","role":"USER","name":"Test","surname":"User"}}
+2026-04-23 21:15:28.132 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: REGISTER from /127.0.0.1
+2026-04-23 21:15:28.301 [pool-2-thread-1] INFO  c.j.server.repository.UserRepository - User saved with id: 27
+2026-04-23 21:15:28.301 [pool-2-thread-1] INFO  c.jobapp.server.service.AuthService - User registered successfully: integrationtest1776968127552@test.com
+2026-04-23 21:15:28.326 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Registration successful","data":{"success":true,"message":"Registration successful","userId":27,"role":"USER"}}
+2026-04-23 21:15:28.352 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"LOGIN","data":{"email":"integrationtest1776968127552@test.com","password":"testPassword123"}}
+2026-04-23 21:15:28.352 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: LOGIN from /127.0.0.1
+2026-04-23 21:15:28.424 [pool-2-thread-1] INFO  c.jobapp.server.service.AuthService - User logged in successfully: integrationtest1776968127552@test.com
+2026-04-23 21:15:28.425 [pool-2-thread-1] INFO  c.j.server.service.SessionManager - Session added for userId: 27
+2026-04-23 21:15:28.425 [pool-2-thread-1] INFO  c.jobapp.server.handler.LoginCommand - User 27 logged in, session created
+2026-04-23 21:15:28.459 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Login successful","data":{"success":true,"message":"Login successful","userId":27,"role":"USER"}}
+2026-04-23 21:15:28.459 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"LOGOUT","data":null}
+2026-04-23 21:15:28.460 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: LOGOUT from /127.0.0.1
+2026-04-23 21:15:28.460 [pool-2-thread-1] INFO  c.j.server.service.SessionManager - Session removed for userId: 27
+2026-04-23 21:15:28.460 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - User 27 logged out
+2026-04-23 21:15:28.461 [pool-2-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Logged out successfully","data":null}
+2026-04-23 21:15:27.756 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-04-23 21:15:27.759 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-04-23 21:15:27.760 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-04-23 21:15:27.760 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool reset
+2026-04-23 21:15:27.761 [Thread-2] INFO  com.jobapp.server.Server - Server started on port 35013
+2026-04-23 21:15:27.761 [Thread-2] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-23 21:15:28.763 [Thread-2] INFO  com.jobapp.server.Server - New connection from /127.0.0.1
+2026-04-23 21:15:28.764 [Thread-2] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-23 21:15:28.782 [Thread-2] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@9d471a2
+2026-04-23 21:15:28.782 [Thread-2] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-23 21:15:28.783 [Thread-2] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-23 21:15:29.265 [pool-3-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"PING","data":null}
+2026-04-23 21:15:29.267 [pool-3-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: PING from /127.0.0.1
+2026-04-23 21:15:29.268 [pool-3-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":null,"data":"PONG"}
+2026-04-23 21:15:31.274 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-04-23 21:15:31.276 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-04-23 21:15:31.277 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-04-23 21:15:31.278 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool reset
+2026-04-23 21:15:31.278 [Thread-3] INFO  com.jobapp.server.Server - Server started on port 37487
+2026-04-23 21:15:31.278 [Thread-3] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-23 21:15:32.279 [Thread-3] INFO  com.jobapp.server.Server - New connection from /127.0.0.1
+2026-04-23 21:15:32.279 [Thread-3] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-23 21:15:32.287 [Thread-3] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@d844f61
+2026-04-23 21:15:32.288 [Thread-3] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-23 21:15:32.288 [Thread-3] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-23 21:15:32.783 [pool-4-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"LOGIN","data":{"email":"nonexistent@test.com","password":"wrongpassword"}}
+2026-04-23 21:15:32.785 [pool-4-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: LOGIN from /127.0.0.1
+2026-04-23 21:15:32.788 [pool-4-thread-1] WARN  c.jobapp.server.service.AuthService - Login attempt with non-existent email: nonexistent@test.com
+2026-04-23 21:15:32.789 [pool-4-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"ERROR","message":"Invalid email or password","data":{"success":false,"message":"Invalid email or password","userId":null,"role":null}}
+2026-04-23 21:15:34.800 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-04-23 21:15:34.802 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-04-23 21:15:34.802 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-04-23 21:15:34.803 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool reset
+2026-04-23 21:15:34.803 [Thread-4] INFO  com.jobapp.server.Server - Server started on port 34859
+2026-04-23 21:15:34.804 [Thread-4] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-23 21:15:35.805 [Thread-4] INFO  com.jobapp.server.Server - New connection from /127.0.0.1
+2026-04-23 21:15:35.806 [Thread-4] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-23 21:15:35.814 [Thread-4] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@3317effc
+2026-04-23 21:15:35.815 [Thread-4] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-23 21:15:35.815 [Thread-4] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-23 21:15:36.307 [pool-5-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"GET_PROFILE","data":null}
+2026-04-23 21:15:36.309 [pool-5-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: GET_PROFILE from /127.0.0.1
+2026-04-23 21:15:36.309 [pool-5-thread-1] WARN  com.jobapp.server.ClientHandler - Unauthorized attempt to execute: GET_PROFILE
+2026-04-23 21:15:36.310 [pool-5-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"ERROR","message":"Unauthorized. Please login first.","data":null}
+2026-04-23 21:15:38.313 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-04-23 21:15:38.315 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-04-23 21:15:38.315 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-04-23 21:15:38.315 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool reset
+2026-04-23 21:15:38.316 [Thread-5] INFO  com.jobapp.server.Server - Server started on port 43215
+2026-04-23 21:15:38.316 [Thread-5] INFO  com.jobapp.server.Server - Thread pool size: 10
+2026-04-23 21:15:39.317 [Thread-5] INFO  com.jobapp.server.Server - New connection from /127.0.0.1
+2026-04-23 21:15:39.317 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-04-23 21:15:39.325 [Thread-5] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@172778df
+2026-04-23 21:15:39.326 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-04-23 21:15:39.326 [Thread-5] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-04-23 21:15:39.819 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"REGISTER","data":{"email":"profiletest1776968139817@test.com","password":"testPassword123","role":"USER","name":"Test","surname":"User"}}
+2026-04-23 21:15:39.820 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: REGISTER from /127.0.0.1
+2026-04-23 21:15:39.891 [pool-6-thread-1] INFO  c.j.server.repository.UserRepository - User saved with id: 28
+2026-04-23 21:15:39.892 [pool-6-thread-1] INFO  c.jobapp.server.service.AuthService - User registered successfully: profiletest1776968139817@test.com
+2026-04-23 21:15:39.894 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Registration successful","data":{"success":true,"message":"Registration successful","userId":28,"role":"USER"}}
+2026-04-23 21:15:39.895 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"LOGIN","data":{"email":"profiletest1776968139817@test.com","password":"testPassword123"}}
+2026-04-23 21:15:39.895 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: LOGIN from /127.0.0.1
+2026-04-23 21:15:39.963 [pool-6-thread-1] INFO  c.jobapp.server.service.AuthService - User logged in successfully: profiletest1776968139817@test.com
+2026-04-23 21:15:39.964 [pool-6-thread-1] INFO  c.j.server.service.SessionManager - Session added for userId: 28
+2026-04-23 21:15:39.964 [pool-6-thread-1] INFO  c.jobapp.server.handler.LoginCommand - User 28 logged in, session created
+2026-04-23 21:15:39.966 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Login successful","data":{"success":true,"message":"Login successful","userId":28,"role":"USER"}}
+2026-04-23 21:15:39.968 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"GET_PROFILE","data":null}
+2026-04-23 21:15:39.968 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: GET_PROFILE from /127.0.0.1
+2026-04-23 21:15:39.968 [pool-6-thread-1] INFO  c.j.server.handler.GetProfileCommand - Executing GET_PROFILE for user: 28
+2026-04-23 21:15:39.983 [pool-6-thread-1] INFO  c.jobapp.server.service.UserService - Profile retrieved for user: 28
+2026-04-23 21:15:39.989 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Profile retrieved","data":{"name":"Test","surname":"User","tags":[]}}
+2026-04-23 21:15:39.996 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"UPDATE_PROFILE","data":{"name":"UpdatedName","surname":"UpdatedSurname","city":"Moscow","phone":"+79001234567","additionalInfo":"Additional info"}}
+2026-04-23 21:15:39.996 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: UPDATE_PROFILE from /127.0.0.1
+2026-04-23 21:15:39.997 [pool-6-thread-1] INFO  c.j.s.handler.UpdateProfileCommand - Executing UPDATE_PROFILE for user: 28
+2026-04-23 21:15:40.004 [pool-6-thread-1] INFO  c.j.server.repository.UserRepository - Profile updated for user: 28
+2026-04-23 21:15:40.004 [pool-6-thread-1] INFO  c.jobapp.server.service.UserService - Profile updated for user: 28
+2026-04-23 21:15:40.005 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Profile updated successfully","data":{"name":"UpdatedName","surname":"UpdatedSurname","city":"Moscow","phone":"+79001234567","additionalInfo":"Additional info"}}
+2026-04-23 21:15:40.005 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"GET_PROFILE","data":null}
+2026-04-23 21:15:40.005 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: GET_PROFILE from /127.0.0.1
+2026-04-23 21:15:40.006 [pool-6-thread-1] INFO  c.j.server.handler.GetProfileCommand - Executing GET_PROFILE for user: 28
+2026-04-23 21:15:40.007 [pool-6-thread-1] INFO  c.jobapp.server.service.UserService - Profile retrieved for user: 28
+2026-04-23 21:15:40.009 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Profile retrieved","data":{"name":"UpdatedName","surname":"UpdatedSurname","city":"Moscow","phone":"+79001234567","additionalInfo":"Additional info","tags":[]}}
+2026-04-23 21:15:40.009 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"GET_ALL_TAGS","data":null}
+2026-04-23 21:15:40.009 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: GET_ALL_TAGS from /127.0.0.1
+2026-04-23 21:15:40.010 [pool-6-thread-1] INFO  c.j.server.handler.GetAllTagsCommand - Executing GET_ALL_TAGS
+2026-04-23 21:15:40.013 [pool-6-thread-1] INFO  c.jobapp.server.service.TagService - Found 41 active tags
+2026-04-23 21:15:40.015 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Tags retrieved","data":[{"id":21,"name":"Agile","isActive":true},{"id":6,"name":"C#","isActive":true},{"id":5,"name":"C++","isActive":true},{"id":25,"name":"CI/CD","isActive":true},{"id":35,"name":"Communication","isActive":true},{"id":30,"name":"Data Analysis","isActive":true},{"id":16,"name":"Docker","isActive":true},{"id":38,"name":"English","isActive":true},{"id":31,"name":"Excel","isActive":true},{"id":40,"name":"French","isActive":true},{"id":39,"name":"German","isActive":true},{"id":18,"name":"Git","isActive":true},{"id":7,"name":"Go","isActive":true},{"id":27,"name":"GraphQL","isActive":true},{"id":1,"name":"Java","isActive":true},{"id":3,"name":"JavaScript","isActive":true},{"id":24,"name":"JIRA","isActive":true},{"id":23,"name":"Kanban","isActive":true},{"id":9,"name":"Kotlin","isActive":true},{"id":17,"name":"Kubernetes","isActive":true},{"id":19,"name":"Linux","isActive":true},{"id":29,"name":"Machine Learning","isActive":true},{"id":28,"name":"Microservices","isActive":true},{"id":14,"name":"MongoDB","isActive":true},{"id":13,"name":"MySQL","isActive":true},{"id":12,"name":"PostgreSQL","isActive":true},{"id":32,"name":"Power BI","isActive":true},{"id":37,"name":"Problem Solving","isActive":true},{"id":34,"name":"Project Management","isActive":true},{"id":2,"name":"Python","isActive":true},{"id":15,"name":"Redis","isActive":true},{"id":26,"name":"REST API","isActive":true},{"id":8,"name":"Rust","isActive":true},{"id":22,"name":"Scrum","isActive":true},{"id":41,"name":"Spanish","isActive":true},{"id":11,"name":"SQL","isActive":true},{"id":10,"name":"Swift","isActive":true},{"id":33,"name":"Tableau","isActive":true},{"id":36,"name":"Teamwork","isActive":true},{"id":4,"name":"TypeScript","isActive":true},{"id":20,"name":"Windows Server","isActive":true}]}
+2026-04-23 21:15:40.024 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"UPDATE_USER_TAGS","data":{"tagIds":[21,6,5]}}
+2026-04-23 21:15:40.025 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: UPDATE_USER_TAGS from /127.0.0.1
+2026-04-23 21:15:40.026 [pool-6-thread-1] INFO  c.j.s.handler.UpdateUserTagsCommand - Executing UPDATE_USER_TAGS for user: 28
+2026-04-23 21:15:40.044 [pool-6-thread-1] INFO  c.j.server.repository.UserRepository - User tags updated for user: 28
+2026-04-23 21:15:40.044 [pool-6-thread-1] INFO  c.jobapp.server.service.UserService - Tags updated for user: 28
+2026-04-23 21:15:40.045 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Tags updated successfully","data":[21,6,5]}
+2026-04-23 21:15:40.045 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received from /127.0.0.1: {"type":"REQUEST","command":"GET_USER_TAGS","data":null}
+2026-04-23 21:15:40.045 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Received command: GET_USER_TAGS from /127.0.0.1
+2026-04-23 21:15:40.046 [pool-6-thread-1] INFO  c.j.s.handler.GetUserTagsCommand - Executing GET_USER_TAGS for user: 28
+2026-04-23 21:15:40.049 [pool-6-thread-1] INFO  c.jobapp.server.service.UserService - Found 3 tags for user: 28
+2026-04-23 21:15:40.050 [pool-6-thread-1] INFO  com.jobapp.server.ClientHandler - Sent to /127.0.0.1: {"status":"OK","message":"Tags retrieved","data":[{"id":21,"name":"Agile","isActive":true},{"id":6,"name":"C#","isActive":true},{"id":5,"name":"C++","isActive":true}]}
+2026-04-23 21:15:40.050 [pool-6-thread-1] INFO  c.j.server.service.SessionManager - Session removed for userId: 28
+2026-04-23 21:15:45.677 [main] INFO  c.j.s.repository.CompanyRepository - Company saved with id: 42
+2026-04-23 21:15:45.692 [main] INFO  c.j.s.repository.CompanyRepository - Company updated: 1
+2026-04-23 21:15:45.701 [main] INFO  c.j.server.repository.UserRepository - User saved with id: 42
+2026-04-23 21:15:45.715 [main] INFO  c.j.server.repository.UserRepository - User tags updated for user: 1
+2026-04-23 21:15:45.727 [main] INFO  c.j.server.repository.UserRepository - Profile updated for user: 1
+2026-04-23 21:15:45.743 [main] INFO  c.j.server.repository.UserRepository - Password updated for user: 1
+2026-04-23 21:15:45.752 [main] INFO  c.j.server.repository.UserRepository - User deleted: 1
+2026-04-23 21:15:45.756 [main] INFO  c.j.server.repository.UserRepository - User updated: 1
+2026-04-23 21:15:45.764 [main] INFO  c.j.s.repository.VacancyRepository - Added 3 tags to vacancy 1
+2026-04-23 21:15:45.768 [main] INFO  c.j.s.repository.VacancyRepository - Vacancy closed: 1
+2026-04-23 21:15:45.778 [main] INFO  c.j.s.repository.VacancyRepository - Vacancy saved with id: 1
+2026-04-23 21:15:45.781 [main] INFO  c.j.s.repository.VacancyRepository - Cleared 3 tags from vacancy 1
+2026-04-23 21:15:45.829 [main] INFO  c.j.s.repository.VacancyRepository - Vacancy updated: 1
+2026-04-23 21:15:46.041 [main] WARN  c.jobapp.server.service.AuthService - Failed login attempt for user: test@test.com
+2026-04-23 21:15:46.110 [main] INFO  c.jobapp.server.service.AuthService - Company created for HR user: 2
+2026-04-23 21:15:46.110 [main] INFO  c.jobapp.server.service.AuthService - User registered successfully: hr@test.com
+2026-04-23 21:15:46.117 [main] WARN  c.jobapp.server.service.AuthService - Login attempt with non-existent email: notfound@test.com
+2026-04-23 21:15:46.249 [main] INFO  c.jobapp.server.service.AuthService - User logged in successfully: test@test.com
+2026-04-23 21:15:46.383 [main] WARN  c.jobapp.server.service.AuthService - Login attempt for blocked user: test@test.com
+2026-04-23 21:15:46.385 [main] WARN  c.jobapp.server.service.AuthService - Registration attempt with existing email: test@test.com
+2026-04-23 21:15:46.455 [main] INFO  c.jobapp.server.service.AuthService - User registered successfully: test@test.com
+2026-04-23 21:15:46.657 [main] INFO  c.jobapp.server.service.AuthService - User logged in successfully: test@test.com
+2026-04-23 21:15:46.783 [main] INFO  c.jobapp.server.service.TagService - Found 0 active tags
+2026-04-23 21:15:46.803 [main] INFO  c.jobapp.server.service.TagService - Found 1 active tags
+2026-04-23 21:15:46.805 [main] INFO  c.jobapp.server.service.TagService - Found 2 active tags
+2026-04-23 21:15:46.807 [main] INFO  c.jobapp.server.service.TagService - Found 0 active tags
+2026-04-23 21:15:46.809 [main] INFO  c.jobapp.server.service.TagService - Found 0 active tags
+2026-04-23 21:15:46.816 [main] INFO  c.jobapp.server.service.UserService - Profile updated for user: 1
+2026-04-23 21:15:46.819 [main] INFO  c.jobapp.server.service.UserService - Profile retrieved for user: 1
+2026-04-23 21:15:46.830 [main] WARN  c.jobapp.server.service.UserService - Tag not found: 999
+2026-04-23 21:15:46.833 [main] WARN  c.jobapp.server.service.UserService - User not found: 999
+2026-04-23 21:15:46.838 [main] INFO  c.jobapp.server.service.UserService - Tags updated for user: 1
+2026-04-23 21:15:46.841 [main] INFO  c.jobapp.server.service.UserService - Profile retrieved for user: 1
+2026-04-23 21:15:46.843 [main] INFO  c.jobapp.server.service.UserService - Profile updated for user: 1
+2026-04-23 21:15:46.846 [main] WARN  c.jobapp.server.service.UserService - Tag is not active: 1
+2026-04-23 21:15:46.849 [main] INFO  c.jobapp.server.service.UserService - Profile updated for user: 1
+2026-04-23 21:15:46.851 [main] INFO  c.jobapp.server.service.UserService - Found 2 tags for user: 1
+2026-04-23 21:15:46.881 [main] WARN  c.j.server.service.VacancyService - Tag not found: 999
+2026-04-23 21:15:46.884 [main] WARN  c.j.server.service.VacancyService - Vacancy not found: 999
+2026-04-23 21:15:46.887 [main] WARN  c.j.server.service.VacancyService - User 999 is not owner of company 1
+2026-04-23 21:15:46.889 [main] WARN  c.j.server.service.VacancyService - User 999 is not owner of company 1
+2026-04-23 21:15:46.906 [main] WARN  c.j.server.service.VacancyService - Vacancy not found: 999
+2026-04-23 21:15:46.909 [main] WARN  c.j.server.service.VacancyService - Tag is not active: 1
+2026-04-23 21:15:46.911 [main] WARN  c.j.server.service.VacancyService - User 999 is not owner of company 1
+2026-04-23 21:15:46.914 [main] INFO  c.j.server.service.VacancyService - Vacancy created with id: 10
+2026-04-23 21:15:46.917 [main] INFO  c.j.server.service.VacancyService - Vacancy updated: 10
+2026-04-23 21:15:46.921 [main] INFO  c.j.server.service.VacancyService - Vacancy closed: 10
+2026-04-23 21:15:46.924 [main] WARN  c.j.server.service.VacancyService - Company not found: 999
