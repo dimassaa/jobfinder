@@ -5,6 +5,7 @@ public class AppContext {
     private static int currentUserId;
     private static String currentRole;
     private static String currentEmail;
+    private static NetworkService networkService;
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int LOCAL_PORT = 8081;
@@ -63,6 +64,14 @@ public class AppContext {
 
     public static void setCurrentEmail(String email) {
         currentEmail = email;
+    }
+
+    public static void setNetworkService(NetworkService ns) {
+        networkService = ns;
+    }
+
+    public static NetworkService getNetworkService() {
+        return networkService;
     }
 
     public static boolean isLoggedIn() {

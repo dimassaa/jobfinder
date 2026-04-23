@@ -59,7 +59,9 @@ public class VacancyListController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        vacancyClientService = new VacancyClientService(new com.jobapp.client.NetworkService());
+        com.jobapp.client.NetworkService networkService = new com.jobapp.client.NetworkService();
+        com.jobapp.client.AppContext.setNetworkService(networkService);
+        vacancyClientService = new VacancyClientService(networkService);
 
         setupTableColumns();
         setupEmploymentTypeCombo();
@@ -255,7 +257,32 @@ public class VacancyListController implements Initializable {
 
     private void openVacancyDetails(VacancyDto vacancy) {
         logger.info("Opening vacancy details for: {} (id={})", vacancy.getTitle(), vacancy.getId());
-        showAlert("Информация", "Детальный просмотр вакансии \"" + vacancy.getTitle() + "\" будет реализован позже.");
+
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/fxml/vacancy_details.fxml"));
+
+            javafx.scene.Parent root = loader.load();
+
+            VacancyDetailsController controller = loader.getController();
+            controller.setVacancyId(vacancy.getId());
+
+            com.jobapp.client.NetworkService networkService = com.jobapp.client.AppContext.getNetworkService();
+            if (networkService != null) {
+                controller.setNetworkService(networkService);
+            }
+
+            javafx.stage.Stage detailsStage = new javafx.stage.Stage();
+            detailsStage.setTitle("Вакансия: " + vacancy.getTitle());
+            detailsStage.setScene(new javafx.scene.Scene(root, 600, 700));
+            detailsStage.initOwner(vacanciesTable.getScene().getWindow());
+            detailsStage.setResizable(true);
+            detailsStage.show();
+
+        } catch (Exception e) {
+            logger.error("Failed to open vacancy details: {}", e.getMessage());
+            showAlert("Ошибка", "Не удалось открыть детали вакансии: " + e.getMessage());
+        }
     }
 
     private void showAlert(String title, String message) {
