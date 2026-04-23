@@ -10,15 +10,26 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.sql.DataSource;
 
 public class CompanyRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CompanyRepository.class);
 
+    private DataSource dataSource;
+
+    public CompanyRepository() {
+        this.dataSource = DatabaseConfig.getDataSource();
+    }
+
+    public CompanyRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     public Company save(Company company) {
         String sql = "INSERT INTO companies (user_id, company_name, website, description, created_at, updated_at) " +
                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, company.getUserId());
             stmt.setString(2, company.getCompanyName());
@@ -43,7 +54,7 @@ public class CompanyRepository {
 
     public Optional<Company> findById(Integer id) {
         String sql = "SELECT * FROM companies WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -59,7 +70,7 @@ public class CompanyRepository {
 
     public Optional<Company> findByUserId(Integer userId) {
         String sql = "SELECT * FROM companies WHERE user_id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -76,7 +87,7 @@ public class CompanyRepository {
     public List<Company> findAll() {
         String sql = "SELECT * FROM companies ORDER BY company_name";
         List<Company> companies = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -90,7 +101,7 @@ public class CompanyRepository {
 
     public void update(Company company) {
         String sql = "UPDATE companies SET company_name = ?, website = ?, description = ?, updated_at = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, company.getCompanyName());
             stmt.setString(2, company.getWebsite());
