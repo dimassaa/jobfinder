@@ -43,6 +43,12 @@ public class LoginController {
     @FXML
     private Label statusLabel;
 
+    @FXML
+    private Label connectionStatusLabel;
+
+    @FXML
+    private Button reconnectButton;
+
     private NetworkService networkService;
     private ObjectMapper objectMapper;
 
@@ -57,6 +63,38 @@ public class LoginController {
     @FXML
     private void initialize() {
         logger.info("LoginController initialized");
+        updateConnectionStatus();
+    }
+
+    private void updateConnectionStatus() {
+        if (networkService != null && networkService.isConnected()) {
+            connectionStatusLabel.setText("Подключено");
+            connectionStatusLabel.setStyle("-fx-text-fill: #388E3C;");
+            reconnectButton.setVisible(false);
+        } else {
+            connectionStatusLabel.setText("Не подключено");
+            connectionStatusLabel.setStyle("-fx-text-fill: #D32F2F;");
+            reconnectButton.setVisible(true);
+        }
+    }
+
+    @FXML
+    private void handleReconnect() {
+        logger.info("Reconnect button clicked");
+        reconnectButton.setDisable(true);
+        connectionStatusLabel.setText("Подключение...");
+        connectionStatusLabel.setStyle("-fx-text-fill: #FFA000;");
+
+        new Thread(() -> {
+            try {
+                if (networkService != null) {
+                    networkService.reconnect();
+                }
+            } finally {
+                Platform.runLater(this::updateConnectionStatus);
+                Platform.runLater(() -> reconnectButton.setDisable(false));
+            }
+        }).start();
     }
 
     @FXML
@@ -85,6 +123,16 @@ public class LoginController {
                     return;
                 }
 
+                if (!networkService.isConnected()) {
+                    logger.warn("Not connected to server");
+                    Platform.runLater(() -> {
+                        loginButton.setDisable(false);
+                        showError("Не подключено к серверу. Нажмите 'Переподключиться'.");
+                        updateConnectionStatus();
+                    });
+                    return;
+                }
+
                 Map<String, String> data = new HashMap<>();
                 data.put("email", email);
                 data.put("password", password);
@@ -101,12 +149,14 @@ public class LoginController {
                     } else {
                         showError(response.getMessage());
                     }
+                    updateConnectionStatus();
                 });
             } catch (Exception e) {
                 logger.error("Login error: {}", e.getMessage());
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
                     showError("Ошибка соединения: " + e.getMessage());
+                    updateConnectionStatus();
                 });
             }
         }).start();

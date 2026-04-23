@@ -30,6 +30,11 @@
     -fx-text-fill: #D32F2F;
 }
 
+.label-status {
+    -fx-font-size: 12px;
+    -fx-text-fill: #757575;
+}
+
 .card {
     -fx-background-color: white;
     -fx-padding: 16px;

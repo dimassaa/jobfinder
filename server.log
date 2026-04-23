@@ -1,0 +1,7 @@
+23:13:59.866 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+23:14:00.060 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@66d3eec0
+23:14:00.062 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+23:14:00.062 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+23:14:00.063 [main] INFO  com.jobapp.server.Server - Using port from SERVER_PORT env: 8082
+23:14:00.063 [main] INFO  com.jobapp.server.Server - Server started on port 8082
+23:14:00.064 [main] INFO  com.jobapp.server.Server - Thread pool size: 10

@@ -23,13 +23,25 @@ public class NetworkService {
     private PrintWriter writer;
     private final ObjectMapper objectMapper;
     private volatile boolean connected;
+    private String host;
+    private int port;
 
     public NetworkService() {
         this.objectMapper = new ObjectMapper();
+        this.host = AppContext.getServerHost();
+        this.port = AppContext.getServerPort();
+        logger.info("NetworkService initialized with {}:{}", host, port);
+    }
+
+    public void connect() throws IOException {
+        connect(host, port);
     }
 
     public void connect(String host, int port) throws IOException {
         disconnect();
+
+        this.host = host;
+        this.port = port;
 
         socket = new Socket(host, port);
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -142,17 +154,22 @@ public class NetworkService {
     }
 
     public void reconnect(String host, int port) {
-        logger.info("Attempting to reconnect...");
+        logger.info("Attempting to reconnect to {}:{}...", host, port);
         disconnect();
 
         try {
             Thread.sleep(1000);
             connect(host, port);
+            logger.info("Reconnected successfully to {}:{}", host, port);
         } catch (IOException e) {
             logger.error("Reconnection failed: {}", e.getMessage());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Reconnection interrupted");
         }
+    }
+
+    public void reconnect() {
+        reconnect(host, port);
     }
 }

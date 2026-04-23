@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -53,5 +54,13 @@
                 <Insets top="8" />
             </StackPane.margin>
         </Label>
+
+        <HBox alignment="CENTER" spacing="8">
+            <StackPane.margin>
+                <Insets top="8" />
+            </StackPane.margin>
+            <Label fx:id="connectionStatusLabel" styleClass="label-status" text="Статус подключения" />
+            <Button fx:id="reconnectButton" onAction="#handleReconnect" text="Переподключиться" styleClass="button-link" />
+        </HBox>
     </VBox>
 </StackPane>
