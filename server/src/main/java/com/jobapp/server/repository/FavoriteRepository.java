@@ -46,6 +46,39 @@ public class FavoriteRepository {
     }
 
     public List<Vacancy> findByUserId(Integer userId) {
+        return findFavoritesByUser(userId);
+    }
+
+    public void add(int userId, int vacancyId) {
+        addFavorite(userId, vacancyId);
+    }
+
+    public void remove(int userId, int vacancyId) {
+        removeFavorite(userId, vacancyId);
+    }
+
+    public List<Vacancy> findFavoritesByUser(int userId) {
+        String sql = "SELECT v.* FROM vacancies v INNER JOIN favorites f ON v.id = f.vacancy_id WHERE f.user_id = ? ORDER BY f.created_at DESC";
+        List<Vacancy> vacancies = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    vacancies.add(mapRowToVacancy(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching favorites by user id: {}", userId, e);
+        }
+        return vacancies;
+    }
+
+    public boolean exists(int userId, int vacancyId) {
+        return isFavorite(userId, vacancyId);
+    }
+
+    public List<Vacancy> findFavoritesByUser(Integer userId) {
         String sql = "SELECT v.* FROM vacancies v INNER JOIN favorites f ON v.id = f.vacancy_id WHERE f.user_id = ? ORDER BY f.created_at DESC";
         List<Vacancy> vacancies = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();

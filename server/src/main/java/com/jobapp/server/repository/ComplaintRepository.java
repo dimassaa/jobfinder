@@ -65,6 +65,21 @@ public class ComplaintRepository {
         return complaints;
     }
 
+    public List<Complaint> findAllPending() {
+        String sql = "SELECT * FROM complaints WHERE status = 'PENDING' ORDER BY created_at DESC";
+        List<Complaint> complaints = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                complaints.add(mapRowToComplaint(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching pending complaints", e);
+        }
+        return complaints;
+    }
+
     public Optional<Complaint> findById(Integer id) {
         String sql = "SELECT * FROM complaints WHERE id = ?";
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();
@@ -116,15 +131,15 @@ public class ComplaintRepository {
     }
 
     public void updateStatus(Integer id, String status, Integer resolvedBy) {
+        updateStatus((int) id, status, (int) resolvedBy);
+    }
+
+    public void updateStatus(int id, String status, int resolvedBy) {
         String sql = "UPDATE complaints SET status = ?, resolved_by = ?, resolved_at = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
-            if (resolvedBy != null) {
-                stmt.setInt(2, resolvedBy);
-            } else {
-                stmt.setNull(2, Types.INTEGER);
-            }
+            stmt.setInt(2, resolvedBy);
             stmt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
             stmt.setInt(4, id);
             int rowsUpdated = stmt.executeUpdate();
