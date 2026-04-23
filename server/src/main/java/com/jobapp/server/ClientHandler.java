@@ -1,5 +1,7 @@
 package com.jobapp.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.server.handler.LoginCommand;
@@ -15,6 +17,15 @@ import com.jobapp.server.handler.CloseVacancyCommand;
 import com.jobapp.server.handler.GetVacancyDetailsCommand;
 import com.jobapp.server.handler.SearchVacanciesCommand;
 import com.jobapp.server.handler.GetMyVacanciesCommand;
+import com.jobapp.server.handler.ApplyCommand;
+import com.jobapp.server.handler.GetMyApplicationsCommand;
+import com.jobapp.server.handler.GetApplicationsForVacancyCommand;
+import com.jobapp.server.handler.UpdateApplicationStatusCommand;
+import com.jobapp.server.handler.AddFavoriteCommand;
+import com.jobapp.server.handler.RemoveFavoriteCommand;
+import com.jobapp.server.handler.GetFavoritesCommand;
+import com.jobapp.server.handler.AddViewCommand;
+import com.jobapp.server.handler.CreateComplaintCommand;
 import com.jobapp.server.repository.CompanyRepository;
 import com.jobapp.server.repository.TagRepository;
 import com.jobapp.server.repository.UserRepository;
@@ -24,6 +35,11 @@ import com.jobapp.server.service.SessionManager;
 import com.jobapp.server.service.TagService;
 import com.jobapp.server.service.UserService;
 import com.jobapp.server.service.VacancyService;
+import com.jobapp.server.service.ApplicationService;
+import com.jobapp.server.service.FavoriteService;
+import com.jobapp.server.service.ViewHistoryService;
+import com.jobapp.server.service.ComplaintService;
+import com.jobapp.server.service.NotificationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +62,10 @@ public class ClientHandler implements Runnable {
     private final SessionManager sessionManager;
     private final UserService userService;
     private final TagService tagService;
+    private final ApplicationService applicationService;
+    private final FavoriteService favoriteService;
+    private final ViewHistoryService viewHistoryService;
+    private final ComplaintService complaintService;
     private final LoginCommand loginCommand;
     private final RegisterCommand registerCommand;
     private final VacancyService vacancyService;
@@ -60,12 +80,22 @@ public class ClientHandler implements Runnable {
     private GetVacancyDetailsCommand getVacancyDetailsCommand;
     private SearchVacanciesCommand searchVacanciesCommand;
     private GetMyVacanciesCommand getMyVacanciesCommand;
+    private ApplyCommand applyCommand;
+    private GetMyApplicationsCommand getMyApplicationsCommand;
+    private GetApplicationsForVacancyCommand getApplicationsForVacancyCommand;
+    private UpdateApplicationStatusCommand updateApplicationStatusCommand;
+    private AddFavoriteCommand addFavoriteCommand;
+    private RemoveFavoriteCommand removeFavoriteCommand;
+    private GetFavoritesCommand getFavoritesCommand;
+    private AddViewCommand addViewCommand;
+    private CreateComplaintCommand createComplaintCommand;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
         this.userRepository = new UserRepository();
         this.companyRepository = new CompanyRepository();
         this.tagRepository = new TagRepository();
@@ -78,6 +108,47 @@ public class ClientHandler implements Runnable {
         this.registerCommand = new RegisterCommand(authService, objectMapper);
         this.getVacancyDetailsCommand = new GetVacancyDetailsCommand(vacancyService, objectMapper);
         this.searchVacanciesCommand = new SearchVacanciesCommand(vacancyService, objectMapper);
+        this.applicationService = createApplicationService();
+        this.favoriteService = createFavoriteService();
+        this.viewHistoryService = createViewHistoryService();
+        this.complaintService = createComplaintService();
+    }
+
+    private ApplicationService createApplicationService() {
+        return new ApplicationService(
+                new com.jobapp.server.repository.ApplicationRepository(),
+                new VacancyRepository(),
+                userRepository,
+                companyRepository,
+                new NotificationService(
+                        new com.jobapp.server.repository.NotificationRepository(),
+                        new VacancyRepository(),
+                        companyRepository));
+    }
+
+    private FavoriteService createFavoriteService() {
+        return new FavoriteService(
+                new com.jobapp.server.repository.FavoriteRepository(),
+                companyRepository,
+                tagRepository);
+    }
+
+    private ViewHistoryService createViewHistoryService() {
+        return new ViewHistoryService(
+                new com.jobapp.server.repository.ViewHistoryRepository(),
+                companyRepository,
+                tagRepository);
+    }
+
+    private ComplaintService createComplaintService() {
+        return new ComplaintService(
+                new com.jobapp.server.repository.ComplaintRepository(),
+                new VacancyRepository(),
+                userRepository,
+                new NotificationService(
+                        new com.jobapp.server.repository.NotificationRepository(),
+                        new VacancyRepository(),
+                        companyRepository));
     }
 
     @Override
@@ -175,6 +246,33 @@ public class ClientHandler implements Runnable {
             case "GET_MY_VACANCIES":
                 response = checkAuthAndExecute(() -> getMyVacanciesCommand.execute(msg), "GET_MY_VACANCIES");
                 break;
+            case "APPLY":
+                response = checkAuthAndExecute(() -> applyCommand.execute(msg), "APPLY");
+                break;
+            case "GET_MY_APPLICATIONS":
+                response = checkAuthAndExecute(() -> getMyApplicationsCommand.execute(), "GET_MY_APPLICATIONS");
+                break;
+            case "GET_APPLICATIONS_FOR_VACANCY":
+                response = checkAuthAndExecute(() -> getApplicationsForVacancyCommand.execute(msg), "GET_APPLICATIONS_FOR_VACANCY");
+                break;
+            case "UPDATE_APPLICATION_STATUS":
+                response = checkAuthAndExecute(() -> updateApplicationStatusCommand.execute(msg), "UPDATE_APPLICATION_STATUS");
+                break;
+            case "ADD_FAVORITE":
+                response = checkAuthAndExecute(() -> addFavoriteCommand.execute(msg), "ADD_FAVORITE");
+                break;
+            case "REMOVE_FAVORITE":
+                response = checkAuthAndExecute(() -> removeFavoriteCommand.execute(msg), "REMOVE_FAVORITE");
+                break;
+            case "GET_FAVORITES":
+                response = checkAuthAndExecute(() -> getFavoritesCommand.execute(), "GET_FAVORITES");
+                break;
+            case "ADD_VIEW":
+                response = checkAuthAndExecute(() -> addViewCommand.execute(msg), "ADD_VIEW");
+                break;
+            case "CREATE_COMPLAINT":
+                response = checkAuthAndExecute(() -> createComplaintCommand.execute(msg), "CREATE_COMPLAINT");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -210,6 +308,14 @@ public class ClientHandler implements Runnable {
         this.updateUserTagsCommand = new UpdateUserTagsCommand(userService, objectMapper, currentUserId);
         this.getAllTagsCommand = new GetAllTagsCommand(tagService);
 
+        this.applyCommand = new ApplyCommand(applicationService, objectMapper, currentUserId);
+        this.getMyApplicationsCommand = new GetMyApplicationsCommand(applicationService, currentUserId);
+        this.addFavoriteCommand = new AddFavoriteCommand(favoriteService, objectMapper, currentUserId);
+        this.removeFavoriteCommand = new RemoveFavoriteCommand(favoriteService, objectMapper, currentUserId);
+        this.getFavoritesCommand = new GetFavoritesCommand(favoriteService, currentUserId);
+        this.addViewCommand = new AddViewCommand(viewHistoryService, objectMapper, currentUserId);
+        this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
+
         var user = userRepository.findById(currentUserId).orElse(null);
         if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
             this.createVacancyCommand = new CreateVacancyCommand(vacancyService, userRepository,
@@ -220,6 +326,8 @@ public class ClientHandler implements Runnable {
                     objectMapper, currentUserId);
             this.getMyVacanciesCommand = new GetMyVacanciesCommand(vacancyService, userRepository,
                     companyRepository, currentUserId);
+            this.getApplicationsForVacancyCommand = new GetApplicationsForVacancyCommand(applicationService, objectMapper, currentUserId);
+            this.updateApplicationStatusCommand = new UpdateApplicationStatusCommand(applicationService, objectMapper, currentUserId);
         }
     }
 
