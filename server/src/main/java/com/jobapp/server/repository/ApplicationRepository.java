@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import javax.sql.DataSource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +16,20 @@ public class ApplicationRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationRepository.class);
 
+    private DataSource dataSource;
+
+    public ApplicationRepository() {
+        this.dataSource = DatabaseConfig.getDataSource();
+    }
+
+    public ApplicationRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     public Application save(Application application) {
         String sql = "INSERT INTO applications (vacancy_id, user_id, status, created_at, updated_at) " +
                     "VALUES (?, ?, ?, ?, ?) RETURNING id";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, application.getVacancyId());
             stmt.setInt(2, application.getUserId());
@@ -40,9 +51,67 @@ public class ApplicationRepository {
         }
     }
 
+    public Optional<Application> findExisting(Integer userId, Integer vacancyId) {
+        String sql = "SELECT * FROM applications WHERE user_id = ? AND vacancy_id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToApplication(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding existing application: user {} vacancy {}", userId, vacancyId, e);
+        }
+        return Optional.empty();
+    }
+
+    public List<Application> findByVacancyIdWithUser(Integer vacancyId) {
+        String sql = "SELECT a.*, u.name as user_name, u.surname as user_surname " +
+                     "FROM applications a " +
+                     "JOIN users u ON a.user_id = u.id " +
+                     "WHERE a.vacancy_id = ? ORDER BY a.created_at DESC";
+        List<Application> applications = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Application app = mapRowToApplication(rs);
+                    String userName = rs.getString("user_name");
+                    String userSurname = rs.getString("user_surname");
+                    app.setUserName(userName);
+                    app.setUserSurname(userSurname);
+                    applications.add(app);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching applications with user by vacancy id: {}", vacancyId, e);
+        }
+        return applications;
+    }
+
+    public int countByUserLastMinute(Integer userId) {
+        String sql = "SELECT COUNT(*) FROM applications WHERE user_id = ? AND created_at > NOW() - INTERVAL '1 MINUTE'";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error counting applications by user last minute: {}", userId, e);
+        }
+        return 0;
+    }
+
     public Optional<Application> findById(Integer id) {
         String sql = "SELECT * FROM applications WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -59,7 +128,7 @@ public class ApplicationRepository {
     public List<Application> findByUserId(Integer userId) {
         String sql = "SELECT * FROM applications WHERE user_id = ? ORDER BY created_at DESC";
         List<Application> applications = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -76,7 +145,7 @@ public class ApplicationRepository {
     public List<Application> findByVacancyId(Integer vacancyId) {
         String sql = "SELECT * FROM applications WHERE vacancy_id = ? ORDER BY created_at DESC";
         List<Application> applications = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, vacancyId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -92,7 +161,7 @@ public class ApplicationRepository {
 
     public void updateStatus(Integer id, String status) {
         String sql = "UPDATE applications SET status = ?, updated_at = ? WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
             stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
@@ -109,7 +178,7 @@ public class ApplicationRepository {
 
     public boolean existsByUserAndVacancy(Integer userId, Integer vacancyId) {
         String sql = "SELECT 1 FROM applications WHERE user_id = ? AND vacancy_id = ?";
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setInt(2, vacancyId);

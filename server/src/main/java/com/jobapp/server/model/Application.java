@@ -9,6 +9,8 @@ public class Application {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String userName;
+    private String userSurname;
 
     public Application() {}
 
@@ -35,4 +37,10 @@ public class Application {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+
+    public String getUserSurname() { return userSurname; }
+    public void setUserSurname(String userSurname) { this.userSurname = userSurname; }
 }
