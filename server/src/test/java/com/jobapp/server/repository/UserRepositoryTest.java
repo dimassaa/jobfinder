@@ -1,5 +1,6 @@
 package com.jobapp.server.repository;
 
+import com.jobapp.server.model.Tag;
 import com.jobapp.server.model.User;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -166,5 +169,58 @@ class UserRepositoryTest {
         verify(mockStatement).setString(1, "newPasswordHash");
         verify(mockStatement).setInt(3, 1);
         verify(mockStatement).executeUpdate();
+    }
+
+    @Test
+    void testUpdateProfile() throws SQLException {
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        userRepository.updateProfile(1, "John", "Doe", "Moscow", "+1234567890", "Some info");
+
+        verify(mockStatement).setString(1, "John");
+        verify(mockStatement).setString(2, "Doe");
+        verify(mockStatement).setString(3, "Moscow");
+        verify(mockStatement).setString(4, "+1234567890");
+        verify(mockStatement).setString(5, "Some info");
+        verify(mockStatement).setInt(7, 1);
+        verify(mockStatement).executeUpdate();
+    }
+
+    @Test
+    void testFindUserTags() throws SQLException {
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(true, true, false);
+        when(mockResultSet.getInt("id")).thenReturn(1, 2);
+        when(mockResultSet.getString("name")).thenReturn("Java", "Python");
+        when(mockResultSet.getBoolean("is_active")).thenReturn(true, true);
+        when(mockResultSet.getTimestamp(anyString())).thenReturn(null);
+
+        List<Tag> tags = userRepository.findUserTags(1);
+
+        assertEquals(2, tags.size());
+        assertEquals("Java", tags.get(0).getName());
+        assertEquals("Python", tags.get(1).getName());
+    }
+
+    @Test
+    void testUpdateUserTags() throws SQLException {
+        when(mockDataSource.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockConnection.prepareStatement(anyString(), anyInt())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+        when(mockStatement.executeBatch()).thenReturn(new int[0]);
+        doNothing().when(mockConnection).setAutoCommit(false);
+
+        List<Integer> tagIds = new ArrayList<>();
+        tagIds.add(1);
+        tagIds.add(2);
+        userRepository.updateUserTags(1, tagIds);
+
+        verify(mockConnection).setAutoCommit(false);
+        verify(mockStatement).executeBatch();
     }
 }

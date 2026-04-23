@@ -1,12 +1,15 @@
 package com.jobapp.server.repository;
 
 import com.jobapp.server.db.DatabaseConfig;
+import com.jobapp.server.model.Tag;
 import com.jobapp.server.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 
@@ -157,6 +160,74 @@ public class UserRepository {
         }
     }
 
+    public void updateProfile(int userId, String name, String surname, String city, String phone, String additionalInfo) {
+        String sql = "UPDATE users SET name = ?, surname = ?, city = ?, phone = ?, additional_info = ?, updated_at = ? WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            setStringOrNull(stmt, 1, name);
+            setStringOrNull(stmt, 2, surname);
+            setStringOrNull(stmt, 3, city);
+            setStringOrNull(stmt, 4, phone);
+            setStringOrNull(stmt, 5, additionalInfo);
+            stmt.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(7, userId);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("Profile updated for user: {}", userId);
+            }
+        } catch (SQLException e) {
+            logger.error("Error updating profile for user: {}", userId, e);
+            throw new RuntimeException("Failed to update profile", e);
+        }
+    }
+
+    public List<Tag> findUserTags(int userId) {
+        String sql = "SELECT t.* FROM tags t " +
+                     "INNER JOIN user_tags ut ON t.id = ut.tag_id " +
+                     "WHERE ut.user_id = ? ORDER BY t.name";
+        List<Tag> tags = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tags.add(mapRowToTag(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding user tags for user: {}", userId, e);
+        }
+        return tags;
+    }
+
+    public void updateUserTags(int userId, List<Integer> tagIds) {
+        String deleteSql = "DELETE FROM user_tags WHERE user_id = ?";
+        String insertSql = "INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?)";
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                deleteStmt.setInt(1, userId);
+                deleteStmt.executeUpdate();
+                for (Integer tagId : tagIds) {
+                    insertStmt.setInt(1, userId);
+                    insertStmt.setInt(2, tagId);
+                    insertStmt.addBatch();
+                }
+                insertStmt.executeBatch();
+                conn.commit();
+                logger.info("User tags updated for user: {}", userId);
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.error("Error updating user tags for user: {}", userId, e);
+                throw new RuntimeException("Failed to update user tags", e);
+            }
+        } catch (SQLException e) {
+            logger.error("Error updating user tags for user: {}", userId, e);
+            throw new RuntimeException("Failed to update user tags", e);
+        }
+    }
+
     private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
         if (value != null) {
             stmt.setString(index, value);
@@ -192,5 +263,17 @@ public class UserRepository {
         user.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         user.setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
         return user;
+    }
+
+    private Tag mapRowToTag(ResultSet rs) throws SQLException {
+        Tag tag = new Tag();
+        tag.setId(rs.getInt("id"));
+        tag.setName(rs.getString("name"));
+        tag.setIsActive(rs.getBoolean("is_active"));
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) {
+            tag.setCreatedAt(createdAt.toLocalDateTime());
+        }
+        return tag;
     }
 }
