@@ -84,6 +84,24 @@ public class CompanyRepository {
         return Optional.empty();
     }
 
+    public Optional<Company> findByVacancyId(Integer vacancyId) {
+        String sql = "SELECT c.* FROM companies c " +
+                    "INNER JOIN vacancies v ON c.id = v.company_id " +
+                    "WHERE v.id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToCompany(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding company by vacancy id: {}", vacancyId, e);
+        }
+        return Optional.empty();
+    }
+
     public List<Company> findAll() {
         String sql = "SELECT * FROM companies ORDER BY company_name";
         List<Company> companies = new ArrayList<>();
