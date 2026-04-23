@@ -81,4 +81,15 @@ public class DatabaseConfig {
             logger.info("HikariCP connection pool closed");
         }
     }
+
+    public static void reset() {
+        close();
+        dataSource = null;
+        logger.info("HikariCP connection pool reset");
+    }
+
+    public static void init() {
+        reset();
+        getDataSource();
+    }
 }
