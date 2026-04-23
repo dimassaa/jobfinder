@@ -99,6 +99,10 @@ CREATE INDEX idx_vacancies_company_id ON vacancies(company_id);
 CREATE INDEX idx_vacancies_created_at ON vacancies(created_at);
 CREATE INDEX idx_vacancies_is_active ON vacancies(is_active);
 CREATE INDEX idx_vacancies_city ON vacancies(city);
+CREATE INDEX idx_vacancies_salary ON vacancies(salary_min, salary_max);
+CREATE INDEX idx_vacancies_employment_type ON vacancies(employment_type);
+CREATE INDEX idx_vacancies_title_trgm ON vacancies USING gin (title gin_trgm_ops);
+CREATE INDEX idx_vacancies_description_trgm ON vacancies USING gin (description gin_trgm_ops);
 
 -- =============================================================================
 -- VACANCY_TAGS table (vacancy skills junction)
