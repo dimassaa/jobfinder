@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import com.jobapp.common.dto.TagDto?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jobapp.client.controller.VacancyEditController">
+    <VBox alignment="TOP_CENTER" spacing="16" styleClass="card" maxWidth="700" StackPane.alignment="TOP_CENTER">
+        <padding>
+            <Insets bottom="24" left="24" right="24" top="24" />
+        </padding>
+
+        <Text text="Вакансия" styleClass="h1" StackPane.alignment="CENTER_LEFT">
+            <StackPane.margin>
+                <Insets bottom="16" />
+            </StackPane.margin>
+        </Text>
+
+        <VBox spacing="12" maxWidth="600">
+            <VBox spacing="4">
+                <Label text="Заголовок вакансии *" styleClass="label-secondary" />
+                <TextField fx:id="titleField" promptText="Например: Java Developer" styleClass="text-field" />
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Описание *" styleClass="label-secondary" />
+                <TextArea fx:id="descriptionArea" promptText="Опишите обязанности, требования и условия работы..." styleClass="text-field" prefRowCount="6" wrapText="true" />
+            </VBox>
+
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Город *" styleClass="label-secondary" />
+                    <TextField fx:id="cityField" promptText="Москва" styleClass="text-field" />
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Тип занятости *" styleClass="label-secondary" />
+                    <ComboBox fx:id="employmentTypeCombo" styleClass="combo-box" />
+                </VBox>
+            </HBox>
+
+            <HBox spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Зарплата от" styleClass="label-secondary" />
+                    <TextField fx:id="salaryMinField" promptText="100000" styleClass="text-field" />
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Зарплата до" styleClass="label-secondary" />
+                    <TextField fx:id="salaryMaxField" promptText="200000" styleClass="text-field" />
+                </VBox>
+            </HBox>
+
+            <VBox spacing="8">
+                <Label text="Навыки (теги)" styleClass="label-secondary" />
+                <Text text="Выберите необходимые навыки для вакансии" styleClass="label-status" />
+                <ListView fx:id="tagsListView" prefHeight="150">
+                    <cells>
+                        <ListView styleClass="list-view" />
+                    </cells>
+                </ListView>
+            </VBox>
+        </VBox>
+
+        <Label fx:id="statusLabel" styleClass="label-error" text="" visible="false">
+            <StackPane.margin>
+                <Insets top="8" />
+            </StackPane.margin>
+        </Label>
+
+        <HBox alignment="CENTER_RIGHT" spacing="12">
+            <StackPane.margin>
+                <Insets top="16" />
+            </StackPane.margin>
+            <Button fx:id="cancelButton" onAction="#handleCancel" text="Отмена" styleClass="button-secondary" />
+            <Button fx:id="saveButton" onAction="#handleSave" text="Сохранить" styleClass="button-primary" />
+        </HBox>
+    </VBox>
+</StackPane>
