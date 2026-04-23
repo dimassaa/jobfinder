@@ -99,6 +99,26 @@ public class TagRepository {
         return Optional.empty();
     }
 
+    public List<Tag> findByVacancyId(int vacancyId) {
+        String sql = "SELECT t.* FROM tags t " +
+                    "JOIN vacancy_tags vt ON t.id = vt.tag_id " +
+                    "WHERE vt.vacancy_id = ? " +
+                    "ORDER BY t.name";
+        List<Tag> tags = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tags.add(mapRowToTag(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding tags by vacancy id: {}", vacancyId, e);
+        }
+        return tags;
+    }
+
     private Tag mapRowToTag(ResultSet rs) throws SQLException {
         Tag tag = new Tag();
         tag.setId(rs.getInt("id"));
