@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jobapp.client.controller.VacancyListController">
+    <VBox spacing="16" styleClass="card" maxWidth="900" StackPane.alignment="TOP_CENTER">
+        <padding>
+            <Insets bottom="24" left="24" right="24" top="24" />
+        </padding>
+
+        <Text text="Вакансии" styleClass="h1" StackPane.alignment="CENTER_LEFT">
+            <StackPane.margin>
+                <Insets bottom="16" />
+            </StackPane.margin>
+        </Text>
+
+        <!-- Фильтры -->
+        <VBox spacing="12" style="-fx-background-color: #F5F7FA; -fx-padding: 16; -fx-background-radius: 8;">
+            <VBox spacing="8">
+                <Label text="Фильтры поиска" styleClass="h2" />
+            </VBox>
+
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Город" styleClass="label-secondary" />
+                    <TextField fx:id="cityField" promptText="Москва" styleClass="text-field" />
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Ключевое слово" styleClass="label-secondary" />
+                    <TextField fx:id="keywordField" promptText="Java, Python..." styleClass="text-field" />
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Тип занятости" styleClass="label-secondary" />
+                    <ComboBox fx:id="employmentTypeCombo" promptText="Выберите тип" styleClass="combo-box" />
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Зарплата от" styleClass="label-secondary" />
+                    <TextField fx:id="salaryFromField" promptText="От" styleClass="text-field" />
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Зарплата до" styleClass="label-secondary" />
+                    <TextField fx:id="salaryToField" promptText="До" styleClass="text-field" />
+                </VBox>
+
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Загрузка..." styleClass="label-secondary" />
+                    <HBox spacing="8">
+                        <Button fx:id="searchButton" text="Найти" onAction="#handleSearch" styleClass="button-primary" />
+                        <Button fx:id="last24HoursButton" text="За 24 часа" onAction="#handleLast24Hours" styleClass="button-secondary" />
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Статус/ошибка -->
+        <Label fx:id="statusLabel" styleClass="label-error" text="" visible="false" />
+
+        <!-- Таблица вакансий -->
+        <TableView fx:id="vacanciesTable" VBox.vgrow="ALWAYS" onMouseClicked="#handleTableClick">
+            <columns>
+                <TableColumn fx:id="titleColumn" text="Заголовок" prefWidth="250" />
+                <TableColumn fx:id="companyColumn" text="Компания" prefWidth="150" />
+                <TableColumn fx:id="cityColumn" text="Город" prefWidth="100" />
+                <TableColumn fx:id="salaryColumn" text="Зарплата" prefWidth="120" />
+                <TableColumn fx:id="employmentTypeColumn" text="Тип занятости" prefWidth="120" />
+                <TableColumn fx:id="createdAtColumn" text="Дата публикации" prefWidth="140" />
+            </columns>
+        </TableView>
+
+        <HBox alignment="CENTER_RIGHT" spacing="12">
+            <StackPane.margin>
+                <Insets top="8" />
+            </StackPane.margin>
+            <Button fx:id="refreshButton" text="Обновить" onAction="#handleSearch" styleClass="button-secondary" />
+        </HBox>
+    </VBox>
+</StackPane>
