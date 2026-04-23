@@ -9,13 +9,21 @@ import com.jobapp.server.handler.UpdateProfileCommand;
 import com.jobapp.server.handler.GetUserTagsCommand;
 import com.jobapp.server.handler.UpdateUserTagsCommand;
 import com.jobapp.server.handler.GetAllTagsCommand;
+import com.jobapp.server.handler.CreateVacancyCommand;
+import com.jobapp.server.handler.UpdateVacancyCommand;
+import com.jobapp.server.handler.CloseVacancyCommand;
+import com.jobapp.server.handler.GetVacancyDetailsCommand;
+import com.jobapp.server.handler.SearchVacanciesCommand;
+import com.jobapp.server.handler.GetMyVacanciesCommand;
 import com.jobapp.server.repository.CompanyRepository;
 import com.jobapp.server.repository.TagRepository;
 import com.jobapp.server.repository.UserRepository;
+import com.jobapp.server.repository.VacancyRepository;
 import com.jobapp.server.service.AuthService;
 import com.jobapp.server.service.SessionManager;
 import com.jobapp.server.service.TagService;
 import com.jobapp.server.service.UserService;
+import com.jobapp.server.service.VacancyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +48,18 @@ public class ClientHandler implements Runnable {
     private final TagService tagService;
     private final LoginCommand loginCommand;
     private final RegisterCommand registerCommand;
+    private final VacancyService vacancyService;
     private GetProfileCommand getProfileCommand;
     private UpdateProfileCommand updateProfileCommand;
     private GetUserTagsCommand getUserTagsCommand;
     private UpdateUserTagsCommand updateUserTagsCommand;
     private GetAllTagsCommand getAllTagsCommand;
+    private CreateVacancyCommand createVacancyCommand;
+    private UpdateVacancyCommand updateVacancyCommand;
+    private CloseVacancyCommand closeVacancyCommand;
+    private GetVacancyDetailsCommand getVacancyDetailsCommand;
+    private SearchVacanciesCommand searchVacanciesCommand;
+    private GetMyVacanciesCommand getMyVacanciesCommand;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
@@ -58,8 +73,11 @@ public class ClientHandler implements Runnable {
         this.authService = new AuthService(userRepository, companyRepository);
         this.userService = new UserService(userRepository, companyRepository, tagRepository);
         this.tagService = new TagService(tagRepository);
+        this.vacancyService = new VacancyService(new VacancyRepository(), companyRepository, tagRepository);
         this.loginCommand = new LoginCommand(authService, sessionManager, objectMapper);
         this.registerCommand = new RegisterCommand(authService, objectMapper);
+        this.getVacancyDetailsCommand = new GetVacancyDetailsCommand(vacancyService, objectMapper);
+        this.searchVacanciesCommand = new SearchVacanciesCommand(vacancyService, objectMapper);
     }
 
     @Override
@@ -139,6 +157,24 @@ public class ClientHandler implements Runnable {
             case "GET_ALL_TAGS":
                 response = getAllTagsCommand.execute();
                 break;
+            case "CREATE_VACANCY":
+                response = checkAuthAndExecute(() -> createVacancyCommand.execute(msg), "CREATE_VACANCY");
+                break;
+            case "UPDATE_VACANCY":
+                response = checkAuthAndExecute(() -> updateVacancyCommand.execute(msg), "UPDATE_VACANCY");
+                break;
+            case "CLOSE_VACANCY":
+                response = checkAuthAndExecute(() -> closeVacancyCommand.execute(msg), "CLOSE_VACANCY");
+                break;
+            case "GET_VACANCY_DETAILS":
+                response = getVacancyDetailsCommand.execute(msg);
+                break;
+            case "SEARCH_VACANCIES":
+                response = searchVacanciesCommand.execute(msg);
+                break;
+            case "GET_MY_VACANCIES":
+                response = checkAuthAndExecute(() -> getMyVacanciesCommand.execute(msg), "GET_MY_VACANCIES");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -173,6 +209,18 @@ public class ClientHandler implements Runnable {
         this.getUserTagsCommand = new GetUserTagsCommand(userService, currentUserId);
         this.updateUserTagsCommand = new UpdateUserTagsCommand(userService, objectMapper, currentUserId);
         this.getAllTagsCommand = new GetAllTagsCommand(tagService);
+
+        var user = userRepository.findById(currentUserId).orElse(null);
+        if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
+            this.createVacancyCommand = new CreateVacancyCommand(vacancyService, userRepository,
+                    companyRepository, objectMapper, currentUserId);
+            this.updateVacancyCommand = new UpdateVacancyCommand(vacancyService, userRepository,
+                    companyRepository, objectMapper, currentUserId);
+            this.closeVacancyCommand = new CloseVacancyCommand(vacancyService, userRepository,
+                    objectMapper, currentUserId);
+            this.getMyVacanciesCommand = new GetMyVacanciesCommand(vacancyService, userRepository,
+                    companyRepository, currentUserId);
+        }
     }
 
     private Response checkAuthAndExecute(java.util.function.Supplier<Response> action, String commandName) {
