@@ -34,6 +34,10 @@ import com.jobapp.server.handler.GetConversionCommand;
 import com.jobapp.server.handler.GetSalaryComparisonCommand;
 import com.jobapp.server.handler.GetSystemStatsCommand;
 import com.jobapp.server.handler.GetActivityTimelineCommand;
+import com.jobapp.server.handler.GetNotificationsCommand;
+import com.jobapp.server.handler.MarkNotificationReadCommand;
+import com.jobapp.server.handler.DeleteNotificationCommand;
+import com.jobapp.server.handler.GetUnreadCountCommand;
 import com.jobapp.server.repository.AnalyticsRepository;
 import com.jobapp.server.service.AnalyticsService;
 import com.jobapp.server.repository.CompanyRepository;
@@ -110,6 +114,11 @@ public class ClientHandler implements Runnable {
     private GetSystemStatsCommand getSystemStatsCommand;
     private GetActivityTimelineCommand getActivityTimelineCommand;
     private AnalyticsService analyticsService;
+    private GetNotificationsCommand getNotificationsCommand;
+    private MarkNotificationReadCommand markNotificationReadCommand;
+    private DeleteNotificationCommand deleteNotificationCommand;
+    private GetUnreadCountCommand getUnreadCountCommand;
+    private NotificationService notificationService;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
@@ -130,6 +139,7 @@ public class ClientHandler implements Runnable {
                 new VacancyRepository(),
                 companyRepository,
                 sessionManager);
+        this.notificationService = notificationService;
 
         this.vacancyService = new VacancyService(
                 new VacancyRepository(),
@@ -341,6 +351,18 @@ public class ClientHandler implements Runnable {
             case "GET_ACTIVITY_TIMELINE":
                 response = checkAuthAndExecute(() -> getActivityTimelineCommand.execute(msg), "GET_ACTIVITY_TIMELINE");
                 break;
+            case "GET_NOTIFICATIONS":
+                response = checkAuthAndExecute(() -> getNotificationsCommand.execute(), "GET_NOTIFICATIONS");
+                break;
+            case "MARK_NOTIFICATION_READ":
+                response = checkAuthAndExecute(() -> markNotificationReadCommand.execute(msg), "MARK_NOTIFICATION_READ");
+                break;
+            case "DELETE_NOTIFICATION":
+                response = checkAuthAndExecute(() -> deleteNotificationCommand.execute(msg), "DELETE_NOTIFICATION");
+                break;
+            case "GET_UNREAD_COUNT":
+                response = checkAuthAndExecute(() -> getUnreadCountCommand.execute(), "GET_UNREAD_COUNT");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -406,6 +428,11 @@ public class ClientHandler implements Runnable {
             this.getSystemStatsCommand = new GetSystemStatsCommand(analyticsService, currentUserId, userRepository);
             this.getActivityTimelineCommand = new GetActivityTimelineCommand(analyticsService, currentUserId, userRepository);
         }
+
+        this.getNotificationsCommand = new GetNotificationsCommand(notificationService, currentUserId, objectMapper);
+        this.markNotificationReadCommand = new MarkNotificationReadCommand(notificationService, objectMapper, currentUserId);
+        this.deleteNotificationCommand = new DeleteNotificationCommand(notificationService, objectMapper, currentUserId);
+        this.getUnreadCountCommand = new GetUnreadCountCommand(notificationService, currentUserId);
     }
 
     private Response checkAuthAndExecute(java.util.function.Supplier<Response> action, String commandName) {

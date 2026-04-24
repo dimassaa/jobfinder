@@ -137,6 +137,10 @@ public class NotificationService {
         logger.info("Notification {} deleted by user {}", notificationId, userId);
     }
 
+    public int getUnreadCount(int userId) {
+        return notificationRepository.countUnreadByUserId(userId);
+    }
+
     private NotificationDto toDto(Notification notification) {
         NotificationDto dto = new NotificationDto();
         dto.setId(notification.getId());
