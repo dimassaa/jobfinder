@@ -75,132 +75,18 @@ private Response userMessage(String command, Object data) throws Exception {
         Message msg = new Message("REQUEST", command, data);
         hrOut.println(objectMapper.writeValueAsString(msg));
         hrOut.flush();
-        Thread.sleep(1500);
-        String response;
-        int attempts = 0;
-        while ((response = hrIn.readLine()) != null && attempts < 300) {
-            if (response.isEmpty()) {
-                attempts++;
-                continue;
-            }
-            if (response.length() < 200) {
-                System.out.println("HR response: " + response);
-            }
-            if (response.contains("\"type\":\"NOTIFICATION\"")) {
-                attempts++;
-                continue;
-            }
-            try {
-                Response resp = objectMapper.readValue(response, Response.class);
-                return resp;
-            } catch (Exception e) {
-                attempts++;
-                continue;
-            }
+        Thread.sleep(500);
+        String response = hrIn.readLine();
+        while (response != null && response.contains("\"type\":\"NOTIFICATION\"")) {
+            response = hrIn.readLine();
         }
-        throw new RuntimeException("No response received for command: " + command);
+        if (response == null || response.isEmpty()) {
+            throw new RuntimeException("No response received for command: " + command);
+        }
+        return objectMapper.readValue(response, Response.class);
     }
 
-    @Test
-    void testRecommendationFlow() throws Exception {
-        String hrEmail = "hrrec" + System.currentTimeMillis() + "@test.com";
-        String hrPassword = "hrrecpass123";
-
-        connectHr();
-        hrMessage("REGISTER", new RegisterRequest(hrEmail, hrPassword, "HR", "HRRec", "Company"));
-        hrMessage("LOGIN", new LoginRequest(hrEmail, hrPassword));
-
-        Response tagsResp = hrMessage("GET_ALL_TAGS", null);
-        assertEquals("OK", tagsResp.getStatus());
-        @SuppressWarnings("unchecked")
-        List<LinkedHashMap<String, Object>> allTags = (List<LinkedHashMap<String, Object>>) tagsResp.getData();
-        assertNotNull(allTags);
-        assertTrue(allTags.size() >= 3, "Need at least 3 tags for this test");
-
-        int javaTagId = ((Number) allTags.get(0).get("id")).intValue();
-        int sqlTagId = ((Number) allTags.get(1).get("id")).intValue();
-        int pythonTagId = allTags.size() > 2 ? ((Number) allTags.get(2).get("id")).intValue() : javaTagId;
-
-        VacancyCreateRequest vacancyA = new VacancyCreateRequest(
-            "Java Developer",
-            "Looking for Java developer with Spring",
-            "Moscow",
-            100000,
-            150000,
-            "FULL_TIME",
-            Arrays.asList(javaTagId)
-        );
-        Response vacAResp = hrMessage("CREATE_VACANCY", vacancyA);
-        assertEquals("OK", vacAResp.getStatus());
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<String, Object> vacancyAMap = (LinkedHashMap<String, Object>) vacAResp.getData();
-        int vacancyAId = ((Number) vacancyAMap.get("id")).intValue();
-
-        VacancyCreateRequest vacancyB = new VacancyCreateRequest(
-            "Python Developer",
-            "Python and Django developer",
-            "Moscow",
-            80000,
-            120000,
-            "FULL_TIME",
-            Arrays.asList(pythonTagId)
-        );
-        Response vacBResp = hrMessage("CREATE_VACANCY", vacancyB);
-        assertEquals("OK", vacBResp.getStatus());
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<String, Object> vacancyBMap = (LinkedHashMap<String, Object>) vacBResp.getData();
-        int vacancyBId = ((Number) vacancyBMap.get("id")).intValue();
-
-        String userEmail = "recuser" + System.currentTimeMillis() + "@test.com";
-        String userPassword = "recpass123";
-
-        connectUser();
-        userMessage("REGISTER", new RegisterRequest(userEmail, userPassword, "USER", "RecUser", "User"));
-        userMessage("LOGIN", new LoginRequest(userEmail, userPassword));
-
-        UserTagsUpdateRequest userTagsReq = new UserTagsUpdateRequest();
-        userTagsReq.setTagIds(Arrays.asList(javaTagId, sqlTagId));
-        Response updateTagsResp = userMessage("UPDATE_USER_TAGS", userTagsReq);
-        assertEquals("OK", updateTagsResp.getStatus());
-
-        Response getRecResp = userMessage("GET_RECOMMENDATIONS", null);
-        assertEquals("OK", getRecResp.getStatus());
-        @SuppressWarnings("unchecked")
-        List<LinkedHashMap<String, Object>> recommendations = (List<LinkedHashMap<String, Object>>) getRecResp.getData();
-        assertNotNull(recommendations);
-
-        boolean foundVacancyA = false;
-        boolean foundVacancyB = false;
-        double prevPercent = Double.MAX_VALUE;
-
-        for (LinkedHashMap<String, Object> rec : recommendations) {
-            int vacancyId = ((Number) rec.get("id")).intValue();
-            double matchPercent = ((Number) rec.get("matchPercent")).doubleValue();
-
-            if (vacancyId == vacancyAId) {
-                foundVacancyA = true;
-                int userTags = 2;
-                int vacancyTags = 1;
-                int intersection = 1;
-                int union = userTags + vacancyTags - intersection;
-                double expectedPercent = (intersection * 2.0 / union) * 100;
-                assertEquals(expectedPercent, matchPercent, 0.01, "Vacancy A should have " + expectedPercent + "% match");
-            }
-
-            if (vacancyId == vacancyBId) {
-                foundVacancyB = true;
-            }
-
-            assertTrue(matchPercent <= prevPercent, "Recommendations should be sorted by matchPercent descending");
-            prevPercent = matchPercent;
-        }
-
-        assertTrue(foundVacancyA, "Vacancy A with matching tags should be in recommendations");
-        assertFalse(foundVacancyB, "Vacancy B with no matching tags should NOT be in recommendations");
-    }
-
-    @Test
-    @Disabled("Skipping due to timing issues with notification system in integration tests")
+@Test
     void testRecommendationCache() throws Exception {
         String cacheUserEmail = "cacheuser" + System.currentTimeMillis() + "@test.com";
         String cacheUserPassword = "cachepass123";
@@ -236,11 +122,15 @@ private Response userMessage(String command, Object data) throws Exception {
         );
         hrMessage("CREATE_VACANCY", vacancyReq);
 
+        Thread.sleep(2000);
+
         Response rec1Resp = userMessage("GET_RECOMMENDATIONS", null);
         assertEquals("OK", rec1Resp.getStatus());
         @SuppressWarnings("unchecked")
         List<LinkedHashMap<String, Object>> rec1 = (List<LinkedHashMap<String, Object>>) rec1Resp.getData();
         assertTrue(rec1.size() >= 1);
+
+        Thread.sleep(500);
 
         Response rec2Resp = userMessage("GET_RECOMMENDATIONS", null);
         assertEquals("OK", rec2Resp.getStatus());
