@@ -2,6 +2,7 @@ package com.jobapp.server.repository;
 
 import com.jobapp.server.db.DatabaseConfig;
 import com.jobapp.server.model.Vacancy;
+import com.jobapp.server.model.VacancyWithTags;
 import com.jobapp.common.dto.VacancyFilterDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +11,12 @@ import java.sql.*;
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class VacancyRepository {
 
@@ -278,6 +283,34 @@ public class VacancyRepository {
             logger.error("Error clearing tags from vacancy: {}", vacancyId, e);
             throw new RuntimeException("Failed to clear tags from vacancy", e);
         }
+    }
+
+    public List<VacancyWithTags> findAllActiveWithTags() {
+        List<VacancyWithTags> result = new ArrayList<>();
+        String sql = "SELECT v.id, vt.tag_id FROM vacancies v " +
+                    "LEFT JOIN vacancy_tags vt ON v.id = vt.vacancy_id " +
+                    "WHERE v.is_active = true";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            Map<Integer, Set<Integer>> vacancyTagsMap = new HashMap<>();
+            while (rs.next()) {
+                int vacancyId = rs.getInt("id");
+                int tagId = rs.getInt("tag_id");
+                Set<Integer> tags = vacancyTagsMap.computeIfAbsent(vacancyId, k -> new HashSet<>());
+                if (!rs.wasNull()) {
+                    tags.add(tagId);
+                }
+            }
+            for (Integer vacancyId : vacancyTagsMap.keySet()) {
+                result.add(new VacancyWithTags(vacancyId, vacancyTagsMap.get(vacancyId)));
+            }
+            logger.debug("Found {} active vacancies with tags", result.size());
+        } catch (SQLException e) {
+            logger.error("Error fetching active vacancies with tags", e);
+            throw new RuntimeException("Failed to fetch active vacancies with tags", e);
+        }
+        return result;
     }
 
     private Vacancy mapRowToVacancy(ResultSet rs) throws SQLException {

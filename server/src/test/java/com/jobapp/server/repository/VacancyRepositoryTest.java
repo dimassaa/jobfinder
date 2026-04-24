@@ -2,6 +2,7 @@ package com.jobapp.server.repository;
 
 import com.jobapp.common.dto.VacancyFilterDto;
 import com.jobapp.server.model.Vacancy;
+import com.jobapp.server.model.VacancyWithTags;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -331,5 +334,43 @@ class VacancyRepositoryTest {
         when(rs.getBoolean("is_active")).thenReturn(true);
         when(rs.getTimestamp("created_at")).thenReturn(null);
         when(rs.getTimestamp("closed_at")).thenReturn(null);
+    }
+
+    @Test
+    void testFindAllActiveWithTags() throws SQLException {
+        when(mockStatement.executeQuery()).thenAnswer(invocation -> {
+            when(mockResultSet.next()).thenReturn(true, true, true, false);
+            when(mockResultSet.getInt("id")).thenReturn(1, 1, 2);
+            when(mockResultSet.getInt("tag_id")).thenReturn(1, 2, 1);
+            when(mockResultSet.wasNull()).thenReturn(false);
+            return mockResultSet;
+        });
+
+        List<VacancyWithTags> result = vacancyRepository.findAllActiveWithTags();
+
+        assertEquals(2, result.size());
+        VacancyWithTags v1 = result.stream().filter(v -> v.getVacancyId() == 1).findFirst().orElseThrow();
+        VacancyWithTags v2 = result.stream().filter(v -> v.getVacancyId() == 2).findFirst().orElseThrow();
+        assertEquals(2, v1.getTagIds().size());
+        assertTrue(v1.getTagIds().contains(1));
+        assertTrue(v1.getTagIds().contains(2));
+        assertEquals(1, v2.getTagIds().size());
+        assertTrue(v2.getTagIds().contains(1));
+    }
+
+    @Test
+    void testFindAllActiveWithTagsWithoutTags() throws SQLException {
+        when(mockStatement.executeQuery()).thenAnswer(invocation -> {
+            when(mockResultSet.next()).thenReturn(true, false);
+            when(mockResultSet.getInt("id")).thenReturn(1);
+            when(mockResultSet.getInt("tag_id")).thenReturn(0);
+            when(mockResultSet.wasNull()).thenReturn(true);
+            return mockResultSet;
+        });
+
+        List<VacancyWithTags> result = vacancyRepository.findAllActiveWithTags();
+
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).getTagIds().isEmpty());
     }
 }
