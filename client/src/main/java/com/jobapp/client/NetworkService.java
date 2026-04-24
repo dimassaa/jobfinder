@@ -1,9 +1,11 @@
 package com.jobapp.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
+import com.jobapp.common.dto.NotificationDto;
 import javafx.concurrent.Task;
 
 import java.io.BufferedReader;
@@ -25,6 +27,7 @@ public class NetworkService {
     private volatile boolean connected;
     private String host;
     private int port;
+    private Consumer<NotificationDto> notificationCallback;
 
     public NetworkService() {
         this.objectMapper = new ObjectMapper();
@@ -99,10 +102,20 @@ public class NetworkService {
                             break;
                         }
 
-                        Response response = objectMapper.readValue(line, Response.class);
-                        logger.info("Received response: {}", response.getStatus());
+                        JsonNode node = objectMapper.readTree(line);
+                        String type = node.has("type") ? node.get("type").asText() : null;
 
-                        javafx.application.Platform.runLater(() -> onResponse.accept(response));
+                        if ("NOTIFICATION".equals(type) && notificationCallback != null) {
+                            NotificationDto notification = objectMapper.readValue(line, NotificationDto.class);
+                            logger.info("Received push notification: {}", notification.getTitle());
+
+                            javafx.application.Platform.runLater(() -> notificationCallback.accept(notification));
+                        } else {
+                            Response response = objectMapper.readValue(line, Response.class);
+                            logger.info("Received response: {}", response.getStatus());
+
+                            javafx.application.Platform.runLater(() -> onResponse.accept(response));
+                        }
 
                     } catch (SocketException e) {
                         logger.warn("Socket exception: {}", e.getMessage());
@@ -171,5 +184,13 @@ public class NetworkService {
 
     public void reconnect() {
         reconnect(host, port);
+    }
+
+    public void setNotificationCallback(Consumer<NotificationDto> callback) {
+        this.notificationCallback = callback;
+    }
+
+    public boolean hasNotificationCallback() {
+        return notificationCallback != null;
     }
 }
