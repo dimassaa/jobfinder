@@ -26,6 +26,7 @@ import com.jobapp.server.handler.RemoveFavoriteCommand;
 import com.jobapp.server.handler.GetFavoritesCommand;
 import com.jobapp.server.handler.AddViewCommand;
 import com.jobapp.server.handler.CreateComplaintCommand;
+import com.jobapp.server.handler.GetRecommendationsCommand;
 import com.jobapp.server.repository.CompanyRepository;
 import com.jobapp.server.repository.TagRepository;
 import com.jobapp.server.repository.UserRepository;
@@ -40,6 +41,7 @@ import com.jobapp.server.service.FavoriteService;
 import com.jobapp.server.service.ViewHistoryService;
 import com.jobapp.server.service.ComplaintService;
 import com.jobapp.server.service.NotificationService;
+import com.jobapp.server.service.RecommendationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,7 @@ public class ClientHandler implements Runnable {
     private final FavoriteService favoriteService;
     private final ViewHistoryService viewHistoryService;
     private final ComplaintService complaintService;
+    private final RecommendationService recommendationService;
     private final LoginCommand loginCommand;
     private final RegisterCommand registerCommand;
     private final VacancyService vacancyService;
@@ -89,6 +92,7 @@ public class ClientHandler implements Runnable {
     private GetFavoritesCommand getFavoritesCommand;
     private AddViewCommand addViewCommand;
     private CreateComplaintCommand createComplaintCommand;
+    private GetRecommendationsCommand getRecommendationsCommand;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
@@ -112,6 +116,11 @@ public class ClientHandler implements Runnable {
         this.favoriteService = createFavoriteService();
         this.viewHistoryService = createViewHistoryService();
         this.complaintService = createComplaintService();
+        this.recommendationService = new RecommendationService(
+                new VacancyRepository(),
+                userRepository,
+                tagRepository,
+                companyRepository);
     }
 
     private ApplicationService createApplicationService() {
@@ -273,6 +282,9 @@ public class ClientHandler implements Runnable {
             case "CREATE_COMPLAINT":
                 response = checkAuthAndExecute(() -> createComplaintCommand.execute(msg), "CREATE_COMPLAINT");
                 break;
+            case "GET_RECOMMENDATIONS":
+                response = checkAuthAndExecute(() -> getRecommendationsCommand.execute(), "GET_RECOMMENDATIONS");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -315,6 +327,7 @@ public class ClientHandler implements Runnable {
         this.getFavoritesCommand = new GetFavoritesCommand(favoriteService, currentUserId);
         this.addViewCommand = new AddViewCommand(viewHistoryService, objectMapper, currentUserId);
         this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
+        this.getRecommendationsCommand = new GetRecommendationsCommand(recommendationService, currentUserId);
 
         var user = userRepository.findById(currentUserId).orElse(null);
         if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
