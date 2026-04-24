@@ -231,4 +231,76 @@ public class AnalyticsRepository {
                 totalUsers, totalApplicants, totalHr, totalAdmins, totalVacancies, totalApplications);
         return new SystemStatsDto(totalUsers, totalApplicants, totalHr, totalAdmins, totalVacancies, totalApplications);
     }
+
+    public List<ChartDataPointDto> getSalaryStatsByTagIds(List<Integer> tagIds) {
+        List<ChartDataPointDto> result = new ArrayList<>();
+        if (tagIds == null || tagIds.isEmpty()) {
+            return result;
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT t.name as tag_name, AVG((v.salary_min + v.salary_max)/2.0) as avg_salary ");
+        sql.append("FROM vacancies v ");
+        sql.append("JOIN vacancy_tags vt ON v.id = vt.vacancy_id ");
+        sql.append("JOIN tags t ON vt.tag_id = t.id ");
+        sql.append("WHERE vt.tag_id IN (");
+
+        for (int i = 0; i < tagIds.size(); i++) {
+            sql.append("?");
+            if (i < tagIds.size() - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(") AND v.salary_min IS NOT NULL AND v.salary_max IS NOT NULL ");
+        sql.append("GROUP BY t.id, t.name ");
+        sql.append("ORDER BY avg_salary DESC");
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < tagIds.size(); i++) {
+                stmt.setInt(i + 1, tagIds.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String tagName = rs.getString("tag_name");
+                    double avgSalary = rs.getDouble("avg_salary");
+                    if (!rs.wasNull()) {
+                        result.add(new ChartDataPointDto(tagName, avgSalary));
+                    }
+                }
+            }
+            logger.debug("Salary stats by tag ids returned {} points", result.size());
+        } catch (SQLException e) {
+            logger.error("Error getting salary stats by tag ids", e);
+            throw new RuntimeException("Failed to get salary stats by tag ids", e);
+        }
+        return result;
+    }
+
+    public List<ChartDataPointDto> getActivityTimeline(int days) {
+        List<ChartDataPointDto> result = new ArrayList<>();
+        String sql = "SELECT DATE(created_at) as date, COUNT(*) as count " +
+                    "FROM users " +
+                    "WHERE created_at >= NOW() - INTERVAL '? days' " +
+                    "GROUP BY DATE(created_at) " +
+                    "ORDER BY date";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, days);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Date date = rs.getDate("date");
+                    double count = rs.getDouble("count");
+                    if (!rs.wasNull()) {
+                        result.add(new ChartDataPointDto(date != null ? date.toString() : null, count));
+                    }
+                }
+            }
+            logger.debug("Activity timeline returned {} points", result.size());
+        } catch (SQLException e) {
+            logger.error("Error getting activity timeline", e);
+            throw new RuntimeException("Failed to get activity timeline", e);
+        }
+        return result;
+    }
 }
