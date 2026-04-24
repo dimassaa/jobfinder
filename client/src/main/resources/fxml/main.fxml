@@ -48,6 +48,10 @@
                 <fx:include source="analytics.fxml"/>
             </Tab>
 
+            <Tab text="Уведомления">
+                <fx:include source="notifications.fxml"/>
+            </Tab>
+
         </TabPane>
     </center>
 
