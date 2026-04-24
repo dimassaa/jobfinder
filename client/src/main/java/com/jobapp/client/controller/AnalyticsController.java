@@ -110,10 +110,6 @@ public class AnalyticsController {
     }
 
     private void configureTabsByRole() {
-        salariesTab.setDisable(false);
-        tagsTab.setDisable(false);
-        geoTab.setDisable(false);
-
         boolean isApplicant = "USER".equals(userRole);
         boolean isHr = "HR".equals(userRole);
         boolean isAdmin = "ADMIN".equals(userRole);
@@ -126,7 +122,43 @@ public class AnalyticsController {
             loadInitialApplicantData();
         } else if (isHr) {
             loadInitialHrData();
+        } else if (isAdmin) {
+            loadInitialAdminData();
         }
+    }
+
+    private void loadInitialAdminData() {
+        logger.info("Loading initial analytics data for admin");
+        int systemPeriod = getPeriodDays(systemPeriodCombo.getValue());
+        loadSystemStats(systemPeriod);
+
+        int tagsPeriod = getPeriodDays(tagsPeriodCombo.getValue());
+        loadTagsDataForAdmin(tagsPeriod);
+
+        int geoPeriod = getPeriodDays(geoPeriodCombo.getValue());
+        loadGeoDataForAdmin(geoPeriod);
+    }
+
+    private void loadTagsDataForAdmin(int periodDays) {
+        new Thread(() -> {
+            try {
+                List<TagUsageDto> tags = analyticsService.getTopTags(periodDays, 10);
+                Platform.runLater(() -> updateTagsChart(tags));
+            } catch (Exception e) {
+                logger.error("Failed to load top tags for admin: {}", e.getMessage());
+            }
+        }).start();
+    }
+
+    private void loadGeoDataForAdmin(int periodDays) {
+        new Thread(() -> {
+            try {
+                GeoDistributionDto geo = analyticsService.getGeoStats("VACANCY", periodDays);
+                Platform.runLater(() -> updateGeoChart(geo));
+            } catch (Exception e) {
+                logger.error("Failed to load geo stats for admin: {}", e.getMessage());
+            }
+        }).start();
     }
 
     private void loadInitialHrData() {
