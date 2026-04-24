@@ -154,7 +154,8 @@ public class ClientHandler implements Runnable {
                 new NotificationService(
                         new com.jobapp.server.repository.NotificationRepository(),
                         new VacancyRepository(),
-                        companyRepository));
+                        companyRepository,
+                        sessionManager));
     }
 
     private FavoriteService createFavoriteService() {
@@ -179,7 +180,8 @@ public class ClientHandler implements Runnable {
                 new NotificationService(
                         new com.jobapp.server.repository.NotificationRepository(),
                         new VacancyRepository(),
-                        companyRepository));
+                        companyRepository,
+                        sessionManager));
     }
 
     @Override
