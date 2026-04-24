@@ -34,7 +34,7 @@ public class AnalyticsRepository {
                     "FROM vacancies v " +
                     "JOIN vacancy_tags vt ON v.id = vt.vacancy_id " +
                     "JOIN user_tags ut ON vt.tag_id = ut.tag_id " +
-                    "WHERE ut.user_id = ? AND v.created_at >= NOW() - INTERVAL '? days' " +
+                    "WHERE ut.user_id = ? AND v.created_at >= NOW() - (? || ' days')::interval " +
                     "AND v.salary_min IS NOT NULL AND v.salary_max IS NOT NULL " +
                     "GROUP BY DATE(v.created_at) " +
                     "ORDER BY date";
@@ -65,7 +65,7 @@ public class AnalyticsRepository {
                     "FROM vacancy_tags vt " +
                     "JOIN tags t ON vt.tag_id = t.id " +
                     "JOIN vacancies v ON vt.vacancy_id = v.id " +
-                    "WHERE v.created_at >= NOW() - INTERVAL '? days' " +
+                    "WHERE v.created_at >= NOW() - (? || ' days')::interval " +
                     "GROUP BY t.id, t.name " +
                     "ORDER BY count DESC " +
                     "LIMIT ?";
@@ -95,13 +95,13 @@ public class AnalyticsRepository {
         if ("VACANCY".equalsIgnoreCase(entityType)) {
             sql = "SELECT city, COUNT(*) as count, AVG((salary_min+salary_max)/2.0) as avg_salary " +
                  "FROM vacancies " +
-                 "WHERE created_at >= NOW() - INTERVAL '? days' AND city IS NOT NULL " +
+                 "WHERE created_at >= NOW() - (? || ' days')::interval AND city IS NOT NULL " +
                  "GROUP BY city " +
                  "ORDER BY count DESC";
         } else {
             sql = "SELECT city, COUNT(*) as count, NULL as avg_salary " +
                  "FROM users " +
-                 "WHERE role = 'USER' AND created_at >= NOW() - INTERVAL '? days' AND city IS NOT NULL " +
+                 "WHERE role = 'USER' AND created_at >= NOW() - (? || ' days')::interval AND city IS NOT NULL " +
                  "GROUP BY city " +
                  "ORDER BY count DESC";
         }
@@ -281,7 +281,7 @@ public class AnalyticsRepository {
         List<ChartDataPointDto> result = new ArrayList<>();
         String sql = "SELECT DATE(created_at) as date, COUNT(*) as count " +
                     "FROM users " +
-                    "WHERE created_at >= NOW() - INTERVAL '? days' " +
+                    "WHERE created_at >= NOW() - (? || ' days')::interval " +
                     "GROUP BY DATE(created_at) " +
                     "ORDER BY date";
         try (Connection conn = dataSource.getConnection();
