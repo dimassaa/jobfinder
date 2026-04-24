@@ -27,6 +27,15 @@ import com.jobapp.server.handler.GetFavoritesCommand;
 import com.jobapp.server.handler.AddViewCommand;
 import com.jobapp.server.handler.CreateComplaintCommand;
 import com.jobapp.server.handler.GetRecommendationsCommand;
+import com.jobapp.server.handler.GetSalaryStatsCommand;
+import com.jobapp.server.handler.GetTopTagsCommand;
+import com.jobapp.server.handler.GetGeoStatsCommand;
+import com.jobapp.server.handler.GetConversionCommand;
+import com.jobapp.server.handler.GetSalaryComparisonCommand;
+import com.jobapp.server.handler.GetSystemStatsCommand;
+import com.jobapp.server.handler.GetActivityTimelineCommand;
+import com.jobapp.server.repository.AnalyticsRepository;
+import com.jobapp.server.service.AnalyticsService;
 import com.jobapp.server.repository.CompanyRepository;
 import com.jobapp.server.repository.TagRepository;
 import com.jobapp.server.repository.UserRepository;
@@ -93,6 +102,14 @@ public class ClientHandler implements Runnable {
     private AddViewCommand addViewCommand;
     private CreateComplaintCommand createComplaintCommand;
     private GetRecommendationsCommand getRecommendationsCommand;
+    private GetSalaryStatsCommand getSalaryStatsCommand;
+    private GetTopTagsCommand getTopTagsCommand;
+    private GetGeoStatsCommand getGeoStatsCommand;
+    private GetConversionCommand getConversionCommand;
+    private GetSalaryComparisonCommand getSalaryComparisonCommand;
+    private GetSystemStatsCommand getSystemStatsCommand;
+    private GetActivityTimelineCommand getActivityTimelineCommand;
+    private AnalyticsService analyticsService;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
@@ -120,6 +137,11 @@ public class ClientHandler implements Runnable {
                 new VacancyRepository(),
                 userRepository,
                 tagRepository,
+                companyRepository);
+        this.analyticsService = new AnalyticsService(
+                new AnalyticsRepository(),
+                userRepository,
+                new VacancyRepository(),
                 companyRepository);
     }
 
@@ -285,6 +307,27 @@ public class ClientHandler implements Runnable {
             case "GET_RECOMMENDATIONS":
                 response = checkAuthAndExecute(() -> getRecommendationsCommand.execute(), "GET_RECOMMENDATIONS");
                 break;
+            case "GET_SALARY_STATS":
+                response = checkAuthAndExecute(() -> getSalaryStatsCommand.execute(msg), "GET_SALARY_STATS");
+                break;
+            case "GET_TOP_TAGS":
+                response = getTopTagsCommand.execute(msg);
+                break;
+            case "GET_GEO_STATS":
+                response = getGeoStatsCommand.execute(msg);
+                break;
+            case "GET_CONVERSION":
+                response = checkAuthAndExecute(() -> getConversionCommand.execute(msg), "GET_CONVERSION");
+                break;
+            case "GET_SALARY_COMPARISON":
+                response = checkAuthAndExecute(() -> getSalaryComparisonCommand.execute(msg), "GET_SALARY_COMPARISON");
+                break;
+            case "GET_SYSTEM_STATS":
+                response = checkAuthAndExecute(() -> getSystemStatsCommand.execute(msg), "GET_SYSTEM_STATS");
+                break;
+            case "GET_ACTIVITY_TIMELINE":
+                response = checkAuthAndExecute(() -> getActivityTimelineCommand.execute(msg), "GET_ACTIVITY_TIMELINE");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -328,6 +371,9 @@ public class ClientHandler implements Runnable {
         this.addViewCommand = new AddViewCommand(viewHistoryService, objectMapper, currentUserId);
         this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
         this.getRecommendationsCommand = new GetRecommendationsCommand(recommendationService, currentUserId);
+        this.getSalaryStatsCommand = new GetSalaryStatsCommand(analyticsService, currentUserId);
+        this.getTopTagsCommand = new GetTopTagsCommand(analyticsService);
+        this.getGeoStatsCommand = new GetGeoStatsCommand(analyticsService);
 
         var user = userRepository.findById(currentUserId).orElse(null);
         if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
@@ -341,6 +387,11 @@ public class ClientHandler implements Runnable {
                     companyRepository, currentUserId);
             this.getApplicationsForVacancyCommand = new GetApplicationsForVacancyCommand(applicationService, objectMapper, currentUserId);
             this.updateApplicationStatusCommand = new UpdateApplicationStatusCommand(applicationService, objectMapper, currentUserId);
+            this.getConversionCommand = new GetConversionCommand(analyticsService, currentUserId, userRepository);
+            this.getSalaryComparisonCommand = new GetSalaryComparisonCommand(analyticsService, currentUserId, userRepository);
+        } else if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
+            this.getSystemStatsCommand = new GetSystemStatsCommand(analyticsService, currentUserId, userRepository);
+            this.getActivityTimelineCommand = new GetActivityTimelineCommand(analyticsService, currentUserId, userRepository);
         }
     }
 
