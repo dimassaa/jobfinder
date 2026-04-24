@@ -2,6 +2,7 @@ package com.jobapp.client.controller;
 
 import com.jobapp.client.AppContext;
 import com.jobapp.client.service.AnalyticsClientService;
+import com.jobapp.client.service.VacancyClientService;
 import com.jobapp.common.dto.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -18,6 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class AnalyticsController {
 
@@ -37,6 +41,9 @@ public class AnalyticsController {
 
     @FXML
     private Tab conversionTab;
+
+    @FXML
+    private Tab salaryCompareTab;
 
     @FXML
     private Tab systemStatsTab;
@@ -71,8 +78,24 @@ public class AnalyticsController {
     @FXML
     private BarChart<String, Number> activityChart;
 
+    @FXML
+    private ComboBox<VacancyDto> vacancySelectCombo;
+
+    @FXML
+    private BarChart<String, Number> salaryCompareChart;
+
+    @FXML
+    private ComboBox<TagDto> tagCompareCombo1;
+
+    @FXML
+    private ComboBox<TagDto> tagCompareCombo2;
+
     private AnalyticsClientService analyticsService;
+    private VacancyClientService vacancyService;
     private String userRole;
+    private ObservableList<VacancyDto> hrVacancies = FXCollections.observableArrayList();
+    private ObservableList<TagDto> availableTags = FXCollections.observableArrayList();
+    private int selectedVacancyId = -1;
 
     @FXML
     private void initialize() {
@@ -80,6 +103,7 @@ public class AnalyticsController {
 
         userRole = AppContext.getCurrentRole();
         analyticsService = new AnalyticsClientService(AppContext.getNetworkService());
+        vacancyService = new VacancyClientService(AppContext.getNetworkService());
 
         configureTabsByRole();
         setDefaultPeriods();
@@ -95,11 +119,97 @@ public class AnalyticsController {
         boolean isAdmin = "ADMIN".equals(userRole);
 
         conversionTab.setDisable(!isHr);
+        salaryCompareTab.setDisable(!isHr);
         systemStatsTab.setDisable(!isAdmin);
 
         if (isApplicant) {
             loadInitialApplicantData();
+        } else if (isHr) {
+            loadInitialHrData();
         }
+    }
+
+    private void loadInitialHrData() {
+        logger.info("Loading initial analytics data for HR");
+        loadHrVacancies();
+    }
+
+    private void loadHrVacancies() {
+        new Thread(() -> {
+            try {
+                List<VacancyDto> vacancies = vacancyService.getMyVacancies();
+                Platform.runLater(() -> {
+                    hrVacancies.setAll(vacancies);
+                    vacancySelectCombo.setItems(hrVacancies);
+                    if (!vacancies.isEmpty()) {
+                        vacancySelectCombo.getSelectionModel().selectFirst();
+                        selectedVacancyId = vacancies.get(0).getId();
+                        loadConversion(selectedVacancyId);
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("Failed to load HR vacancies: {}", e.getMessage());
+            }
+        }).start();
+    }
+
+    @FXML
+    private void onVacancySelected() {
+        VacancyDto selected = vacancySelectCombo.getValue();
+        if (selected != null) {
+            selectedVacancyId = selected.getId();
+            loadConversion(selectedVacancyId);
+        }
+    }
+
+    @FXML
+    private void onRefreshConversion() {
+        if (selectedVacancyId > 0) {
+            loadConversion(selectedVacancyId);
+        }
+    }
+
+    @FXML
+    private void onCompareSalaries() {
+        TagDto tag1 = tagCompareCombo1.getValue();
+        TagDto tag2 = tagCompareCombo2.getValue();
+        if (tag1 != null) {
+            List<Integer> tagIds = new java.util.ArrayList<>();
+            tagIds.add(tag1.getId());
+            if (tag2 != null) {
+                tagIds.add(tag2.getId());
+            }
+            loadSalaryComparison(tagIds);
+        }
+    }
+
+    private void loadSalaryComparison(List<Integer> tagIds) {
+        new Thread(() -> {
+            try {
+                List<ChartDataPointDto> comparison = analyticsService.getSalaryComparison(tagIds);
+                Platform.runLater(() -> updateSalaryCompareChart(comparison));
+            } catch (Exception e) {
+                logger.error("Failed to load salary comparison: {}", e.getMessage());
+            }
+        }).start();
+    }
+
+    private void updateSalaryCompareChart(List<ChartDataPointDto> data) {
+        salaryCompareChart.getData().clear();
+
+        if (data == null || data.isEmpty()) {
+            logger.info("No salary comparison data available");
+            return;
+        }
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Средняя зарплата");
+
+        for (ChartDataPointDto point : data) {
+            series.getData().add(new XYChart.Data<>(point.getLabel(), point.getValue()));
+        }
+
+        salaryCompareChart.getData().add(series);
     }
 
     private void loadInitialApplicantData() {
@@ -285,6 +395,11 @@ public class AnalyticsController {
         series.getData().add(new XYChart.Data<>("Приглашения", conversion.getInvites()));
 
         conversionChart.getData().add(series);
+
+        Double rate = conversion.getConversionRate();
+        if (rate != null) {
+            logger.info("Conversion rate: {}%", String.format("%.2f", rate * 100));
+        }
     }
 
     private void loadSystemStats(int periodDays) {
