@@ -40,6 +40,10 @@
                 <fx:include source="view_history.fxml"/>
             </Tab>
 
+            <Tab text="Рекомендации">
+                <fx:include source="recommendations.fxml"/>
+            </Tab>
+
         </TabPane>
     </center>
 
