@@ -90,19 +90,29 @@ public class AnalyticsController {
         tagsTab.setDisable(false);
         geoTab.setDisable(false);
 
-        switch (userRole) {
-            case "HR":
-                conversionTab.setDisable(false);
-                systemStatsTab.setDisable(true);
-                break;
-            case "ADMIN":
-                conversionTab.setDisable(true);
-                systemStatsTab.setDisable(false);
-                break;
-            default:
-                conversionTab.setDisable(true);
-                systemStatsTab.setDisable(true);
+        boolean isApplicant = "USER".equals(userRole);
+        boolean isHr = "HR".equals(userRole);
+        boolean isAdmin = "ADMIN".equals(userRole);
+
+        conversionTab.setDisable(!isHr);
+        systemStatsTab.setDisable(!isAdmin);
+
+        if (isApplicant) {
+            loadInitialApplicantData();
         }
+    }
+
+    private void loadInitialApplicantData() {
+        logger.info("Loading initial analytics data for applicant");
+
+        int salaryPeriod = getPeriodDays(salaryPeriodCombo.getValue());
+        loadSalaryData(salaryPeriod);
+
+        int tagsPeriod = getPeriodDays(tagsPeriodCombo.getValue());
+        loadTagsData(tagsPeriod);
+
+        int geoPeriod = getPeriodDays(geoPeriodCombo.getValue());
+        loadGeoData(geoPeriod);
     }
 
     private void setDefaultPeriods() {
