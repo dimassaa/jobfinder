@@ -39,16 +39,31 @@ public class Server {
     }
 
     private static int parsePortFromEnv() {
-        String envPort = System.getenv("SERVER_PORT");
-        if (envPort != null && !envPort.isBlank()) {
+        // 1. Check Java System Property (for tests)
+        String portStr = System.getProperty("SERVER_PORT");
+        if (portStr != null && !portStr.isBlank()) {
             try {
-                int port = Integer.parseInt(envPort.trim());
+                int port = Integer.parseInt(portStr.trim());
+                if (port > 0 && port < 65536) {
+                    logger.info("Using port from SERVER_PORT property: {}", port);
+                    return port;
+                }
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid SERVER_PORT property value: {}, using default", portStr);
+            }
+        }
+
+        // 2. Check Environment Variable
+        portStr = System.getenv("SERVER_PORT");
+        if (portStr != null && !portStr.isBlank()) {
+            try {
+                int port = Integer.parseInt(portStr.trim());
                 if (port > 0 && port < 65536) {
                     logger.info("Using port from SERVER_PORT env: {}", port);
                     return port;
                 }
             } catch (NumberFormatException e) {
-                logger.warn("Invalid SERVER_PORT value: {}, using default", envPort);
+                logger.warn("Invalid SERVER_PORT value: {}, using default", portStr);
             }
         }
         logger.info("Using default port: {}", DEFAULT_PORT);

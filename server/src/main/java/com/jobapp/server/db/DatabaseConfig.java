@@ -14,30 +14,26 @@ public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
     private static HikariDataSource dataSource;
 
-    private static final String DB_HOST = getProperty("DB_HOST", "localhost");
-    private static final String DB_PORT = getProperty("DB_PORT", "5432");
-    private static final String DB_NAME = getProperty("DB_NAME", "jobdb");
-    private static final String DB_USER = getProperty("DB_USER", "jobuser");
-    private static final String DB_PASSWORD = getProperty("DB_PASSWORD", "secret");
-
-    private static final int MAX_POOL_SIZE = Integer.parseInt(getProperty("DB_MAX_POOL_SIZE", "10"));
-    private static final int MIN_IDLE = Integer.parseInt(getProperty("DB_MIN_IDLE", "2"));
-    private static final long CONNECTION_TIMEOUT = Long.parseLong(getProperty("DB_CONNECTION_TIMEOUT", "30000"));
-    private static final long IDLE_TIMEOUT = Long.parseLong(getProperty("DB_IDLE_TIMEOUT", "600000"));
-    private static final long MAX_LIFETIME = Long.parseLong(getProperty("DB_MAX_LIFETIME", "1800000"));
-
     private static String getProperty(String key, String defaultValue) {
-        String envValue = System.getenv(key);
-        if (envValue != null && !envValue.isEmpty()) {
-            return envValue;
+        // 1. Check Java System Property (for tests) - Has highest priority for tests
+        String value = System.getProperty(key);
+        if (value != null && !value.isEmpty()) {
+            return value;
         }
 
+        // 2. Check Environment Variable
+        value = System.getenv(key);
+        if (value != null && !value.isEmpty()) {
+            return value;
+        }
+
+        // 3. Check properties file
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream("server/src/main/resources/application.properties")) {
             props.load(fis);
-            String propValue = props.getProperty(key);
-            if (propValue != null && !propValue.isEmpty()) {
-                return propValue;
+            value = props.getProperty(key);
+            if (value != null && !value.isEmpty()) {
+                return value;
             }
         } catch (IOException e) {
             logger.debug("Properties file not found, using default values");
@@ -46,19 +42,31 @@ public class DatabaseConfig {
         return defaultValue;
     }
 
-    public static HikariDataSource getDataSource() {
+    public static synchronized HikariDataSource getDataSource() {
         if (dataSource == null) {
             HikariConfig config = new HikariConfig();
 
-            config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", DB_HOST, DB_PORT, DB_NAME));
-            config.setUsername(DB_USER);
-            config.setPassword(DB_PASSWORD);
+            String host = getProperty("DB_HOST", "localhost");
+            String port = getProperty("DB_PORT", "5432");
+            String name = getProperty("DB_NAME", "jobdb");
+            String user = getProperty("DB_USER", "jobuser");
+            String password = getProperty("DB_PASSWORD", "secret");
 
-            config.setMaximumPoolSize(MAX_POOL_SIZE);
-            config.setMinimumIdle(MIN_IDLE);
-            config.setConnectionTimeout(CONNECTION_TIMEOUT);
-            config.setIdleTimeout(IDLE_TIMEOUT);
-            config.setMaxLifetime(MAX_LIFETIME);
+            config.setJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", host, port, name));
+            config.setUsername(user);
+            config.setPassword(password);
+
+            int maxPoolSize = Integer.parseInt(getProperty("DB_MAX_POOL_SIZE", "10"));
+            int minIdle = Integer.parseInt(getProperty("DB_MIN_IDLE", "2"));
+            long connectionTimeout = Long.parseLong(getProperty("DB_CONNECTION_TIMEOUT", "30000"));
+            long idleTimeout = Long.parseLong(getProperty("DB_IDLE_TIMEOUT", "600000"));
+            long maxLifetime = Long.parseLong(getProperty("DB_MAX_LIFETIME", "1800000"));
+
+            config.setMaximumPoolSize(maxPoolSize);
+            config.setMinimumIdle(minIdle);
+            config.setConnectionTimeout(connectionTimeout);
+            config.setIdleTimeout(idleTimeout);
+            config.setMaxLifetime(maxLifetime);
 
             config.setPoolName("JobFinder-HikariCP");
             config.setAutoCommit(true);
