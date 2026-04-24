@@ -41,6 +41,25 @@ public class NotificationRepository {
         }
     }
 
+    public List<Notification> findAllByUserId(int userId, int limit, int offset) {
+        String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        List<Notification> notifications = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, limit);
+            stmt.setInt(3, offset);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    notifications.add(mapRowToNotification(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching notifications for user: {} with limit {} offset {}", userId, limit, offset, e);
+        }
+        return notifications;
+    }
+
     public List<Notification> findByUserId(Integer userId) {
         String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC";
         List<Notification> notifications = new ArrayList<>();
