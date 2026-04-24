@@ -67,7 +67,14 @@ public class VacancyService {
         }
 
         logger.info("Vacancy created with id: {}", vacancy.getId());
+
+        checkAndNotifyMatchingUsers(vacancy.getId());
+
         return toDto(vacancy, company);
+    }
+
+    public void checkAndNotifyMatchingUsers(int vacancyId) {
+        logger.info("checkAndNotifyMatchingUsers called for vacancy {}. Here notification logic will be implemented in Step 9.", vacancyId);
     }
 
     public void update(int vacancyId, int userId, VacancyCreateRequest req) {
