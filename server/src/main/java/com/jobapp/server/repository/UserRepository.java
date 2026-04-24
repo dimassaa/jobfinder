@@ -247,6 +247,57 @@ public class UserRepository {
         }
     }
 
+    public List<User> findAllUsersWithTags() {
+        String sql = "SELECT DISTINCT u.* FROM users u " +
+                   "INNER JOIN user_tags ut ON u.id = ut.user_id " +
+                   "WHERE u.role = 'USER' AND u.is_blocked = false";
+        List<User> users = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                users.add(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding all users with tags", e);
+        }
+        return users;
+    }
+
+    public List<User> findUsersWithIncompleteProfile() {
+        String sql = "SELECT u.* FROM users u " +
+                  "LEFT JOIN user_tags ut ON u.id = ut.user_id " +
+                  "WHERE u.role = 'USER' " +
+                  "AND u.created_at < NOW() - INTERVAL '1 day' " +
+                  "AND (u.city IS NULL OR ut.tag_id IS NULL)";
+        List<User> users = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                users.add(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding users with incomplete profile", e);
+        }
+        return users;
+    }
+
+    public List<User> findAllAdmins() {
+        String sql = "SELECT * FROM users WHERE role = 'ADMIN'";
+        List<User> admins = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                admins.add(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding admins", e);
+        }
+        return admins;
+    }
+
     private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
         if (value != null) {
             stmt.setString(index, value);

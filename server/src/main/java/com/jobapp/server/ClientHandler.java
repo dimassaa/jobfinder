@@ -124,7 +124,18 @@ public class ClientHandler implements Runnable {
         this.authService = new AuthService(userRepository, companyRepository);
         this.userService = new UserService(userRepository, companyRepository, tagRepository);
         this.tagService = new TagService(tagRepository);
-        this.vacancyService = new VacancyService(new VacancyRepository(), companyRepository, tagRepository);
+
+        NotificationService notificationService = new NotificationService(
+                new com.jobapp.server.repository.NotificationRepository(),
+                new VacancyRepository(),
+                companyRepository,
+                sessionManager);
+
+        this.vacancyService = new VacancyService(
+                new VacancyRepository(),
+                companyRepository,
+                tagRepository,
+                notificationService);
         this.loginCommand = new LoginCommand(authService, sessionManager, objectMapper);
         this.registerCommand = new RegisterCommand(authService, objectMapper);
         this.getVacancyDetailsCommand = new GetVacancyDetailsCommand(vacancyService, objectMapper);

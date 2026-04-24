@@ -1,22 +1,27 @@
 package com.jobapp.server.service;
 
+import com.jobapp.common.dto.NotificationDto;
 import com.jobapp.common.dto.TagDto;
 import com.jobapp.common.dto.VacancyCreateRequest;
 import com.jobapp.common.dto.VacancyDto;
 import com.jobapp.common.dto.VacancyFilterDto;
 import com.jobapp.server.model.Company;
 import com.jobapp.server.model.Tag;
+import com.jobapp.server.model.User;
 import com.jobapp.server.model.Vacancy;
 import com.jobapp.server.repository.CompanyRepository;
 import com.jobapp.server.repository.TagRepository;
+import com.jobapp.server.repository.UserRepository;
 import com.jobapp.server.repository.VacancyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class VacancyService {
@@ -26,11 +31,24 @@ public class VacancyService {
     private final VacancyRepository vacancyRepository;
     private final CompanyRepository companyRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public VacancyService(VacancyRepository vacancyRepository, CompanyRepository companyRepository, TagRepository tagRepository) {
+    public VacancyService(VacancyRepository vacancyRepository,
+                          CompanyRepository companyRepository,
+                          TagRepository tagRepository) {
+        this(vacancyRepository, companyRepository, tagRepository, null);
+    }
+
+    public VacancyService(VacancyRepository vacancyRepository,
+                          CompanyRepository companyRepository,
+                          TagRepository tagRepository,
+                          NotificationService notificationService) {
         this.vacancyRepository = vacancyRepository;
         this.companyRepository = companyRepository;
         this.tagRepository = tagRepository;
+        this.userRepository = new UserRepository();
+        this.notificationService = notificationService;
     }
 
     public VacancyDto create(int companyId, VacancyCreateRequest req, int userId) {
@@ -74,7 +92,64 @@ public class VacancyService {
     }
 
     public void checkAndNotifyMatchingUsers(int vacancyId) {
-        logger.info("checkAndNotifyMatchingUsers called for vacancy {}. Here notification logic will be implemented in Step 9.", vacancyId);
+        if (notificationService == null) {
+            logger.debug("NotificationService not available, skipping notifications for vacancy {}", vacancyId);
+            return;
+        }
+
+        logger.info("Checking for matching users for vacancy {}", vacancyId);
+
+        Optional<Vacancy> vacancyOpt = vacancyRepository.findById(vacancyId);
+        if (vacancyOpt.isEmpty()) {
+            logger.warn("Vacancy not found: {}", vacancyId);
+            return;
+        }
+
+        Vacancy vacancy = vacancyOpt.get();
+        Set<Integer> vacancyTagIds = vacancyRepository.getVacancyTagIds(vacancyId);
+
+        if (vacancyTagIds.isEmpty()) {
+            logger.debug("Vacancy {} has no tags, skipping notifications", vacancyId);
+            return;
+        }
+
+        List<User> allUsers = userRepository.findAllUsersWithTags();
+        int notificationCount = 0;
+
+        for (User user : allUsers) {
+            if (user.getRole() == null || !"USER".equals(user.getRole())) {
+                continue;
+            }
+
+            Set<Integer> userTagIds = userRepository.findUserTagIds(user.getId());
+            if (userTagIds.isEmpty()) {
+                continue;
+            }
+
+            Set<Integer> intersection = new java.util.HashSet<>(userTagIds);
+            intersection.retainAll(vacancyTagIds);
+
+            Set<Integer> union = new java.util.HashSet<>(userTagIds);
+            union.addAll(vacancyTagIds);
+
+            double matchPercent = (intersection.size() * 2.0 / union.size()) * 100;
+
+            if (matchPercent >= 50.0) {
+                NotificationDto notification = new NotificationDto();
+                notification.setType("NEW_VACANCY");
+                notification.setTitle("New Matching Vacancy");
+                notification.setContent("A new vacancy matching your skills: " + vacancy.getTitle());
+                notification.setLink("/vacancies/" + vacancyId);
+
+                notificationService.sendToUser(user.getId(), notification);
+                notificationCount++;
+
+                logger.debug("Sent notification to user {} for vacancy {} (match: {}%)",
+                        user.getId(), vacancyId, matchPercent);
+            }
+        }
+
+        logger.info("Sent {} notifications for vacancy {}", notificationCount, vacancyId);
     }
 
     public void update(int vacancyId, int userId, VacancyCreateRequest req) {

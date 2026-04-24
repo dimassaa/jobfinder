@@ -17,10 +17,13 @@
         </encoder>
     </appender>
 
+    <appender name="NOTIFICATION" class="com.jobapp.server.logging.NotificationAppender"/>
+
     <logger name="com.jobapp.server" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
+        <appender-ref ref="NOTIFICATION"/>
     </root>
 </configuration>

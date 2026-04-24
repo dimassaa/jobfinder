@@ -313,6 +313,23 @@ public class VacancyRepository {
         return result;
     }
 
+    public Set<Integer> getVacancyTagIds(int vacancyId) {
+        String sql = "SELECT tag_id FROM vacancy_tags WHERE vacancy_id = ?";
+        Set<Integer> tagIds = new HashSet<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tagIds.add(rs.getInt("tag_id"));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error getting tag IDs for vacancy: {}", vacancyId, e);
+        }
+        return tagIds;
+    }
+
     private Vacancy mapRowToVacancy(ResultSet rs) throws SQLException {
         Vacancy vacancy = new Vacancy();
         vacancy.setId(rs.getInt("id"));
