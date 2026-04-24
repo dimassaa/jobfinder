@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.FontWeight?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/fx"
+            fx:controller="com.jobapp.client.controller.AnalyticsController"
+            style="-fx-background-color: #F5F7FA;">
+
+    <top>
+        <VBox style="-fx-background-color: #1976D2; -fx-padding: 12 24 12 24;">
+            <Label text="Аналитика" 
+                   style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="analyticsTabPane" tabClosingPolicy="UNAVAILABLE"
+                 style="-fx-background-color: white;">
+
+            <Tab text="Зарплаты" fx:id="salariesTab">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <ComboBox fx:id="salaryPeriodCombo" promptText="Выберите период"
+                              onAction="#onSalaryPeriodChanged">
+                        <items>
+                            <String fx:value="Неделя"/>
+                            <String fx:value="Месяц"/>
+                            <String fx:value="Год"/>
+                        </items>
+                    </ComboBox>
+                    <LineChart fx:id="salaryChart" legendVisible="true">
+                        <xAxis>
+                            <CategoryAxis label="Период"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Средняя зарплата (руб)"/>
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+            </Tab>
+
+            <Tab text="Тренды навыков" fx:id="tagsTab">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <ComboBox fx:id="tagsPeriodCombo" promptText="Выберите период"
+                              onAction="#onTagsPeriodChanged">
+                        <items>
+                            <String fx:value="Неделя"/>
+                            <String fx:value="Месяц"/>
+                            <String fx:value="Год"/>
+                        </items>
+                    </ComboBox>
+                    <BarChart fx:id="tagsChart">
+                        <xAxis>
+                            <CategoryAxis label="Навык"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Количество вакансий"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </Tab>
+
+            <Tab text="География" fx:id="geoTab">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <ComboBox fx:id="geoPeriodCombo" promptText="Выберите период"
+                              onAction="#onGeoPeriodChanged">
+                        <items>
+                            <String fx:value="Неделя"/>
+                            <String fx:value="Месяц"/>
+                            <String fx:value="Год"/>
+                        </items>
+                    </ComboBox>
+                    <BarChart fx:id="geoChart">
+                        <xAxis>
+                            <CategoryAxis label="Город"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Количество"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </Tab>
+
+            <Tab text="Конверсия" fx:id="conversionTab">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <BarChart fx:id="conversionChart">
+                        <xAxis>
+                            <CategoryAxis label="Этап"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Количество"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </Tab>
+
+            <Tab text="Общая статистика" fx:id="systemStatsTab">
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <ComboBox fx:id="systemPeriodCombo" promptText="Выберите период"
+                              onAction="#onSystemPeriodChanged">
+                        <items>
+                            <String fx:value="Неделя"/>
+                            <String fx:value="Месяц"/>
+                            <String fx:value="Год"/>
+                        </items>
+                    </ComboBox>
+                    <PieChart fx:id="usersPieChart" labelLineSide="RIGHT" legendVisible="true">
+                        <title>
+                            <Label text="Пользователи по ролям" font="$FONT_BOLD_14"/>
+                        </title>
+                    </PieChart>
+                    <BarChart fx:id="activityChart">
+                        <xAxis>
+                            <CategoryAxis label="Дата"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Активность"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+</BorderPane>
