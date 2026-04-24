@@ -2,7 +2,12 @@ package com.jobapp.client.controller;
 
 import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
+import com.jobapp.client.service.ApplicationClientService;
+import com.jobapp.client.service.ComplaintClientService;
+import com.jobapp.client.service.FavoriteClientService;
 import com.jobapp.client.service.VacancyClientService;
+import com.jobapp.client.service.ViewHistoryClientService;
+import com.jobapp.common.dto.ApplicationDto;
 import com.jobapp.common.dto.TagDto;
 import com.jobapp.common.dto.VacancyDto;
 import javafx.application.Platform;
@@ -10,6 +15,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -66,14 +72,24 @@ public class VacancyDetailsController {
     private Button closeButton;
 
     private VacancyClientService vacancyClientService;
+    private ApplicationClientService applicationClientService;
+    private FavoriteClientService favoriteClientService;
+    private ComplaintClientService complaintClientService;
+    private ViewHistoryClientService viewHistoryClientService;
     private VacancyDto vacancy;
     private Integer vacancyId;
+    private boolean hasApplied = false;
+    private boolean isFavorite = false;
 
     public VacancyDetailsController() {
     }
 
     public void setNetworkService(NetworkService networkService) {
         this.vacancyClientService = new VacancyClientService(networkService);
+        this.applicationClientService = new ApplicationClientService(networkService);
+        this.favoriteClientService = new FavoriteClientService(networkService);
+        this.complaintClientService = new ComplaintClientService(networkService);
+        this.viewHistoryClientService = new ViewHistoryClientService(networkService);
     }
 
     public void setVacancyId(Integer vacancyId) {
@@ -99,6 +115,8 @@ public class VacancyDetailsController {
                 VacancyDto vacancy = vacancyClientService.getDetails(vacancyId);
                 this.vacancy = vacancy;
 
+                recordView();
+
                 Platform.runLater(() -> displayVacancy(vacancy));
             } catch (Exception e) {
                 logger.error("Failed to load vacancy details: {}", e.getMessage());
@@ -108,6 +126,17 @@ public class VacancyDetailsController {
                 });
             }
         }).start();
+    }
+
+    private void recordView() {
+        try {
+            if (viewHistoryClientService != null && vacancyId != null) {
+                viewHistoryClientService.addView(vacancyId);
+                logger.debug("View recorded for vacancy {}", vacancyId);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to record view: {}", e.getMessage());
+        }
     }
 
     private void displayVacancy(VacancyDto vacancy) {
@@ -133,6 +162,19 @@ public class VacancyDetailsController {
         descriptionArea.setText(vacancy.getDescription() != null ? vacancy.getDescription() : "Описание не указано");
 
         displayTags(vacancy.getTags());
+        checkIfAlreadyApplied();
+        checkIfFavorite();
+        updateButtonStates();
+    }
+
+    private void updateButtonStates() {
+        if (hasApplied) {
+            applyButton.setText("Отклик отправлен");
+            applyButton.setDisable(true);
+        }
+        if (isFavorite) {
+            favoriteButton.setText("В избранном");
+        }
     }
 
     private String formatSalary(Integer salaryMin, Integer salaryMax) {
@@ -196,22 +238,114 @@ public class VacancyDetailsController {
         }
     }
 
+    private void checkIfAlreadyApplied() {
+        if (applicationClientService == null || vacancyId == null) return;
+        try {
+            List<ApplicationDto> applications = applicationClientService.getMyApplications();
+            for (ApplicationDto app : applications) {
+                if (app.getVacancyId() != null && app.getVacancyId().equals(vacancyId)) {
+                    hasApplied = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to check applications: {}", e.getMessage());
+        }
+    }
+
+    private void checkIfFavorite() {
+        if (favoriteClientService == null || vacancyId == null) return;
+        try {
+            isFavorite = favoriteClientService.isFavorite(vacancyId);
+        } catch (Exception e) {
+            logger.warn("Failed to check favorite status: {}", e.getMessage());
+        }
+    }
+
     @FXML
     private void handleApply() {
         logger.info("Apply button clicked for vacancy: {}", vacancyId);
-        showInfo("Функция отклика на вакансию будет реализована позже.");
+
+        if (hasApplied) {
+            showInfo("Вы уже откликались на эту вакансию");
+            return;
+        }
+
+        applyButton.setDisable(true);
+        applyButton.setText("Отправка...");
+
+        new Thread(() -> {
+            try {
+                ApplicationDto application = applicationClientService.apply(vacancyId);
+                Platform.runLater(() -> {
+                    hasApplied = true;
+                    applyButton.setText("Отклик отправлен");
+                    showInfo("Ваш отклик успешно отправлен!");
+                });
+            } catch (Exception e) {
+                logger.error("Failed to apply: {}", e.getMessage());
+                Platform.runLater(() -> {
+                    applyButton.setDisable(false);
+                    applyButton.setText("Откликнуться");
+                    showError("Не удалось отправить отклик: " + e.getMessage());
+                });
+            }
+        }).start();
     }
 
     @FXML
     private void handleFavorite() {
         logger.info("Favorite button clicked for vacancy: {}", vacancyId);
-        showInfo("Функция добавления в избранное будет реализована позже.");
+
+        new Thread(() -> {
+            try {
+                if (isFavorite) {
+                    favoriteClientService.remove(vacancyId);
+                    Platform.runLater(() -> {
+                        isFavorite = false;
+                        favoriteButton.setText("В избранное");
+                        showInfo("Вакансия удалена из избранного");
+                    });
+                } else {
+                    favoriteClientService.add(vacancyId);
+                    Platform.runLater(() -> {
+                        isFavorite = true;
+                        favoriteButton.setText("В избранном");
+                        showInfo("Вакансия добавлена в избранное");
+                    });
+                }
+            } catch (Exception e) {
+                logger.error("Failed to toggle favorite: {}", e.getMessage());
+                Platform.runLater(() -> showError("Ошибка: " + e.getMessage()));
+            }
+        }).start();
     }
 
     @FXML
     private void handleComplain() {
         logger.info("Complain button clicked for vacancy: {}", vacancyId);
-        showInfo("Функция жалобы на вакансию будет реализована позже.");
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Пожаловаться на вакансию");
+        dialog.setHeaderText("Укажите причину жалобы");
+        dialog.setContentText("Причина:");
+
+        dialog.showAndWait().ifPresent(reason -> {
+            if (reason == null || reason.trim().isEmpty()) {
+                showError("Необходимо указать причину жалобы");
+                return;
+            }
+
+            new Thread(() -> {
+                try {
+                    complaintClientService.create("VACANCY", vacancyId, reason.trim());
+                    Platform.runLater(() -> showInfo("Жалоба отправлена модератору"));
+                } catch (Exception e) {
+                    logger.error("Failed to submit complaint: {}", e.getMessage());
+                    Platform.runLater(() -> showError("Не удалось отправить жалобу: " + e.getMessage()));
+                }
+            }).start();
+        });
     }
 
     @FXML

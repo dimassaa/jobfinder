@@ -1,6 +1,7 @@
 package com.jobapp.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.server.db.DatabaseConfig;
@@ -12,6 +13,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 abstract class BaseIntegrationTest {
 
@@ -41,6 +44,7 @@ abstract class BaseIntegrationTest {
     @BeforeEach
     void setUpBase() throws Exception {
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         testPort = findAvailablePort();
 
         DatabaseConfig.reset();
@@ -68,5 +72,13 @@ abstract class BaseIntegrationTest {
             serverThread.interrupt();
             serverThread.join(2000);
         }
+    }
+
+    protected Response message(String command, Object data) throws Exception {
+        Message msg = new Message("REQUEST", command, data);
+        out.println(objectMapper.writeValueAsString(msg));
+        String response = in.readLine();
+        assertNotNull(response);
+        return objectMapper.readValue(response, Response.class);
     }
 }
