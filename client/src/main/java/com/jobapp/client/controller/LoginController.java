@@ -176,6 +176,7 @@ public class LoginController {
             AppContext.setCurrentUserId(authResponse.getUserId());
             AppContext.setCurrentRole(authResponse.getRole());
             AppContext.setCurrentEmail(emailField.getText().trim());
+            AppContext.setNetworkService(networkService);
 
             logger.info("Login successful. User: {}, Role: {}", authResponse.getUserId(), authResponse.getRole());
 
