@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.sql.DataSource;
 
 public class UserRepository {
@@ -198,6 +200,23 @@ public class UserRepository {
             logger.error("Error finding user tags for user: {}", userId, e);
         }
         return tags;
+    }
+
+    public Set<Integer> findUserTagIds(int userId) {
+        String sql = "SELECT tag_id FROM user_tags WHERE user_id = ?";
+        Set<Integer> tagIds = new HashSet<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    tagIds.add(rs.getInt("tag_id"));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding user tag IDs for user: {}", userId, e);
+        }
+        return tagIds;
     }
 
     public void updateUserTags(int userId, List<Integer> tagIds) {
