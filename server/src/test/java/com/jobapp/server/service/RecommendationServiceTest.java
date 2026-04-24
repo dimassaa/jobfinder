@@ -179,7 +179,32 @@ class RecommendationServiceTest {
         List<RecommendedVacancyDto> result2 = recommendationService.getRecommendations(1);
 
         assertEquals(result1.size(), result2.size());
+        assertEquals("Java Developer", result2.get(0).getTitle());
         verify(vacancyRepository, times(1)).findAllActiveWithTags();
+    }
+
+    @Test
+    void getRecommendations_shouldRecalculateAfterCacheClear() {
+        Set<Integer> userTagIds = new HashSet<>(Arrays.asList(1, 2));
+        when(userRepository.findUserTagIds(1)).thenReturn(userTagIds);
+
+        Vacancy vacancy = createVacancy(10, "Java Developer", 1);
+        VacancyWithTags vwt = new VacancyWithTags(10, new HashSet<>(Arrays.asList(1)));
+        Company company = createCompany(1, "TechCorp");
+
+        when(vacancyRepository.findAllActiveWithTags()).thenReturn(Collections.singletonList(vwt));
+        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy));
+        when(companyRepository.findById(1)).thenReturn(Optional.of(company));
+        when(tagRepository.findByVacancyId(anyInt())).thenReturn(Collections.emptyList());
+
+        List<RecommendedVacancyDto> result1 = recommendationService.getRecommendations(1);
+
+        recommendationService.clearCache(1);
+
+        List<RecommendedVacancyDto> result2 = recommendationService.getRecommendations(1);
+
+        assertEquals(result1.size(), result2.size());
+        verify(vacancyRepository, times(2)).findAllActiveWithTags();
     }
 
     private Vacancy createVacancy(int id, String title, int companyId) {
