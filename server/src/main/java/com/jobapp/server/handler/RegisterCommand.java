@@ -5,6 +5,7 @@ import com.jobapp.common.Response;
 import com.jobapp.common.dto.AuthResponse;
 import com.jobapp.common.dto.RegisterRequest;
 import com.jobapp.server.service.AuthService;
+import com.jobapp.server.util.ValidationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,32 @@ public class RegisterCommand {
         try {
             String dataJson = objectMapper.writeValueAsString(msg.getData());
             RegisterRequest request = objectMapper.readValue(dataJson, RegisterRequest.class);
+
+            String emailError = ValidationUtil.validateEmail(request.getEmail());
+            if (emailError != null) {
+                return new Response("ERROR", emailError, null);
+            }
+
+            String passwordError = ValidationUtil.validatePassword(request.getPassword());
+            if (passwordError != null) {
+                return new Response("ERROR", passwordError, null);
+            }
+
+            String roleError = ValidationUtil.validateRole(request.getRole());
+            if (roleError != null) {
+                return new Response("ERROR", roleError, null);
+            }
+
+            String nameError = ValidationUtil.validateName(request.getName(), "Name");
+            if (nameError != null) {
+                return new Response("ERROR", nameError, null);
+            }
+
+            String surnameError = ValidationUtil.validateName(request.getSurname(), "Surname");
+            if (surnameError != null) {
+                return new Response("ERROR", surnameError, null);
+            }
+
             AuthResponse authResponse = authService.register(request);
 
             return new Response(
