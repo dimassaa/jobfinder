@@ -360,4 +360,39 @@ public class VacancyRepository {
         }
         return vacancy;
     }
+
+    public List<Vacancy> findAllForAdmin(boolean includeInactive) {
+        String sql = includeInactive
+            ? "SELECT * FROM vacancies ORDER BY created_at DESC"
+            : "SELECT * FROM vacancies WHERE is_active = true ORDER BY created_at DESC";
+        List<Vacancy> vacancies = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                vacancies.add(mapRowToVacancy(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching all vacancies for admin", e);
+        }
+        return vacancies;
+    }
+
+    public void softDeleteByAdmin(int vacancyId) {
+        String sql = "UPDATE vacancies SET is_active = false, closed_at = ?, title = ?, updated_at = ? WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setString(2, "[DELETED]");
+            stmt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(4, vacancyId);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("Vacancy soft deleted by admin: {}", vacancyId);
+            }
+        } catch (SQLException e) {
+            logger.error("Error soft deleting vacancy by admin: {}", vacancyId, e);
+            throw new RuntimeException("Failed to soft delete vacancy", e);
+        }
+    }
 }

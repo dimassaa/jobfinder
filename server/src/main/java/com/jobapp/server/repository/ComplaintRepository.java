@@ -177,4 +177,41 @@ public class ComplaintRepository {
         }
         return complaint;
     }
+
+    public List<Complaint> findAllWithDetails() {
+        String sql = "SELECT c.*, " +
+                     "CASE WHEN c.target_type = 'VACANCY' THEN v.title ELSE u.email END as target_name " +
+                     "FROM complaints c " +
+                     "LEFT JOIN vacancies v ON c.target_type = 'VACANCY' AND c.target_id = v.id " +
+                     "LEFT JOIN users u ON c.target_type = 'USER' AND c.target_id = u.id " +
+                     "ORDER BY c.created_at DESC";
+        List<Complaint> complaints = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                complaints.add(mapRowToComplaint(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching complaints with details", e);
+        }
+        return complaints;
+    }
+
+    public void resolve(int complaintId, String action, int adminId) {
+        String status;
+        switch (action) {
+            case "DISMISS":
+                status = "REJECTED";
+                break;
+            case "BLOCK_VACANCY":
+            case "BLOCK_USER":
+                status = "RESOLVED";
+                break;
+            default:
+                status = "REJECTED";
+        }
+        updateStatus(complaintId, status, adminId);
+        logger.info("Complaint {} resolved with action: {}", complaintId, action);
+    }
 }

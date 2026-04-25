@@ -205,6 +205,7 @@ CREATE INDEX idx_password_reset_tokens_expires_at ON password_reset_tokens(expir
 CREATE TABLE block_history (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blocked_by INTEGER NOT NULL REFERENCES users(id),
     reason TEXT,
     blocked_until TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

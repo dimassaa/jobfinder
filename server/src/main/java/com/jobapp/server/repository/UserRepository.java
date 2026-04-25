@@ -298,6 +298,113 @@ public class UserRepository {
         return admins;
     }
 
+    public List<User> findAllWithFilters(String role, Boolean isBlocked, int offset, int limit) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (role != null && !role.isBlank()) {
+            sql.append(" AND role = ?");
+            params.add(role);
+        }
+        if (isBlocked != null) {
+            sql.append(" AND is_blocked = ?");
+            params.add(isBlocked);
+        }
+        sql.append(" ORDER BY created_at DESC LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        List<User> users = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    stmt.setString(i + 1, (String) param);
+                } else if (param instanceof Boolean) {
+                    stmt.setBoolean(i + 1, (Boolean) param);
+                } else if (param instanceof Integer) {
+                    stmt.setInt(i + 1, (Integer) param);
+                }
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    users.add(mapRowToUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding users with filters", e);
+        }
+        return users;
+    }
+
+    public void blockUser(int userId, String reason, LocalDateTime blockedUntil, int adminId) {
+        String updateSql = "UPDATE users SET is_blocked = true, blocked_until = ?, updated_at = ? WHERE id = ?";
+        String historySql = "INSERT INTO block_history (user_id, blocked_by, reason, blocked_until, created_at) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                 PreparedStatement historyStmt = conn.prepareStatement(historySql)) {
+                setTimestampOrNull(updateStmt, 1, blockedUntil);
+                updateStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                updateStmt.setInt(3, userId);
+                updateStmt.executeUpdate();
+
+                historyStmt.setInt(1, userId);
+                historyStmt.setInt(2, adminId);
+                setStringOrNull(historyStmt, 3, reason);
+                setTimestampOrNull(historyStmt, 4, blockedUntil);
+                historyStmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+                historyStmt.executeUpdate();
+
+                conn.commit();
+                logger.info("User {} blocked by admin {}", userId, adminId);
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.error("Error blocking user: {}", userId, e);
+                throw new RuntimeException("Failed to block user", e);
+            }
+        } catch (SQLException e) {
+            logger.error("Error blocking user: {}", userId, e);
+            throw new RuntimeException("Failed to block user", e);
+        }
+    }
+
+    public void unblockUser(int userId) {
+        String sql = "UPDATE users SET is_blocked = false, blocked_until = NULL, updated_at = ? WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(2, userId);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("User unblocked: {}", userId);
+            }
+        } catch (SQLException e) {
+            logger.error("Error unblocking user: {}", userId, e);
+            throw new RuntimeException("Failed to unblock user", e);
+        }
+    }
+
+    public void softDelete(int userId) {
+        String sql = "UPDATE users SET email = ?, is_blocked = true, updated_at = ? WHERE id = ?";
+        String deletedEmail = "deleted_" + userId + "_" + System.currentTimeMillis() + "@deleted.local";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, deletedEmail);
+            stmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(3, userId);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("User soft deleted: {}", userId);
+            }
+        } catch (SQLException e) {
+            logger.error("Error soft deleting user: {}", userId, e);
+            throw new RuntimeException("Failed to soft delete user", e);
+        }
+    }
+
     private void setStringOrNull(PreparedStatement stmt, int index, String value) throws SQLException {
         if (value != null) {
             stmt.setString(index, value);
