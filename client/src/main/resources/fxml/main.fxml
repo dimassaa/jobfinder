@@ -69,6 +69,10 @@
                 <fx:include source="notifications.fxml"/>
             </Tab>
 
+            <Tab text="Администрирование">
+                <fx:include source="admin_panel.fxml"/>
+            </Tab>
+
         </TabPane>
     </center>
 

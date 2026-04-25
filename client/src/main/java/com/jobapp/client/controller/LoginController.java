@@ -233,7 +233,25 @@ public class LoginController {
     @FXML
     private void handleForgotPassword() {
         logger.info("Forgot password button clicked");
-        showError("Восстановление пароля временно недоступно");
+        openForgotPasswordScene();
+    }
+
+    private void openForgotPasswordScene() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/fxml/forgot_password.fxml"));
+            javafx.scene.Parent root = loader.load();
+            ForgotPasswordController controller = loader.getController();
+            controller.setNetworkService(networkService);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 400, 350);
+            javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("JobMatch - Восстановление пароля");
+            stage.show();
+        } catch (Exception e) {
+            logger.error("Failed to load forgot password scene: {}", e.getMessage());
+            showError("Не удалось загрузить экран восстановления пароля");
+        }
     }
 
     private boolean isValidEmail(String email) {
