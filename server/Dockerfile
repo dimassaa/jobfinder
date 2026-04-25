@@ -18,8 +18,8 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/server/target/server-1.0-SNAPSHOT.jar server.jar
+COPY --from=build /app/server/target/server-1.0-SNAPSHOT.jar app.jar
 
-EXPOSE 8082
+EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "server.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

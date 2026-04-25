@@ -8,26 +8,37 @@ services:
       POSTGRES_USER: jobuser
       POSTGRES_PASSWORD: secret
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobuser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   server:
     build:
       context: .
       dockerfile: server/Dockerfile
     ports:
-      - "${SERVER_PORT:-8081}:8081"
+      - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
-      - SERVER_PORT=${SERVER_PORT:-8081}
+      - SERVER_PORT=8080
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=jobdb
       - DB_USER=jobuser
       - DB_PASSWORD=secret
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
-  postgres_data:
+  pgdata:

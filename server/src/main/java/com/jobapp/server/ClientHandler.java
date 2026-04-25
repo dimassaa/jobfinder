@@ -438,6 +438,9 @@ public class ClientHandler implements Runnable {
             case "CREATE_ADMIN":
                 response = checkAdminAndExecute(() -> createAdminCommand.execute(msg), "CREATE_ADMIN");
                 break;
+            case "HEALTH":
+                response = new Response("OK", "Server is healthy", null);
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
