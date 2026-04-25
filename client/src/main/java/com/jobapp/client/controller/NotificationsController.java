@@ -179,12 +179,17 @@ public class NotificationsController {
             return;
         }
 
+        final boolean wasUnread = !Boolean.TRUE.equals(selected.getIsRead());
+
         new Thread(() -> {
             try {
                 notificationClientService.markAsRead(selected.getId());
                 Platform.runLater(() -> {
                     showInfo("Уведомление отмечено как прочитанное");
                     loadNotifications();
+                    if (wasUnread && MainController.getInstance() != null) {
+                        MainController.getInstance().decrementUnreadCount();
+                    }
                 });
             } catch (Exception e) {
                 logger.error("Failed to mark notification as read: {}", e.getMessage());
@@ -202,12 +207,17 @@ public class NotificationsController {
             return;
         }
 
+        final boolean wasUnread = !Boolean.TRUE.equals(selected.getIsRead());
+
         new Thread(() -> {
             try {
                 notificationClientService.delete(selected.getId());
                 Platform.runLater(() -> {
                     showInfo("Уведомление удалено");
                     loadNotifications();
+                    if (wasUnread && MainController.getInstance() != null) {
+                        MainController.getInstance().decrementUnreadCount();
+                    }
                 });
             } catch (Exception e) {
                 logger.error("Failed to delete notification: {}", e.getMessage());

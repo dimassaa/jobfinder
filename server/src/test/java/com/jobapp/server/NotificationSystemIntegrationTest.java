@@ -1,4 +1,4 @@
-package com.jobapp.server.integration;
+package com.jobapp.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,39 +7,25 @@ import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.common.dto.AuthResponse;
 import com.jobapp.common.dto.NotificationDto;
+import com.jobapp.common.dto.UserTagsUpdateRequest;
+import com.jobapp.common.dto.VacancyCreateRequest;
 import com.jobapp.common.dto.VacancyDto;
-import com.jobapp.server.db.DatabaseConfig;
-import org.junit.jupiter.api.*;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.*;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-@Testcontainers
-public class NotificationSystemIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("jobdb")
-            .withUsername("jobuser")
-            .withPassword("secret");
+class NotificationSystemIntegrationTest extends BaseIntegrationTest {
 
     private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    private static final int SERVER_PORT = 8081;
-
-    private Thread serverThread;
 
     // Helper class to simulate a client
     static class TestClient implements AutoCloseable {
@@ -51,12 +37,8 @@ public class NotificationSystemIntegrationTest {
         private volatile boolean running = true;
         private Integer userId;
 
-        public TestClient() throws IOException {
-            this("localhost", SERVER_PORT);
-        }
-
-        public TestClient(String host, int port) throws IOException {
-            socket = new Socket(host, port);
+        public TestClient(int port) throws IOException {
+            socket = new Socket("localhost", port);
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -68,8 +50,16 @@ public class NotificationSystemIntegrationTest {
                         if (line.contains("\"type\":\"NOTIFICATION\"")) {
                             try {
                                 int dataStart = line.indexOf("\"data\":");
-                                if (dataStart > 0) {
-                                    String jsonData = line.substring(dataStart + 7, line.lastIndexOf('}') + 1);
+                                int braceStart = line.indexOf('{', dataStart);
+                                if (braceStart > 0) {
+                                    int braceCount = 1;
+                                    int end = braceStart + 1;
+                                    while (end < line.length() && braceCount > 0) {
+                                        if (line.charAt(end) == '{') braceCount++;
+                                        else if (line.charAt(end) == '}') braceCount--;
+                                        end++;
+                                    }
+                                    String jsonData = line.substring(braceStart, end);
                                     NotificationDto dto = objectMapper.readValue(jsonData, NotificationDto.class);
                                     notifications.add(dto);
                                 }
@@ -87,7 +77,7 @@ public class NotificationSystemIntegrationTest {
         }
 
         public Response sendCommand(String command, Object data) throws Exception {
-            Message msg = new Message(null, command, data);
+            Message msg = new Message("REQUEST", command, data);
             String json = objectMapper.writeValueAsString(msg);
             System.out.println("[CLIENT " + userId + "] Sending: " + json);
             out.println(json);
@@ -126,48 +116,13 @@ public class NotificationSystemIntegrationTest {
         }
     }
 
-    @BeforeAll
-    static void setupDatabase() throws Exception {
-        String initSql = readFile("/mnt/d/cours/jobfinder/db/init.sql");
-        try (Connection conn = DriverManager.getConnection(
-                postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-             Statement stmt = conn.createStatement()) {
-            stmt.execute(initSql);
-            System.out.println("Database initialized with init.sql");
-        }
-    }
-
-    @BeforeEach
-    void startServer() throws Exception {
-        System.setProperty("DB_HOST", postgres.getHost());
-        System.setProperty("DB_PORT", String.valueOf(postgres.getFirstMappedPort()));
-        System.setProperty("DB_NAME", postgres.getDatabaseName());
-        System.setProperty("DB_USER", postgres.getUsername());
-        System.setProperty("DB_PASSWORD", postgres.getPassword());
-        System.setProperty("SERVER_PORT", String.valueOf(SERVER_PORT));
-
-        DatabaseConfig.reset();
-
-        serverThread = new Thread(() -> {
-            try {
-                com.jobapp.server.Server.main(new String[]{});
-            } catch (Exception e) {
-                System.err.println("Server thread exception: " + e.getMessage());
-            }
-        });
-        serverThread.setDaemon(true);
-        serverThread.start();
-
-        Thread.sleep(3000);
-    }
-
     @Test
     void testFullNotificationFlow() throws Exception {
         String hrEmail = "hr_" + System.currentTimeMillis() + "@test.com";
         String appEmail = "app_" + System.currentTimeMillis() + "@test.com";
 
-        try (TestClient hr = new TestClient();
-             TestClient applicant = new TestClient()) {
+        try (TestClient hr = new TestClient(testPort);
+             TestClient applicant = new TestClient(testPort)) {
 
             // 1. Register HR
             Map<String, Object> hrReg = new HashMap<>();
@@ -194,20 +149,21 @@ public class NotificationSystemIntegrationTest {
             applicant.login(appEmail, "pass123");
 
             // 3. Applicant adds tags (Tag ID 1 is 'Java' from init.sql)
-            resp = applicant.sendCommand("UPDATE_USER_TAGS", new int[]{1});
+            UserTagsUpdateRequest tagsRequest = new UserTagsUpdateRequest();
+            tagsRequest.setTagIds(List.of(1));
+            resp = applicant.sendCommand("UPDATE_USER_TAGS", tagsRequest);
             assertNotNull(resp);
             assertEquals("OK", resp.getStatus());
 
             // 4. HR Creates Vacancy
-            VacancyDto vacancy = new VacancyDto();
-            vacancy.setTitle("Java Developer");
-            vacancy.setDescription("Test vacancy");
-            vacancy.setCity("Moscow");
-            vacancy.setEmploymentType("FULL_TIME");
-            // Add tag 1 (Java) to vacancy
-            vacancy.setTags(List.of(new com.jobapp.common.dto.TagDto(1, "Java", true)));
+            VacancyCreateRequest vacancyRequest = new VacancyCreateRequest();
+            vacancyRequest.setTitle("Java Developer");
+            vacancyRequest.setDescription("Test vacancy");
+            vacancyRequest.setCity("Moscow");
+            vacancyRequest.setEmploymentType("FULL_TIME");
+            vacancyRequest.setTagIds(List.of(1));
 
-            resp = hr.sendCommand("CREATE_VACANCY", vacancy);
+            resp = hr.sendCommand("CREATE_VACANCY", vacancyRequest);
             assertNotNull(resp);
             assertEquals("OK", resp.getStatus());
 
@@ -219,7 +175,7 @@ public class NotificationSystemIntegrationTest {
             Thread.sleep(2000);
             List<NotificationDto> appNotifications = applicant.getReceivedNotifications();
             assertFalse(appNotifications.isEmpty());
-            assertEquals("New vacancy matching your skills", appNotifications.get(0).getTitle());
+            assertEquals("New Matching Vacancy", appNotifications.get(0).getTitle());
 
             // 6. Applicant Apply
             Map<String, Object> applyData = new HashMap<>();
@@ -278,21 +234,5 @@ public class NotificationSystemIntegrationTest {
                 assertEquals("OK", resp.getStatus());
             }
         }
-    }
-
-    @AfterEach
-    void tearDown() {
-        System.clearProperty("SERVER_PORT");
-    }
-
-    static String readFile(String path) throws IOException {
-        StringBuilder content = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                content.append(line).append("\n");
-            }
-        }
-        return content.toString();
     }
 }
