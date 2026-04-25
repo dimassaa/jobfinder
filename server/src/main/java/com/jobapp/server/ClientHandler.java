@@ -38,6 +38,19 @@ import com.jobapp.server.handler.GetNotificationsCommand;
 import com.jobapp.server.handler.MarkNotificationReadCommand;
 import com.jobapp.server.handler.DeleteNotificationCommand;
 import com.jobapp.server.handler.GetUnreadCountCommand;
+import com.jobapp.server.handler.ForgotPasswordCommand;
+import com.jobapp.server.handler.ResetPasswordCommand;
+import com.jobapp.server.handler.GetAllUsersCommand;
+import com.jobapp.server.handler.BlockUserCommand;
+import com.jobapp.server.handler.UnblockUserCommand;
+import com.jobapp.server.handler.DeleteUserCommand;
+import com.jobapp.server.handler.GetAllVacanciesAdminCommand;
+import com.jobapp.server.handler.DeleteVacancyAdminCommand;
+import com.jobapp.server.handler.GetComplaintsAdminCommand;
+import com.jobapp.server.handler.ResolveComplaintCommand;
+import com.jobapp.server.handler.AddTagCommand;
+import com.jobapp.server.handler.DeactivateTagCommand;
+import com.jobapp.server.handler.CreateAdminCommand;
 import com.jobapp.server.repository.AnalyticsRepository;
 import com.jobapp.server.service.AnalyticsService;
 import com.jobapp.server.repository.CompanyRepository;
@@ -55,6 +68,9 @@ import com.jobapp.server.service.ViewHistoryService;
 import com.jobapp.server.service.ComplaintService;
 import com.jobapp.server.service.NotificationService;
 import com.jobapp.server.service.RecommendationService;
+import com.jobapp.server.service.AdminService;
+import com.jobapp.server.service.PasswordResetService;
+import com.jobapp.server.service.EmailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +135,21 @@ public class ClientHandler implements Runnable {
     private DeleteNotificationCommand deleteNotificationCommand;
     private GetUnreadCountCommand getUnreadCountCommand;
     private NotificationService notificationService;
+    private AdminService adminService;
+    private PasswordResetService passwordResetService;
+    private ForgotPasswordCommand forgotPasswordCommand;
+    private ResetPasswordCommand resetPasswordCommand;
+    private GetAllUsersCommand getAllUsersCommand;
+    private BlockUserCommand blockUserCommand;
+    private UnblockUserCommand unblockUserCommand;
+    private DeleteUserCommand deleteUserCommand;
+    private GetAllVacanciesAdminCommand getAllVacanciesAdminCommand;
+    private DeleteVacancyAdminCommand deleteVacancyAdminCommand;
+    private GetComplaintsAdminCommand getComplaintsAdminCommand;
+    private ResolveComplaintCommand resolveComplaintCommand;
+    private AddTagCommand addTagCommand;
+    private DeactivateTagCommand deactivateTagCommand;
+    private CreateAdminCommand createAdminCommand;
     private Integer currentUserId;
     private boolean shouldClose = false;
 
@@ -164,6 +195,11 @@ public class ClientHandler implements Runnable {
                 userRepository,
                 new VacancyRepository(),
                 companyRepository);
+        this.adminService = new AdminService();
+        this.passwordResetService = new PasswordResetService(
+                userRepository,
+                new com.jobapp.server.repository.PasswordResetTokenRepository(),
+                new EmailService());
     }
 
     private ApplicationService createApplicationService() {
@@ -363,6 +399,45 @@ public class ClientHandler implements Runnable {
             case "GET_UNREAD_COUNT":
                 response = checkAuthAndExecute(() -> getUnreadCountCommand.execute(), "GET_UNREAD_COUNT");
                 break;
+            case "FORGOT_PASSWORD":
+                response = forgotPasswordCommand.execute(msg);
+                break;
+            case "RESET_PASSWORD":
+                response = resetPasswordCommand.execute(msg);
+                break;
+            case "GET_ALL_USERS":
+                response = checkAdminAndExecute(() -> getAllUsersCommand.execute((java.util.Map<String, Object>) msg.getData()), "GET_ALL_USERS");
+                break;
+            case "BLOCK_USER":
+                response = checkAdminAndExecute(() -> blockUserCommand.execute(msg), "BLOCK_USER");
+                break;
+            case "UNBLOCK_USER":
+                response = checkAdminAndExecute(() -> unblockUserCommand.execute(msg), "UNBLOCK_USER");
+                break;
+            case "DELETE_USER":
+                response = checkAdminAndExecute(() -> deleteUserCommand.execute(msg), "DELETE_USER");
+                break;
+            case "GET_ALL_VACANCIES_ADMIN":
+                response = checkAdminAndExecute(() -> getAllVacanciesAdminCommand.execute(msg), "GET_ALL_VACANCIES_ADMIN");
+                break;
+            case "DELETE_VACANCY_ADMIN":
+                response = checkAdminAndExecute(() -> deleteVacancyAdminCommand.execute(msg), "DELETE_VACANCY_ADMIN");
+                break;
+            case "GET_COMPLAINTS_ADMIN":
+                response = checkAdminAndExecute(() -> getComplaintsAdminCommand.execute(), "GET_COMPLAINTS_ADMIN");
+                break;
+            case "RESOLVE_COMPLAINT":
+                response = checkAdminAndExecute(() -> resolveComplaintCommand.execute(msg), "RESOLVE_COMPLAINT");
+                break;
+            case "ADD_TAG":
+                response = checkAdminAndExecute(() -> addTagCommand.execute(msg), "ADD_TAG");
+                break;
+            case "DEACTIVATE_TAG":
+                response = checkAdminAndExecute(() -> deactivateTagCommand.execute(msg), "DEACTIVATE_TAG");
+                break;
+            case "CREATE_ADMIN":
+                response = checkAdminAndExecute(() -> createAdminCommand.execute(msg), "CREATE_ADMIN");
+                break;
             case "TEST_DB":
                 var testUser = userRepository.findByEmail("test@example.com");
                 if (testUser.isPresent()) {
@@ -427,12 +502,42 @@ public class ClientHandler implements Runnable {
         } else if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
             this.getSystemStatsCommand = new GetSystemStatsCommand(analyticsService, currentUserId, userRepository);
             this.getActivityTimelineCommand = new GetActivityTimelineCommand(analyticsService, currentUserId, userRepository);
+            initAdminCommands();
         }
 
         this.getNotificationsCommand = new GetNotificationsCommand(notificationService, currentUserId, objectMapper);
         this.markNotificationReadCommand = new MarkNotificationReadCommand(notificationService, objectMapper, currentUserId);
         this.deleteNotificationCommand = new DeleteNotificationCommand(notificationService, objectMapper, currentUserId);
         this.getUnreadCountCommand = new GetUnreadCountCommand(notificationService, currentUserId);
+    }
+
+    private void initAdminCommands() {
+        this.forgotPasswordCommand = new ForgotPasswordCommand(passwordResetService);
+        this.resetPasswordCommand = new ResetPasswordCommand(passwordResetService, objectMapper);
+        this.getAllUsersCommand = new GetAllUsersCommand(adminService);
+        this.blockUserCommand = new BlockUserCommand(adminService, objectMapper, currentUserId);
+        this.unblockUserCommand = new UnblockUserCommand(adminService);
+        this.deleteUserCommand = new DeleteUserCommand(adminService);
+        this.getAllVacanciesAdminCommand = new GetAllVacanciesAdminCommand(adminService);
+        this.deleteVacancyAdminCommand = new DeleteVacancyAdminCommand(adminService);
+        this.getComplaintsAdminCommand = new GetComplaintsAdminCommand(adminService);
+        this.resolveComplaintCommand = new ResolveComplaintCommand(adminService, objectMapper, currentUserId);
+        this.addTagCommand = new AddTagCommand(adminService);
+        this.deactivateTagCommand = new DeactivateTagCommand(adminService);
+        this.createAdminCommand = new CreateAdminCommand(adminService, objectMapper);
+    }
+
+    private Response checkAdminAndExecute(java.util.function.Supplier<Response> action, String commandName) {
+        if (currentUserId == null) {
+            logger.warn("Unauthorized attempt to execute: {}", commandName);
+            return new Response("ERROR", "Unauthorized. Please login first.", null);
+        }
+        var user = userRepository.findById(currentUserId).orElse(null);
+        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
+            logger.warn("Admin permission denied for: {}", commandName);
+            return new Response("ERROR", "Admin permission required.", null);
+        }
+        return action.get();
     }
 
     private Response checkAuthAndExecute(java.util.function.Supplier<Response> action, String commandName) {
