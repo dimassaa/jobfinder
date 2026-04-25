@@ -118,8 +118,12 @@ public class LoginController {
         new Thread(() -> {
             try {
                 if (networkService == null) {
-                    logger.warn("NetworkService not set, using local stub");
-                    handleLoginStub(email, password);
+                    logger.warn("NetworkService not set");
+                    Platform.runLater(() -> {
+                        loginButton.setDisable(false);
+                        showError("Ошибка инициализации. Перезапустите приложение.");
+                        updateConnectionStatus();
+                    });
                     return;
                 }
 
@@ -160,14 +164,6 @@ public class LoginController {
                 });
             }
         }).start();
-    }
-
-    private void handleLoginStub(String email, String password) {
-        logger.info("Login stub called with email: {}", email);
-        Platform.runLater(() -> {
-            loginButton.setDisable(false);
-            showSuccess("Login stub - OK");
-        });
     }
 
     private void handleLoginSuccess(Response response) {
