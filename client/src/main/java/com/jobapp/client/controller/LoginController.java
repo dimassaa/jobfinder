@@ -223,7 +223,25 @@ public class LoginController {
     @FXML
     private void handleRegister() {
         logger.info("Register button clicked");
-        showError("Регистрация временно недоступна");
+        openRegisterScene();
+    }
+
+    private void openRegisterScene() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/fxml/register.fxml"));
+            javafx.scene.Parent root = loader.load();
+            RegisterController controller = loader.getController();
+            controller.setNetworkService(networkService);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 450, 550);
+            javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("JobMatch - Регистрация");
+            stage.show();
+        } catch (Exception e) {
+            logger.error("Failed to load register scene: {}", e.getMessage());
+            showError("Не удалось загрузить экран регистрации");
+        }
     }
 
     @FXML
