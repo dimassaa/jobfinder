@@ -32,6 +32,14 @@ class AuthIntegrationTest extends BaseIntegrationTest {
             assertEquals("USER", authResp.getRole());
         }
 
+        Message pingMsg = new Message("REQUEST", "PING", null);
+        out.println(objectMapper.writeValueAsString(pingMsg));
+        String pingResponse = in.readLine();
+        assertNotNull(pingResponse);
+        Response pingResp = objectMapper.readValue(pingResponse, Response.class);
+        assertEquals("OK", pingResp.getStatus());
+        assertEquals("PONG", pingResp.getData());
+
         Message loginMsg = new Message("REQUEST", "LOGIN", new LoginRequest(testEmail, testPassword));
         out.println(objectMapper.writeValueAsString(loginMsg));
 
@@ -70,17 +78,5 @@ class AuthIntegrationTest extends BaseIntegrationTest {
         if (loginResp.getData() instanceof AuthResponse authResp) {
             assertFalse(authResp.isSuccess());
         }
-    }
-
-    @Test
-    void testPingPong() throws Exception {
-        Message pingMsg = new Message("REQUEST", "PING", null);
-        out.println(objectMapper.writeValueAsString(pingMsg));
-
-        String response = in.readLine();
-        assertNotNull(response);
-        Response resp = objectMapper.readValue(response, Response.class);
-        assertEquals("OK", resp.getStatus());
-        assertEquals("PONG", resp.getData());
     }
 }

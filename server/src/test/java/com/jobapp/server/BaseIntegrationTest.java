@@ -54,13 +54,13 @@ abstract class BaseIntegrationTest {
         serverThread.setDaemon(true);
         serverThread.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(200);
 
         socket = new Socket("localhost", testPort);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        Thread.sleep(500);
+        Thread.sleep(100);
     }
 
     @AfterEach

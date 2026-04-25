@@ -172,7 +172,7 @@ class NotificationSystemIntegrationTest extends BaseIntegrationTest {
             System.out.println("Vacancy created: " + createdVacancy.getId());
 
             // 5. Check Applicant gets Push Notification
-            Thread.sleep(2000);
+            Thread.sleep(300);
             List<NotificationDto> appNotifications = applicant.getReceivedNotifications();
             assertFalse(appNotifications.isEmpty());
             assertEquals("New Matching Vacancy", appNotifications.get(0).getTitle());
@@ -185,7 +185,7 @@ class NotificationSystemIntegrationTest extends BaseIntegrationTest {
             assertEquals("OK", resp.getStatus());
 
             // 7. Check HR gets Notification about application
-            Thread.sleep(2000);
+            Thread.sleep(300);
             List<NotificationDto> hrNotifications = hr.getReceivedNotifications();
             assertFalse(hrNotifications.isEmpty());
             assertEquals("New Application", hrNotifications.get(0).getTitle());
@@ -212,7 +212,7 @@ class NotificationSystemIntegrationTest extends BaseIntegrationTest {
                 assertEquals("OK", resp.getStatus());
 
                 // 9. Check Applicant gets Status Update Notification
-                Thread.sleep(2000);
+                Thread.sleep(300);
                 appNotifications = applicant.getReceivedNotifications();
                 boolean statusUpdateReceived = appNotifications.stream()
                         .anyMatch(n -> "Application Status Updated".equals(n.getTitle()));

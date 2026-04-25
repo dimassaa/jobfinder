@@ -4,6 +4,9 @@ import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.common.dto.*;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -26,8 +29,9 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
     private PrintWriter adminOut;
     private BufferedReader adminIn;
 
+    @BeforeEach
     @Override
-    protected void setUpBase() throws Exception {
+    void setUpBase() throws Exception {
         super.setUpBase();
         userSocket = new Socket("localhost", testPort);
         userOut = new PrintWriter(userSocket.getOutputStream(), true);
@@ -45,6 +49,7 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         Thread.sleep(300);
     }
 
+    @AfterEach
     @Override
     protected void tearDownBase() throws Exception {
         if (userSocket != null && !userSocket.isClosed()) userSocket.close();

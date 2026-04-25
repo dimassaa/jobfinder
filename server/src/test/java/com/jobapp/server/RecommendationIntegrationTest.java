@@ -122,7 +122,7 @@ private Response userMessage(String command, Object data) throws Exception {
         );
         hrMessage("CREATE_VACANCY", vacancyReq);
 
-        Thread.sleep(2000);
+        Thread.sleep(300);
 
         Response rec1Resp = userMessage("GET_RECOMMENDATIONS", null);
         assertEquals("OK", rec1Resp.getStatus());
@@ -130,7 +130,7 @@ private Response userMessage(String command, Object data) throws Exception {
         List<LinkedHashMap<String, Object>> rec1 = (List<LinkedHashMap<String, Object>>) rec1Resp.getData();
         assertTrue(rec1.size() >= 1);
 
-        Thread.sleep(500);
+        Thread.sleep(50);
 
         Response rec2Resp = userMessage("GET_RECOMMENDATIONS", null);
         assertEquals("OK", rec2Resp.getStatus());
