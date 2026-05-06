@@ -26,11 +26,9 @@
         <VBox spacing="12">
             <Label text="Email" styleClass="label-secondary" />
             <TextField fx:id="emailField" promptText="example@mail.ru" />
-            
+
             <Label text="Пароль" styleClass="label-secondary" />
             <PasswordField fx:id="passwordField" promptText="Введите пароль" />
-            
-            <CheckBox fx:id="rememberMeCheckBox" text="Запомнить меня" />
         </VBox>
 
         <Button fx:id="loginButton" onAction="#handleLogin" text="Войти" styleClass="button-primary" maxWidth="Infinity">
@@ -39,7 +37,9 @@
             </VBox.margin>
         </Button>
 
-        <Button fx:id="forgotPasswordButton" onAction="#handleForgotPassword" text="Забыли пароль?" styleClass="button-link" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" />
+        <HBox alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308">
+            <Button fx:id="forgotPasswordButton" onAction="#handleForgotPassword" text="Забыли пароль?" styleClass="button-link" />
+        </HBox>
 
         <Text text="или" styleClass="text-secondary">
             <VBox.margin>

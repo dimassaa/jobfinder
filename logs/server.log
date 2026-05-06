@@ -1,82 +1,46 @@
-2026-04-23 19:07:48.369 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:07:48.600 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@2dc54ad4
-2026-04-23 19:07:48.601 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
-2026-04-23 19:07:48.601 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
-2026-04-23 19:07:48.601 [main] INFO  com.jobapp.server.Server - Using default port: 8081
-2026-04-23 19:07:48.601 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
-java.net.BindException: Address already in use: bind
+2026-05-06 21:28:54.986 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-05-06 21:28:55.002 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@2e385cce
+2026-05-06 21:28:55.003 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-05-06 21:28:55.003 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-05-06 21:28:55.004 [main] INFO  com.jobapp.server.Server - Checking for default admin user...
+2026-05-06 21:28:55.026 [main] INFO  com.jobapp.server.Server - Default admin already exists
+2026-05-06 21:28:55.026 [main] INFO  com.jobapp.server.Server - Using default port: 8081
+2026-05-06 21:28:55.027 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
+java.net.BindException: Address already in use
 	at java.base/sun.nio.ch.Net.bind0(Native Method)
 	at java.base/sun.nio.ch.Net.bind(Net.java:577)
 	at java.base/sun.nio.ch.Net.bind(Net.java:566)
 	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
 	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
 	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
-	at com.jobapp.server.Server.start(Server.java:53)
-	at com.jobapp.server.Server.main(Server.java:98)
-2026-04-23 19:07:48.601 [main] INFO  com.jobapp.server.Server - Shutting down server...
-2026-04-23 19:07:48.601 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
-2026-04-23 19:07:48.607 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
-2026-04-23 19:07:48.607 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
-2026-04-23 19:07:48.607 [main] INFO  com.jobapp.server.Server - Server stopped
-2026-04-23 19:08:45.268 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:08:45.490 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@3c7f66c4
-2026-04-23 19:08:45.491 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
-2026-04-23 19:08:45.491 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
-2026-04-23 19:08:45.491 [main] INFO  com.jobapp.server.Server - Using default port: 8081
-2026-04-23 19:08:45.492 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
-java.net.BindException: Address already in use: bind
+	at com.jobapp.server.Server.start(Server.java:79)
+	at com.jobapp.server.Server.main(Server.java:152)
+2026-05-06 21:28:55.236 [main] WARN  c.j.s.logging.NotificationAppender - Services not available, skipping admin notification
+2026-05-06 21:28:55.237 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-05-06 21:28:55.237 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-05-06 21:28:55.239 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-05-06 21:28:55.240 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-05-06 21:28:55.240 [main] INFO  com.jobapp.server.Server - Server stopped
+2026-05-06 21:29:11.073 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+2026-05-06 21:29:11.076 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@51c668e3
+2026-05-06 21:29:11.077 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+2026-05-06 21:29:11.077 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+2026-05-06 21:29:11.078 [main] INFO  com.jobapp.server.Server - Checking for default admin user...
+2026-05-06 21:29:11.101 [main] INFO  com.jobapp.server.Server - Default admin already exists
+2026-05-06 21:29:11.102 [main] INFO  com.jobapp.server.Server - Using default port: 8081
+2026-05-06 21:29:11.103 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
+java.net.BindException: Address already in use
 	at java.base/sun.nio.ch.Net.bind0(Native Method)
 	at java.base/sun.nio.ch.Net.bind(Net.java:577)
 	at java.base/sun.nio.ch.Net.bind(Net.java:566)
 	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
 	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
 	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
-	at com.jobapp.server.Server.start(Server.java:53)
-	at com.jobapp.server.Server.main(Server.java:98)
-2026-04-23 19:08:45.497 [main] INFO  com.jobapp.server.Server - Shutting down server...
-2026-04-23 19:08:45.497 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
-2026-04-23 19:08:45.499 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
-2026-04-23 19:08:45.499 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
-2026-04-23 19:08:45.499 [main] INFO  com.jobapp.server.Server - Server stopped
-2026-04-23 19:11:10.663 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:16:57.075 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:17:06.624 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:17:06.842 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@3c7f66c4
-2026-04-23 19:17:06.843 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
-2026-04-23 19:17:06.843 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
-2026-04-23 19:17:06.844 [main] INFO  com.jobapp.server.Server - Using default port: 8081
-2026-04-23 19:17:06.844 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
-java.net.BindException: Address already in use: bind
-	at java.base/sun.nio.ch.Net.bind0(Native Method)
-	at java.base/sun.nio.ch.Net.bind(Net.java:577)
-	at java.base/sun.nio.ch.Net.bind(Net.java:566)
-	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
-	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
-	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
-	at com.jobapp.server.Server.start(Server.java:53)
-	at com.jobapp.server.Server.main(Server.java:98)
-2026-04-23 19:17:06.846 [main] INFO  com.jobapp.server.Server - Shutting down server...
-2026-04-23 19:17:06.846 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
-2026-04-23 19:17:06.853 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
-2026-04-23 19:17:06.853 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
-2026-04-23 19:17:06.853 [main] INFO  com.jobapp.server.Server - Server stopped
-2026-04-23 19:22:08.082 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
-2026-04-23 19:22:08.318 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@4803b726
-2026-04-23 19:22:08.320 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
-2026-04-23 19:22:08.320 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
-2026-04-23 19:22:08.320 [main] INFO  com.jobapp.server.Server - Using default port: 8081
-2026-04-23 19:22:08.321 [main] ERROR com.jobapp.server.Server - Failed to start server on port 8081
-java.net.BindException: Address already in use: bind
-	at java.base/sun.nio.ch.Net.bind0(Native Method)
-	at java.base/sun.nio.ch.Net.bind(Net.java:577)
-	at java.base/sun.nio.ch.Net.bind(Net.java:566)
-	at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:636)
-	at java.base/java.net.ServerSocket.bind(ServerSocket.java:391)
-	at java.base/java.net.ServerSocket.bind(ServerSocket.java:342)
-	at com.jobapp.server.Server.start(Server.java:53)
-	at com.jobapp.server.Server.main(Server.java:98)
-2026-04-23 19:22:08.323 [main] INFO  com.jobapp.server.Server - Shutting down server...
-2026-04-23 19:22:08.324 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
-2026-04-23 19:22:08.331 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
-2026-04-23 19:22:08.331 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
-2026-04-23 19:22:08.331 [main] INFO  com.jobapp.server.Server - Server stopped
+	at com.jobapp.server.Server.start(Server.java:79)
+	at com.jobapp.server.Server.main(Server.java:152)
+2026-05-06 21:29:11.334 [main] WARN  c.j.s.logging.NotificationAppender - Services not available, skipping admin notification
+2026-05-06 21:29:11.334 [main] INFO  com.jobapp.server.Server - Shutting down server...
+2026-05-06 21:29:11.334 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown initiated...
+2026-05-06 21:29:11.336 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Shutdown completed.
+2026-05-06 21:29:11.337 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool closed
+2026-05-06 21:29:11.338 [main] INFO  com.jobapp.server.Server - Server stopped

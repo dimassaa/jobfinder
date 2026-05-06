@@ -6,7 +6,6 @@ import com.jobapp.client.service.ApplicationClientService;
 import com.jobapp.client.service.ComplaintClientService;
 import com.jobapp.client.service.FavoriteClientService;
 import com.jobapp.client.service.VacancyClientService;
-import com.jobapp.client.service.ViewHistoryClientService;
 import com.jobapp.common.dto.ApplicationDto;
 import com.jobapp.common.dto.TagDto;
 import com.jobapp.common.dto.VacancyDto;
@@ -75,7 +74,6 @@ public class VacancyDetailsController {
     private ApplicationClientService applicationClientService;
     private FavoriteClientService favoriteClientService;
     private ComplaintClientService complaintClientService;
-    private ViewHistoryClientService viewHistoryClientService;
     private VacancyDto vacancy;
     private Integer vacancyId;
     private boolean hasApplied = false;
@@ -89,7 +87,6 @@ public class VacancyDetailsController {
         this.applicationClientService = new ApplicationClientService(networkService);
         this.favoriteClientService = new FavoriteClientService(networkService);
         this.complaintClientService = new ComplaintClientService(networkService);
-        this.viewHistoryClientService = new ViewHistoryClientService(networkService);
     }
 
     public void setVacancyId(Integer vacancyId) {
@@ -106,7 +103,6 @@ public class VacancyDetailsController {
             this.applicationClientService = new ApplicationClientService(networkService);
             this.favoriteClientService = new FavoriteClientService(networkService);
             this.complaintClientService = new ComplaintClientService(networkService);
-            this.viewHistoryClientService = new ViewHistoryClientService(networkService);
         }
 
         if (vacancyId != null && vacancyClientService != null) {
@@ -124,8 +120,6 @@ public class VacancyDetailsController {
                 VacancyDto vacancy = vacancyClientService.getDetails(vacancyId);
                 this.vacancy = vacancy;
 
-                recordView();
-
                 Platform.runLater(() -> displayVacancy(vacancy));
             } catch (Exception e) {
                 logger.error("Failed to load vacancy details: {}", e.getMessage());
@@ -135,17 +129,6 @@ public class VacancyDetailsController {
                 });
             }
         }).start();
-    }
-
-    private void recordView() {
-        try {
-            if (viewHistoryClientService != null && vacancyId != null) {
-                viewHistoryClientService.addView(vacancyId);
-                logger.debug("View recorded for vacancy {}", vacancyId);
-            }
-        } catch (Exception e) {
-            logger.warn("Failed to record view: {}", e.getMessage());
-        }
     }
 
     private void displayVacancy(VacancyDto vacancy) {

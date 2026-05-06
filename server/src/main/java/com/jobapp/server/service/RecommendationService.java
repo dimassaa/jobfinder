@@ -42,11 +42,7 @@ public class RecommendationService {
     }
 
     public List<RecommendedVacancyDto> getRecommendations(int userId) {
-        CacheEntry cached = recommendationCache.get(userId);
-        if (cached != null && !cached.isExpired()) {
-            logger.debug("Returning cached recommendations for user: {}", userId);
-            return cached.recommendations;
-        }
+        recommendationCache.remove(userId);
 
         Set<Integer> userTagIds = userRepository.findUserTagIds(userId);
         if (userTagIds.isEmpty()) {
@@ -67,8 +63,7 @@ public class RecommendationService {
             }
 
             int intersection = countIntersection(userTagIds, vacancyTagIds);
-            int union = userTagIds.size() + vacancyTagIds.size() - intersection;
-            double matchPercent = (intersection * 2.0 / union) * 100;
+            double matchPercent = (intersection * 100.0) / userTagIds.size();
 
             if (matchPercent > 0) {
                 matchingVacancyIds.add(vwt.getVacancyId());

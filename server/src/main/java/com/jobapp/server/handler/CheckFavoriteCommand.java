@@ -3,26 +3,26 @@ package com.jobapp.server.handler;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.common.dto.FavoriteRequest;
-import com.jobapp.server.service.ViewHistoryService;
+import com.jobapp.server.service.FavoriteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AddViewCommand {
-    private static final Logger logger = LoggerFactory.getLogger(AddViewCommand.class);
+public class CheckFavoriteCommand {
+    private static final Logger logger = LoggerFactory.getLogger(CheckFavoriteCommand.class);
 
-    private final ViewHistoryService viewHistoryService;
+    private final FavoriteService favoriteService;
     private final ObjectMapper objectMapper;
     private final int userId;
 
-    public AddViewCommand(ViewHistoryService viewHistoryService, ObjectMapper objectMapper, int userId) {
-        this.viewHistoryService = viewHistoryService;
+    public CheckFavoriteCommand(FavoriteService favoriteService, ObjectMapper objectMapper, int userId) {
+        this.favoriteService = favoriteService;
         this.objectMapper = objectMapper;
         this.userId = userId;
     }
 
     public Response execute(Message msg) {
-        logger.info("Executing ADD_VIEW for user: {}", userId);
+        logger.info("Executing CHECK_FAVORITE for user: {}", userId);
         try {
             Integer vacancyId = null;
             if (msg.getData() != null) {
@@ -34,11 +34,12 @@ public class AddViewCommand {
                 return new Response("ERROR", "vacancyId is required", null);
             }
 
-            viewHistoryService.addView(userId, vacancyId);
-            return new Response("OK", "View recorded", null);
+            boolean isFavorite = favoriteService.isFavorite(userId, vacancyId);
+            return new Response("OK", isFavorite ? "Vacancy is in favorites" : "Vacancy is not in favorites",
+                    java.util.Map.of("vacancyId", vacancyId, "isFavorite", isFavorite));
         } catch (Exception e) {
-            logger.error("Error recording view for user: {}", userId, e);
-            return new Response("ERROR", "Failed to record view", null);
+            logger.error("Error checking favorite for user: {}", userId, e);
+            return new Response("ERROR", "Failed to check favorite", null);
         }
     }
 }

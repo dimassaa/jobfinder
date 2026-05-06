@@ -24,8 +24,7 @@ import com.jobapp.server.handler.UpdateApplicationStatusCommand;
 import com.jobapp.server.handler.AddFavoriteCommand;
 import com.jobapp.server.handler.RemoveFavoriteCommand;
 import com.jobapp.server.handler.GetFavoritesCommand;
-import com.jobapp.server.handler.AddViewCommand;
-import com.jobapp.server.handler.GetRecentViewsCommand;
+import com.jobapp.server.handler.CheckFavoriteCommand;
 import com.jobapp.server.handler.CreateComplaintCommand;
 import com.jobapp.server.handler.GetRecommendationsCommand;
 import com.jobapp.server.handler.GetSalaryStatsCommand;
@@ -65,7 +64,6 @@ import com.jobapp.server.service.UserService;
 import com.jobapp.server.service.VacancyService;
 import com.jobapp.server.service.ApplicationService;
 import com.jobapp.server.service.FavoriteService;
-import com.jobapp.server.service.ViewHistoryService;
 import com.jobapp.server.service.ComplaintService;
 import com.jobapp.server.service.NotificationService;
 import com.jobapp.server.service.RecommendationService;
@@ -105,7 +103,6 @@ public class ClientHandler implements Runnable {
     private final TagService tagService;
     private final ApplicationService applicationService;
     private final FavoriteService favoriteService;
-    private final ViewHistoryService viewHistoryService;
     private final ComplaintService complaintService;
     private final RecommendationService recommendationService;
     private final LoginCommand loginCommand;
@@ -129,8 +126,7 @@ public class ClientHandler implements Runnable {
     private AddFavoriteCommand addFavoriteCommand;
     private RemoveFavoriteCommand removeFavoriteCommand;
     private GetFavoritesCommand getFavoritesCommand;
-    private AddViewCommand addViewCommand;
-    private GetRecentViewsCommand getRecentViewsCommand;
+    private CheckFavoriteCommand checkFavoriteCommand;
     private CreateComplaintCommand createComplaintCommand;
     private GetRecommendationsCommand getRecommendationsCommand;
     private GetSalaryStatsCommand getSalaryStatsCommand;
@@ -187,6 +183,8 @@ public class ClientHandler implements Runnable {
         this.userService = new UserService(userRepository, companyRepository, tagRepository);
         this.tagService = new TagService(tagRepository);
 
+        this.companyService = new CompanyService(companyRepository);
+
         NotificationService notificationService = new NotificationService(
                 notificationRepository,
                 vacancyRepository,
@@ -205,26 +203,24 @@ public class ClientHandler implements Runnable {
         this.getVacancyDetailsCommand = new GetVacancyDetailsCommand(vacancyService, objectMapper);
         this.searchVacanciesCommand = new SearchVacanciesCommand(vacancyService, objectMapper);
         this.applicationService = createApplicationService();
-        this.favoriteService = createFavoriteService();
-        this.viewHistoryService = createViewHistoryService();
+this.favoriteService = createFavoriteService();
+
         this.complaintService = createComplaintService();
-        this.recommendationService = new RecommendationService(
-                vacancyRepository,
+
+        this.recommendationService = createRecommendationService();
+
+        this.adminService = new AdminService(
                 userRepository,
+                vacancyRepository,
+                new com.jobapp.server.repository.ComplaintRepository(),
                 tagRepository,
-                companyRepository);
+                new com.jobapp.server.repository.BlockHistoryRepository());
+
         this.analyticsService = new AnalyticsService(
                 analyticsRepository,
                 userRepository,
                 vacancyRepository,
                 companyRepository);
-        this.adminService = new AdminService();
-        this.passwordResetService = new PasswordResetService(
-                userRepository,
-                passwordResetTokenRepository,
-                new EmailService());
-
-        this.companyService = new CompanyService(companyRepository);
     }
 
     private ApplicationService createApplicationService() {
@@ -248,13 +244,6 @@ public class ClientHandler implements Runnable {
                 tagRepository);
     }
 
-    private ViewHistoryService createViewHistoryService() {
-        return new ViewHistoryService(
-                new com.jobapp.server.repository.ViewHistoryRepository(),
-                companyRepository,
-                tagRepository);
-    }
-
     private ComplaintService createComplaintService() {
         NotificationService complaintNotificationService = new NotificationService(
                 notificationRepository,
@@ -266,6 +255,14 @@ public class ClientHandler implements Runnable {
                 vacancyRepository,
                 userRepository,
                 complaintNotificationService);
+    }
+
+    private RecommendationService createRecommendationService() {
+        return new RecommendationService(
+                vacancyRepository,
+                userRepository,
+                tagRepository,
+                companyRepository);
     }
 
     @Override
@@ -346,13 +343,28 @@ public class ClientHandler implements Runnable {
                 response = getAllTagsCommand.execute();
                 break;
             case "CREATE_VACANCY":
-                response = checkAuthAndExecute(() -> createVacancyCommand.execute(msg), "CREATE_VACANCY");
+                if (createVacancyCommand == null) {
+                    logger.error("CREATE_VACANCY command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна. Только HR могут создавать вакансии.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> createVacancyCommand.execute(msg), "CREATE_VACANCY");
+                }
                 break;
             case "UPDATE_VACANCY":
-                response = checkAuthAndExecute(() -> updateVacancyCommand.execute(msg), "UPDATE_VACANCY");
+                if (updateVacancyCommand == null) {
+                    logger.error("UPDATE_VACANCY command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна. Только HR могут редактировать вакансии.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> updateVacancyCommand.execute(msg), "UPDATE_VACANCY");
+                }
                 break;
             case "CLOSE_VACANCY":
-                response = checkAuthAndExecute(() -> closeVacancyCommand.execute(msg), "CLOSE_VACANCY");
+                if (closeVacancyCommand == null) {
+                    logger.error("CLOSE_VACANCY command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна. Только HR могут закрывать вакансии.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> closeVacancyCommand.execute(msg), "CLOSE_VACANCY");
+                }
                 break;
             case "GET_VACANCY_DETAILS":
                 response = getVacancyDetailsCommand.execute(msg);
@@ -361,7 +373,12 @@ public class ClientHandler implements Runnable {
                 response = searchVacanciesCommand.execute(msg);
                 break;
             case "GET_MY_VACANCIES":
-                response = checkAuthAndExecute(() -> getMyVacanciesCommand.execute(msg), "GET_MY_VACANCIES");
+                if (getMyVacanciesCommand == null) {
+                    logger.error("GET_MY_VACANCIES command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна. Только HR могут просматривать свои вакансии.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> getMyVacanciesCommand.execute(msg), "GET_MY_VACANCIES");
+                }
                 break;
             case "APPLY":
                 response = checkAuthAndExecute(() -> applyCommand.execute(msg), "APPLY");
@@ -376,13 +393,28 @@ public class ClientHandler implements Runnable {
                 response = checkAuthAndExecute(() -> updateApplicationStatusCommand.execute(msg), "UPDATE_APPLICATION_STATUS");
                 break;
             case "GET_ALL_APPLICATIONS_FOR_HR":
-                response = checkAuthAndExecute(() -> getAllApplicationsForHrCommand.execute(), "GET_ALL_APPLICATIONS_FOR_HR");
+                if (getAllApplicationsForHrCommand == null) {
+                    logger.error("GET_ALL_APPLICATIONS_FOR_HR command not initialized - user is not HR or session not properly initialized");
+                    response = new Response("ERROR", "Команда недоступна. Пожалуйста, войдите как HR.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> getAllApplicationsForHrCommand.execute(), "GET_ALL_APPLICATIONS_FOR_HR");
+                }
                 break;
             case "GET_COMPANY_PROFILE":
-                response = checkAuthAndExecute(() -> getCompanyProfileCommand.execute(), "GET_COMPANY_PROFILE");
+                if (getCompanyProfileCommand == null) {
+                    logger.error("GET_COMPANY_PROFILE command not initialized");
+                    response = new Response("ERROR", "Команда недоступна. Пожалуйста, войдите как HR.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> getCompanyProfileCommand.execute(), "GET_COMPANY_PROFILE");
+                }
                 break;
             case "SAVE_COMPANY_PROFILE":
-                response = checkAuthAndExecute(() -> saveCompanyProfileCommand.execute(msg), "SAVE_COMPANY_PROFILE");
+                if (saveCompanyProfileCommand == null) {
+                    logger.error("SAVE_COMPANY_PROFILE command not initialized");
+                    response = new Response("ERROR", "Команда недоступна. Пожалуйста, войдите как HR.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> saveCompanyProfileCommand.execute(msg), "SAVE_COMPANY_PROFILE");
+                }
                 break;
             case "ADD_FAVORITE":
                 response = checkAuthAndExecute(() -> addFavoriteCommand.execute(msg), "ADD_FAVORITE");
@@ -393,11 +425,8 @@ public class ClientHandler implements Runnable {
             case "GET_FAVORITES":
                 response = checkAuthAndExecute(() -> getFavoritesCommand.execute(), "GET_FAVORITES");
                 break;
-            case "ADD_VIEW":
-                response = checkAuthAndExecute(() -> addViewCommand.execute(msg), "ADD_VIEW");
-                break;
-            case "GET_RECENT_VIEWS":
-                response = checkAuthAndExecute(() -> getRecentViewsCommand.execute(), "GET_RECENT_VIEWS");
+            case "CHECK_FAVORITE":
+                response = checkAuthAndExecute(() -> checkFavoriteCommand.execute(msg), "CHECK_FAVORITE");
                 break;
             case "CREATE_COMPLAINT":
                 response = checkAuthAndExecute(() -> createComplaintCommand.execute(msg), "CREATE_COMPLAINT");
@@ -415,10 +444,20 @@ public class ClientHandler implements Runnable {
                 response = getGeoStatsCommand.execute(msg);
                 break;
             case "GET_CONVERSION":
-                response = checkAuthAndExecute(() -> getConversionCommand.execute(msg), "GET_CONVERSION");
+                if (getConversionCommand == null) {
+                    logger.error("GET_CONVERSION command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна для вашей роли.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> getConversionCommand.execute(msg), "GET_CONVERSION");
+                }
                 break;
             case "GET_SALARY_COMPARISON":
-                response = checkAuthAndExecute(() -> getSalaryComparisonCommand.execute(msg), "GET_SALARY_COMPARISON");
+                if (getSalaryComparisonCommand == null) {
+                    logger.error("GET_SALARY_COMPARISON command not initialized - user is not HR");
+                    response = new Response("ERROR", "Команда недоступна для вашей роли.", null);
+                } else {
+                    response = checkAuthAndExecute(() -> getSalaryComparisonCommand.execute(msg), "GET_SALARY_COMPARISON");
+                }
                 break;
             case "GET_SYSTEM_STATS":
                 response = checkAuthAndExecute(() -> getSystemStatsCommand.execute(msg), "GET_SYSTEM_STATS");
@@ -509,6 +548,9 @@ public class ClientHandler implements Runnable {
     }
 
     private void initProfileCommands() {
+        this.getCompanyProfileCommand = new GetCompanyProfileCommand(companyService, currentUserId);
+        this.saveCompanyProfileCommand = new SaveCompanyProfileCommand(companyService, currentUserId);
+
         this.getProfileCommand = new GetProfileCommand(userService, currentUserId);
         this.updateProfileCommand = new UpdateProfileCommand(userService, objectMapper, currentUserId);
         this.getUserTagsCommand = new GetUserTagsCommand(userService, currentUserId);
@@ -520,16 +562,12 @@ public class ClientHandler implements Runnable {
         this.addFavoriteCommand = new AddFavoriteCommand(favoriteService, objectMapper, currentUserId);
         this.removeFavoriteCommand = new RemoveFavoriteCommand(favoriteService, objectMapper, currentUserId);
         this.getFavoritesCommand = new GetFavoritesCommand(favoriteService, currentUserId);
-        this.addViewCommand = new AddViewCommand(viewHistoryService, objectMapper, currentUserId);
-        this.getRecentViewsCommand = new GetRecentViewsCommand(viewHistoryService, currentUserId);
+        this.checkFavoriteCommand = new CheckFavoriteCommand(favoriteService, objectMapper, currentUserId);
         this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
         this.getRecommendationsCommand = new GetRecommendationsCommand(recommendationService, currentUserId);
         this.getSalaryStatsCommand = new GetSalaryStatsCommand(analyticsService, currentUserId);
         this.getTopTagsCommand = new GetTopTagsCommand(analyticsService);
         this.getGeoStatsCommand = new GetGeoStatsCommand(analyticsService);
-
-        this.getCompanyProfileCommand = new GetCompanyProfileCommand(companyService, currentUserId);
-        this.saveCompanyProfileCommand = new SaveCompanyProfileCommand(companyService, currentUserId);
 
         var user = userRepository.findById(currentUserId).orElse(null);
         if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
@@ -544,8 +582,6 @@ public class ClientHandler implements Runnable {
             this.getApplicationsForVacancyCommand = new GetApplicationsForVacancyCommand(applicationService, objectMapper, currentUserId);
             this.updateApplicationStatusCommand = new UpdateApplicationStatusCommand(applicationService, objectMapper, currentUserId);
             this.getAllApplicationsForHrCommand = new GetAllApplicationsForHrCommand(applicationService, currentUserId);
-            this.getCompanyProfileCommand = new GetCompanyProfileCommand(companyService, currentUserId);
-            this.saveCompanyProfileCommand = new SaveCompanyProfileCommand(companyService, currentUserId);
             this.getConversionCommand = new GetConversionCommand(analyticsService, currentUserId, userRepository);
             this.getSalaryComparisonCommand = new GetSalaryComparisonCommand(analyticsService, currentUserId, userRepository);
         } else if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {

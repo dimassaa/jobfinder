@@ -2,6 +2,7 @@ package com.jobapp.client.controller;
 
 import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
+import com.jobapp.client.controller.HrController;
 import com.jobapp.client.service.ApplicationClientService;
 import com.jobapp.common.dto.ApplicationDto;
 import javafx.application.Platform;
@@ -66,6 +67,7 @@ public class HrApplicationsController {
         NetworkService networkService = AppContext.getNetworkService();
         if (networkService == null || !networkService.isConnected()) {
             logger.error("NetworkService not available or disconnected");
+            showStatus("Ошибка подключения к серверу", true);
             return;
         }
         applicationClientService = new ApplicationClientService(networkService);
@@ -76,7 +78,7 @@ public class HrApplicationsController {
 
         applicationsTable.setItems(applications);
 
-        Platform.runLater(() -> loadApplications());
+        loadApplications();
     }
 
     private void setupTableColumns() {
@@ -164,13 +166,13 @@ public class HrApplicationsController {
         detailsAlert.setTitle("Детали отклика");
         detailsAlert.setHeaderText("Информация о соискателе");
 
-        String content = "Вакансия: " + (application.getVacancyTitle() != null ? 
+        String content = "Вакансия: " + (application.getVacancyTitle() != null ?
                 application.getVacancyTitle() : "#" + application.getVacancyId()) + "\n" +
                 "ID соискателя: " + application.getUserId() + "\n" +
-                "Имя: " + (application.getUserName() != null ? 
+                "Имя: " + (application.getUserName() != null ?
                 application.getUserName() : "не указано") + "\n" +
                 "Статус: " + translateStatus(application.getStatus()) + "\n" +
-                "Дата отклика: " + (application.getCreatedAt() != null ? 
+                "Дата отклика: " + (application.getCreatedAt() != null ?
                 application.getCreatedAt().format(DATE_FORMATTER) : "неизвестно") + "\n\n" +
                 "Для получения контактных данных свяжитесь с администратором.";
 
@@ -179,22 +181,35 @@ public class HrApplicationsController {
     }
 
     private void updateApplicationStatus(int applicationId, String newStatus) {
+        updateStatusButton.setDisable(true);
+
         new Thread(() -> {
             try {
                 applicationClientService.updateStatus(applicationId, newStatus);
                 Platform.runLater(() -> {
                     showStatus("Статус обновлён", false);
                     loadApplications();
+                    updateStatusButton.setDisable(false);
                 });
             } catch (Exception e) {
                 logger.error("Error updating application status", e);
-                Platform.runLater(() -> showStatus("Ошибка обновления: " + e.getMessage(), true));
+                Platform.runLater(() -> {
+                    showStatus("Ошибка обновления: " + e.getMessage(), true);
+                    updateStatusButton.setDisable(false);
+                });
             }
         }).start();
     }
 
     private void loadApplications() {
+        if (applicationClientService == null) {
+            showStatus("Ошибка: сервис не инициализирован", true);
+            refreshButton.setDisable(false);
+            return;
+        }
+
         hideStatus();
+        refreshButton.setDisable(true);
 
         new Thread(() -> {
             try {
@@ -204,11 +219,20 @@ public class HrApplicationsController {
                 Platform.runLater(() -> {
                     applications.clear();
                     applications.addAll(appList);
-                    showStatus("Загружено откликов: " + appList.size(), false);
+                    if (appList.isEmpty()) {
+                        showStatus("Откликов пока нет. Создайте вакансии для получения откликов.", false);
+                    } else {
+                        showStatus("Загружено откликов: " + appList.size(), false);
+                    }
+                    refreshButton.setDisable(false);
                 });
             } catch (Exception e) {
                 logger.error("Error loading applications", e);
-                Platform.runLater(() -> showStatus("Ошибка загрузки: " + e.getMessage(), true));
+                String errorMessage = e.getMessage();
+                Platform.runLater(() -> {
+                    handleLoadError(errorMessage);
+                    refreshButton.setDisable(false);
+                });
             }
         }).start();
     }
@@ -226,5 +250,55 @@ public class HrApplicationsController {
 
     private void hideStatus() {
         statusLabel.setVisible(false);
+    }
+
+    private void handleLoadError(String errorMessage) {
+        if (errorMessage != null) {
+            if (errorMessage.contains("профиль компании") || errorMessage.contains("компании")) {
+                showSetupAlertWithAction(
+                    "Профиль компании не создан",
+                    "Для просмотра откликов нужно создать профиль компании.",
+                    "Создать компанию",
+                    () -> {
+                        HrController hrController = HrController.getInstance();
+                        if (hrController != null) {
+                            hrController.selectTab("Моя компания");
+                        }
+                    }
+                );
+            } else if (errorMessage.contains("вакансий") || errorMessage.contains("вакансию")) {
+                showSetupAlertWithAction(
+                    "Нет вакансий",
+                    "Для получения откликов нужно создать хотя бы одну вакансию.",
+                    "Создать вакансию",
+                    () -> {
+                        HrController hrController = HrController.getInstance();
+                        if (hrController != null) {
+                            hrController.selectTab("Мои вакансии");
+                        }
+                    }
+                );
+            } else {
+                showStatus(errorMessage, true);
+            }
+        }
+    }
+
+    private void showSetupAlertWithAction(String title, String message, String buttonText, Runnable action) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+
+        ButtonType actionButton = new ButtonType(buttonText);
+        ButtonType closeButton = new ButtonType("Закрыть", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(actionButton, closeButton);
+
+        alert.showAndWait().ifPresent(result -> {
+            if (result == actionButton && action != null) {
+                action.run();
+            }
+        });
     }
 }

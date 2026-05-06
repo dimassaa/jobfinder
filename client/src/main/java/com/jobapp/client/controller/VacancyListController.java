@@ -49,6 +49,13 @@ public class VacancyListController implements Initializable {
     private ProgressIndicator loadingIndicator;
 
     private static final List<String> EMPLOYMENT_TYPES = Arrays.asList(
+            "FULL_TIME",
+            "PART_TIME",
+            "REMOTE",
+            "CONTRACT"
+    );
+
+    private static final List<String> EMPLOYMENT_TYPES_RU = Arrays.asList(
             "Полная занятость",
             "Частичная занятость",
             "Удалённая работа",
@@ -117,7 +124,7 @@ public class VacancyListController implements Initializable {
     }
 
     private void setupEmploymentTypeCombo() {
-        ObservableList<String> types = FXCollections.observableArrayList(EMPLOYMENT_TYPES);
+        ObservableList<String> types = FXCollections.observableArrayList(EMPLOYMENT_TYPES_RU);
         employmentTypeCombo.setItems(types);
     }
 
@@ -202,7 +209,12 @@ public class VacancyListController implements Initializable {
 
         String employmentType = employmentTypeCombo.getValue();
         if (employmentType != null && !employmentType.isBlank()) {
-            filter.setEmploymentType(employmentType);
+            int index = EMPLOYMENT_TYPES_RU.indexOf(employmentType);
+            if (index >= 0) {
+                filter.setEmploymentType(EMPLOYMENT_TYPES.get(index));
+            } else {
+                filter.setEmploymentType(employmentType);
+            }
         }
 
         String salaryFromText = salaryFromField.getText();

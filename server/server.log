@@ -1,0 +1,15 @@
+SLF4J: A number (52) of logging calls during the initialization phase have been intercepted and are
+SLF4J: now being replayed. These are subject to the filtering rules of the underlying logging system.
+SLF4J: See also https://www.slf4j.org/codes.html#replay
+22:26:37.970 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Starting...
+22:26:37.973 [main] INFO  com.zaxxer.hikari.pool.HikariPool - JobFinder-HikariCP - Added connection org.postgresql.jdbc.PgConnection@51c668e3
+22:26:37.974 [main] INFO  com.zaxxer.hikari.HikariDataSource - JobFinder-HikariCP - Start completed.
+22:26:37.974 [main] INFO  com.jobapp.server.db.DatabaseConfig - HikariCP connection pool initialized: JobFinder-HikariCP
+22:26:37.974 [main] INFO  com.jobapp.server.Server - Checking for default admin user...
+22:26:37.995 [main] INFO  com.jobapp.server.Server - Default admin already exists
+22:26:37.996 [main] INFO  com.jobapp.server.Server - Using default port: 8081
+22:26:37.997 [main] INFO  com.jobapp.server.Server - Server started on port 8081
+22:26:37.997 [main] INFO  com.jobapp.server.Server - Thread pool size: 10
+22:26:37.997 [main] INFO  com.jobapp.server.Server - Starting profile reminder scheduler
+22:26:38.199 [main] INFO  c.j.server.service.SessionManager - Session cleanup scheduler started, interval: 5 minutes
+22:26:38.200 [main] INFO  com.jobapp.server.Server - Profile reminder task scheduled to run every 24 hours

@@ -45,9 +45,6 @@ class PasswordUtilTest {
 
         assertNotEquals(hash1, hash2);
         assertTrue(PasswordUtil.verify(plainPassword, hash1));
-        assertTrue(PasswordUtil.verify(plainPassword, hash2));
+assertTrue(PasswordUtil.verify(plainPassword, hash2));
     }
-
-    @Test
-    void hash_shouldGenerateUniqueHashes() {
 }

@@ -30,6 +30,9 @@
                 <TableColumn fx:id="statusColumn" text="Статус" prefWidth="140"/>
                 <TableColumn fx:id="createdAtColumn" text="Дата отклика" prefWidth="160"/>
             </columns>
+            <placeholder>
+                <Label text="Нет откликов. Создайте вакансии для получения откликов от соискателей." style="-fx-text-fill: #757575; -fx-font-size: 14px;"/>
+            </placeholder>
         </TableView>
 
         <HBox spacing="12" alignment="CENTER_LEFT">

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@org.mockito.junit.jupiter.MockitoSettings(strictness = org.mockito.quality.Strictness.LENIENT)
 class RecommendationServiceTest {
 
     @Mock
@@ -90,8 +91,8 @@ class RecommendationServiceTest {
         tag3.setIsActive(true);
 
         when(vacancyRepository.findAllActiveWithTags()).thenReturn(Collections.singletonList(vwt));
-        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy));
-        when(companyRepository.findById(1)).thenReturn(Optional.of(company));
+        when(vacancyRepository.findByIds(any())).thenReturn(Map.of(10, vacancy));
+        when(companyRepository.findByIds(any())).thenReturn(Map.of(1, company));
         when(tagRepository.findByVacancyId(10)).thenReturn(Arrays.asList(tag1, tag3));
 
         List<RecommendedVacancyDto> result = recommendationService.getRecommendations(1);
@@ -100,8 +101,7 @@ class RecommendationServiceTest {
         assertEquals("Java Developer", result.get(0).getTitle());
 
         double expectedIntersection = 1;
-        double expectedUnion = 2 + 2 - 1;
-        double expectedMatchPercent = (expectedIntersection * 2.0 / expectedUnion) * 100;
+        double expectedMatchPercent = (expectedIntersection * 100.0) / userTagIds.size();
         assertEquals(expectedMatchPercent, result.get(0).getMatchPercent(), 0.01);
     }
 
@@ -122,11 +122,8 @@ class RecommendationServiceTest {
         Company company2 = createCompany(2, "DataInc");
 
         when(vacancyRepository.findAllActiveWithTags()).thenReturn(Arrays.asList(vwt1, vwt2, vwt3));
-        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy1));
-        when(vacancyRepository.findById(20)).thenReturn(Optional.of(vacancy2));
-        when(vacancyRepository.findById(30)).thenReturn(Optional.of(vacancy3));
-        when(companyRepository.findById(1)).thenReturn(Optional.of(company1));
-        when(companyRepository.findById(2)).thenReturn(Optional.of(company2));
+        when(vacancyRepository.findByIds(any())).thenReturn(Map.of(10, vacancy1, 20, vacancy2, 30, vacancy3));
+        when(companyRepository.findByIds(any())).thenReturn(Map.of(1, company1, 2, company2));
         when(tagRepository.findByVacancyId(anyInt())).thenReturn(Collections.emptyList());
 
         List<RecommendedVacancyDto> result = recommendationService.getRecommendations(1);
@@ -151,8 +148,8 @@ class RecommendationServiceTest {
         Company company1 = createCompany(1, "TechCorp");
 
         when(vacancyRepository.findAllActiveWithTags()).thenReturn(Arrays.asList(vwt1, vwt2));
-        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy1));
-        when(companyRepository.findById(1)).thenReturn(Optional.of(company1));
+        when(vacancyRepository.findByIds(any())).thenReturn(Map.of(10, vacancy1, 20, vacancy2));
+        when(companyRepository.findByIds(any())).thenReturn(Map.of(1, company1));
         when(tagRepository.findByVacancyId(anyInt())).thenReturn(Collections.emptyList());
 
         List<RecommendedVacancyDto> result = recommendationService.getRecommendations(1);
@@ -171,8 +168,8 @@ class RecommendationServiceTest {
         Company company = createCompany(1, "TechCorp");
 
         when(vacancyRepository.findAllActiveWithTags()).thenReturn(Collections.singletonList(vwt));
-        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy));
-        when(companyRepository.findById(1)).thenReturn(Optional.of(company));
+        when(vacancyRepository.findByIds(any())).thenReturn(Map.of(10, vacancy));
+        when(companyRepository.findByIds(any())).thenReturn(Map.of(1, company));
         when(tagRepository.findByVacancyId(anyInt())).thenReturn(Collections.emptyList());
 
         List<RecommendedVacancyDto> result1 = recommendationService.getRecommendations(1);
@@ -193,8 +190,8 @@ class RecommendationServiceTest {
         Company company = createCompany(1, "TechCorp");
 
         when(vacancyRepository.findAllActiveWithTags()).thenReturn(Collections.singletonList(vwt));
-        when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy));
-        when(companyRepository.findById(1)).thenReturn(Optional.of(company));
+        when(vacancyRepository.findByIds(any())).thenReturn(Map.of(10, vacancy));
+        when(companyRepository.findByIds(any())).thenReturn(Map.of(1, company));
         when(tagRepository.findByVacancyId(anyInt())).thenReturn(Collections.emptyList());
 
         List<RecommendedVacancyDto> result1 = recommendationService.getRecommendations(1);

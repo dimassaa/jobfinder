@@ -4,6 +4,8 @@ import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
 import com.jobapp.client.model.UserProfile;
 import com.jobapp.client.service.ProfileClientService;
+import com.jobapp.client.service.RecommendationClientService;
+import com.jobapp.common.dto.RecommendedVacancyDto;
 import com.jobapp.common.dto.TagDto;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -17,7 +19,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -51,25 +52,10 @@ public class ProfileController {
     private TextArea additionalInfoArea;
 
     @FXML
-    private VBox companySection;
-
-    @FXML
-    private TextField companyNameField;
-
-    @FXML
-    private TextField companyWebsiteField;
-
-    @FXML
-    private TextArea companyDescriptionArea;
-
-    @FXML
     private Label statusLabel;
 
     @FXML
     private Button saveButton;
-
-    @FXML
-    private Button cancelButton;
 
     @FXML
     private Button selectTagsButton;
@@ -78,8 +64,8 @@ public class ProfileController {
     private Label tagsCountLabel;
 
     private ProfileClientService profileClientService;
+    private RecommendationClientService recommendationClientService;
     private Runnable onCloseCallback;
-    private boolean isHr;
     private int userTagsCount = 0;
 
     public ProfileController() {
@@ -104,26 +90,14 @@ public class ProfileController {
         }
         this.profileClientService = new ProfileClientService(networkService);
 
-        isHr = AppContext.isHr();
-
         ObservableList<String> cities = FXCollections.observableArrayList(CITIES);
         cityComboBox.setItems(cities);
-
-        if (isHr) {
-            companySection.setVisible(true);
-            companySection.setManaged(true);
-            selectTagsButton.setVisible(false);
-            selectTagsButton.setManaged(false);
-            tagsCountLabel.setVisible(false);
-            tagsCountLabel.setManaged(false);
-        }
 
         loadProfile();
         loadUserTagsCount();
     }
 
     private void loadUserTagsCount() {
-        if (isHr) return;
         if (profileClientService == null) {
             logger.warn("profileClientService not initialized yet");
             return;
@@ -142,6 +116,24 @@ public class ProfileController {
                 });
             } catch (Exception e) {
                 logger.error("Failed to load user tags: {}", e.getMessage());
+            }
+        }).start();
+    }
+
+    private void refreshRecommendations() {
+        NetworkService networkService = AppContext.getNetworkService();
+        if (networkService == null) {
+            logger.warn("NetworkService not available");
+            return;
+        }
+        recommendationClientService = new RecommendationClientService(networkService);
+
+        new Thread(() -> {
+            try {
+                List<RecommendedVacancyDto> recommendations = recommendationClientService.getRecommendations();
+                logger.info("Recommendations refreshed after tags update: {} recommendations", recommendations.size());
+            } catch (Exception e) {
+                logger.error("Failed to refresh recommendations: {}", e.getMessage());
             }
         }).start();
     }
@@ -177,12 +169,6 @@ public class ProfileController {
         phoneField.setText(profile.getPhone() != null ? profile.getPhone() : "");
         additionalInfoArea.setText(profile.getAdditionalInfo() != null ? profile.getAdditionalInfo() : "");
 
-        if (isHr) {
-            companyNameField.setText(profile.getCompanyName() != null ? profile.getCompanyName() : "");
-            companyWebsiteField.setText(profile.getCompanyWebsite() != null ? profile.getCompanyWebsite() : "");
-            companyDescriptionArea.setText(profile.getCompanyDescription() != null ? profile.getCompanyDescription() : "");
-        }
-
         saveButton.setDisable(false);
         logger.info("Profile fields populated");
     }
@@ -200,7 +186,7 @@ public class ProfileController {
             return;
         }
 
-        if (!isHr && (city == null || city.isEmpty())) {
+        if (city == null || city.isEmpty()) {
             showError("Пожалуйста, выберите город");
             return;
         }
@@ -214,12 +200,6 @@ public class ProfileController {
         profile.setCity(city != null ? city : "");
         profile.setPhone(phone);
         profile.setAdditionalInfo(additionalInfo);
-
-        if (isHr) {
-            profile.setCompanyName(companyNameField.getText().trim());
-            profile.setCompanyWebsite(companyWebsiteField.getText().trim());
-            profile.setCompanyDescription(companyDescriptionArea.getText().trim());
-        }
 
         new Thread(() -> {
             try {
@@ -262,6 +242,7 @@ public class ProfileController {
 
             controller.setOnCloseCallback(() -> {
                 loadUserTagsCount();
+                refreshRecommendations();
             });
 
             Stage stage = new Stage();
@@ -274,13 +255,6 @@ public class ProfileController {
         } catch (Exception e) {
             logger.error("Failed to open tags selector: {}", e.getMessage());
             showError("Не удалось открыть выбор навыков: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleCancel() {
-        if (onCloseCallback != null) {
-            onCloseCallback.run();
         }
     }
 

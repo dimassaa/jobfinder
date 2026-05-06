@@ -11,9 +11,8 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
-<?import com.jobapp.common.dto.TagDto?>
 
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
     <VBox alignment="TOP_CENTER" spacing="16" styleClass="card" maxWidth="700">
         <padding>
             <Insets bottom="24" left="24" right="24" top="24" />
@@ -61,11 +60,7 @@
             <VBox spacing="8">
                 <Label text="Навыки (теги)" styleClass="label-secondary" />
                 <Text text="Выберите необходимые навыки для вакансии" styleClass="label-status" />
-                <ListView fx:id="tagsListView" prefHeight="150">
-                    <cells>
-                        <ListView styleClass="list-view" />
-                    </cells>
-                </ListView>
+                <ListView fx:id="tagsListView" prefHeight="150" styleClass="list-view"/>
             </VBox>
         </VBox>
 

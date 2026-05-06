@@ -30,6 +30,13 @@ public class VacancyEditController {
     private static final Logger logger = LoggerFactory.getLogger(VacancyEditController.class);
 
     private static final List<String> EMPLOYMENT_TYPES = Arrays.asList(
+            "FULL_TIME",
+            "PART_TIME",
+            "REMOTE",
+            "CONTRACT"
+    );
+
+    private static final List<String> EMPLOYMENT_TYPES_RU = Arrays.asList(
             "Полная занятость",
             "Частичная занятость",
             "Удалённая работа",
@@ -99,7 +106,7 @@ public class VacancyEditController {
     }
 
     private void setupEmploymentTypeCombo() {
-        ObservableList<String> types = FXCollections.observableArrayList(EMPLOYMENT_TYPES);
+        ObservableList<String> types = FXCollections.observableArrayList(EMPLOYMENT_TYPES_RU);
         employmentTypeCombo.setItems(types);
     }
 
@@ -131,7 +138,10 @@ public class VacancyEditController {
         titleField.setText(editingVacancy.getTitle());
         descriptionArea.setText(editingVacancy.getDescription());
         cityField.setText(editingVacancy.getCity());
-        employmentTypeCombo.setValue(editingVacancy.getEmploymentType());
+
+        String empType = editingVacancy.getEmploymentType();
+        int empIndex = EMPLOYMENT_TYPES.indexOf(empType);
+        employmentTypeCombo.setValue(empIndex >= 0 ? EMPLOYMENT_TYPES_RU.get(empIndex) : empType);
 
         if (editingVacancy.getSalaryMin() != null) {
             salaryMinField.setText(String.valueOf(editingVacancy.getSalaryMin()));
@@ -169,6 +179,8 @@ public class VacancyEditController {
                 String description = descriptionArea.getText().trim();
                 String city = cityField.getText().trim();
                 String employmentType = employmentTypeCombo.getValue();
+                int empIndex = EMPLOYMENT_TYPES_RU.indexOf(employmentType);
+                String empTypeEnum = (empIndex >= 0) ? EMPLOYMENT_TYPES.get(empIndex) : employmentType;
 
                 Integer salaryMin = parseSalary(salaryMinField.getText());
                 Integer salaryMax = parseSalary(salaryMaxField.getText());
@@ -182,7 +194,7 @@ public class VacancyEditController {
                 request.setTitle(title);
                 request.setDescription(description);
                 request.setCity(city);
-                request.setEmploymentType(employmentType);
+                request.setEmploymentType(empTypeEnum);
                 request.setSalaryMin(salaryMin);
                 request.setSalaryMax(salaryMax);
                 request.setTagIds(tagIds);

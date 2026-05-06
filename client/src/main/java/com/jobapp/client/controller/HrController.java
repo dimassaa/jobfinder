@@ -157,4 +157,15 @@ public class HrController {
     public static HrController getInstance() {
         return instance;
     }
+
+    public void selectTab(String tabName) {
+        if (hrTabPane != null) {
+            for (Tab tab : hrTabPane.getTabs()) {
+                if (tabName.equals(tab.getText())) {
+                    hrTabPane.getSelectionModel().select(tab);
+                    return;
+                }
+            }
+        }
+    }
 }

@@ -100,14 +100,15 @@ public class ApplicationService {
         Optional<Company> companyOpt = companyRepository.findByUserId(hrUserId);
         if (companyOpt.isEmpty()) {
             logger.warn("Company not found for HR user: {}", hrUserId);
-            return List.of();
+            throw new IllegalStateException("Сначала создайте профиль компании в разделе 'Моя компания'");
         }
 
         Company company = companyOpt.get();
         List<Vacancy> vacancies = vacancyRepository.findByCompanyId(company.getId());
 
         if (vacancies.isEmpty()) {
-            return List.of();
+            logger.info("No vacancies found for company: {}", company.getId());
+            throw new IllegalStateException("У вас пока нет вакансий. Сначала создайте вакансию в разделе 'Мои вакансии'");
         }
 
         List<Integer> vacancyIds = vacancies.stream()

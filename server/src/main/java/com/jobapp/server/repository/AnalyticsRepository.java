@@ -128,23 +128,13 @@ public class AnalyticsRepository {
     }
 
     public ConversionStatsDto getVacancyConversion(int vacancyId) {
-        String viewsSql = "SELECT COUNT(*) FROM view_history WHERE vacancy_id = ?";
         String responsesSql = "SELECT COUNT(*) FROM applications WHERE vacancy_id = ?";
         String invitesSql = "SELECT COUNT(*) FROM applications WHERE vacancy_id = ? AND status IN ('INVITED', 'ACCEPTED')";
 
-        int views = 0;
         int responses = 0;
         int invites = 0;
 
         try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement stmt = conn.prepareStatement(viewsSql)) {
-                stmt.setInt(1, vacancyId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        views = rs.getInt(1);
-                    }
-                }
-            }
             try (PreparedStatement stmt = conn.prepareStatement(responsesSql)) {
                 stmt.setInt(1, vacancyId);
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -166,8 +156,8 @@ public class AnalyticsRepository {
             throw new RuntimeException("Failed to get vacancy conversion", e);
         }
 
-        double conversionRate = views > 0 ? (double) invites / views * 100.0 : 0.0;
-        return new ConversionStatsDto(views, responses, invites, conversionRate);
+        double conversionRate = responses > 0 ? (double) invites / responses * 100.0 : 0.0;
+        return new ConversionStatsDto(0, responses, invites, conversionRate);
     }
 
     public SystemStatsDto getSystemStats() {

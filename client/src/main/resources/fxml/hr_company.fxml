@@ -42,7 +42,6 @@
 
         <HBox spacing="12" alignment="CENTER_LEFT">
             <Button fx:id="saveButton" text="Сохранить" onAction="#handleSave" styleClass="button-primary"/>
-            <Button fx:id="refreshButton" text="Загрузить данные" onAction="#handleRefresh" styleClass="button-secondary"/>
         </HBox>
     </VBox>
 </StackPane>

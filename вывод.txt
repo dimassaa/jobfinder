@@ -1,134 +1,32 @@
-13:07:23.709 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Starting JobFinder Client Application
-13:07:23.719 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Server config: Server: localhost:8081
-13:07:24.031 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- LoginController initialized
-13:07:24.031 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- NetworkService initialized with localhost:8081
-13:07:24.031 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Attempting to connect to server (attempt 1/5)
-13:07:24.031 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- Disconnected from server
-13:07:24.037 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- Connected to localhost:8081
-13:07:24.037 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Successfully connected to server at localhost:8081
-13:07:24.214 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Application started successfully
-13:07:34.757 [Thread-3] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: LOGIN
-13:07:34.847 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Login successful for: test1@gmail.com
-13:07:34.852 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Login successful. User: 12, Role: HR
-13:07:34.852 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Switching to HR scene
-13:07:34.915 [JavaFX Application Thread] INFO com.jobapp.client.controller.ProfileController -- ProfileController initialized
-13:07:34.916 [Thread-4] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_PROFILE
-13:07:34.957 [JavaFX Application Thread] INFO com.jobapp.client.controller.AnalyticsController -- AnalyticsController initialized
-13:07:34.958 [JavaFX Application Thread] INFO com.jobapp.client.controller.AnalyticsController -- Loading initial analytics data for HR
-13:07:34.958 [Thread-5] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_MY_VACANCIES
-13:07:34.963 [JavaFX Application Thread] INFO com.jobapp.client.controller.NotificationsController -- NotificationsController initialized
-13:07:34.964 [JavaFX Application Thread] INFO com.jobapp.client.controller.HrController -- HrController initialized
-13:07:34.965 [JavaFX Application Thread] INFO com.jobapp.client.controller.HrController -- Registered notification callback for toast display
-13:07:34.966 [Thread-7] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_UNREAD_COUNT
-13:07:34.966 [Thread-6] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_NOTIFICATIONS
-13:07:35.403 [Thread-8] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_MY_VACANCIES
-13:07:35.404 [Thread-9] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_ALL_APPLICATIONS_FOR_HR
-13:07:35.404 [Thread-10] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPANY_PROFILE
-13:07:35.405 [JavaFX Application Thread] INFO com.jobapp.client.controller.ProfileController -- Profile fields populated
-Exception in thread "JavaFX Application Thread" java.lang.NullPointerException: Cannot invoke "java.util.Collection.isEmpty()" because "<parameter1>" is null
-	at javafx.base@21.0.11/javafx.collections.ModifiableObservableListBase.addAll(ModifiableObservableListBase.java:109)
-	at com.jobapp.client.controller.HrApplicationsController.lambda$loadApplications$8(HrApplicationsController.java:205)
-	at javafx.graphics@21.0.11/com.sun.javafx.application.PlatformImpl.lambda$runLater$10(PlatformImpl.java:456)
-	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
-	at javafx.graphics@21.0.11/com.sun.javafx.application.PlatformImpl.lambda$runLater$11(PlatformImpl.java:455)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:190)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
-13:07:41.871 [Thread-11] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPANY_PROFILE
-13:07:51.275 [Thread-12] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPANY_PROFILE
-13:07:51.655 [Thread-13] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPANY_PROFILE
-13:07:55.581 [Thread-14] INFO com.jobapp.client.service.AnalyticsClientService -- Fetching salary statistics, period: 365 days
-13:07:55.581 [Thread-14] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_SALARY_STATS
-13:07:55.592 [JavaFX Application Thread] INFO com.jobapp.client.controller.AnalyticsController -- No salary data available
-13:08:08.418 [Thread-15] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_UNREAD_COUNT
-13:08:40.643 [Thread-16] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: SAVE_COMPANY_PROFILE
-13:08:46.921 [Thread-17] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPANY_PROFILE
-13:08:53.953 [JavaFX Application Thread] INFO com.jobapp.client.controller.HrVacanciesController -- Opening vacancy creation window
-13:08:53.956 [JavaFX Application Thread] ERROR com.jobapp.client.controller.HrVacanciesController -- Failed to open vacancy creation: Controller value already specified.
-/D:/cours/jobfinder/client/target/classes/fxml/vacancy_edit.fxml:16
+C:\Users\bulbash\.jdks\ms-21.0.10\bin\java.exe --module-path C:\Users\bulbash\.jdks\ms-21.0.10\javafx-sdk-21.0.11\lib --add-modules javafx.controls,javafx.fxml -javaagent:D:\prog\JetBrains\IntelliJIdea2025.2\lib\idea_rt.jar=58836 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath D:\cours\jobfinder\client\target\classes;D:\cours\jobfinder\common\target\classes;C:\Users\bulbash\.m2\repository\ch\qos\logback\logback-classic\1.4.14\logback-classic-1.4.14.jar;C:\Users\bulbash\.m2\repository\ch\qos\logback\logback-core\1.4.14\logback-core-1.4.14.jar;C:\Users\bulbash\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-controls\21\javafx-controls-21.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-controls\21\javafx-controls-21-win.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-graphics\21\javafx-graphics-21.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-graphics\21\javafx-graphics-21-win.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-base\21\javafx-base-21.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-base\21\javafx-base-21-win.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-fxml\21\javafx-fxml-21.jar;C:\Users\bulbash\.m2\repository\org\openjfx\javafx-fxml\21\javafx-fxml-21-win.jar;C:\Users\bulbash\.m2\repository\org\controlsfx\controlsfx\11.1.2\controlsfx-11.1.2.jar;C:\Users\bulbash\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.16.0\jackson-databind-2.16.0.jar;C:\Users\bulbash\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.16.0\jackson-annotations-2.16.0.jar;C:\Users\bulbash\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.16.0\jackson-core-2.16.0.jar;C:\Users\bulbash\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.16.0\jackson-datatype-jsr310-2.16.0.jar com.jobapp.client.MainApplication
+22:53:51.615 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Starting JobFinder Client Application
+22:53:51.625 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Server config: Server: localhost:8081
+22:53:51.934 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- LoginController initialized
+22:53:51.935 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- NetworkService initialized with localhost:8081
+22:53:51.935 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Attempting to connect to server (attempt 1/5)
+22:53:51.935 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- Disconnected from server
+22:53:51.942 [JavaFX Application Thread] INFO com.jobapp.client.NetworkService -- Connected to localhost:8081
+22:53:51.942 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Successfully connected to server at localhost:8081
+22:53:52.148 [JavaFX Application Thread] INFO com.jobapp.client.MainApplication -- Application started successfully
+22:54:02.921 [Thread-3] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: LOGIN
+22:54:03.010 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Login successful for: admin@jobfinder.by
+22:54:03.015 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Login successful. User: 11, Role: ADMIN
+22:54:03.015 [JavaFX Application Thread] INFO com.jobapp.client.controller.LoginController -- Switching to admin scene
+22:54:03.087 [JavaFX Application Thread] INFO com.jobapp.client.controller.AdminPanelController -- AdminPanelController initialized
+22:54:03.092 [Thread-4] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_NOTIFICATIONS
+22:54:03.108 [Thread-4] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_UNREAD_COUNT
+22:54:04.220 [Thread-5] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_ALL_USERS
+22:54:04.226 [Thread-5] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load users: null
+22:54:06.937 [Thread-6] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_ALL_VACANCIES_ADMIN
+22:54:06.937 [Thread-6] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load vacancies: Failed to retrieve users: Cannot invoke "com.jobapp.server.service.AdminService.getAllUsers(String, java.lang.Boolean, int, int)" because "this.adminService" is null
+22:54:07.884 [Thread-7] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_COMPLAINTS_ADMIN
+22:54:07.884 [Thread-7] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load complaints: null
+22:54:08.780 [Thread-8] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_NOTIFICATIONS
+22:54:08.780 [Thread-8] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load notifications: Failed to retrieve vacancies: Cannot invoke "com.jobapp.server.service.AdminService.getAllVacancies(boolean)" because "this.adminService" is null
+22:54:09.920 [Thread-9] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_ALL_TAGS
+22:54:09.920 [Thread-9] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load tags: null
+22:54:10.783 [Thread-10] INFO com.jobapp.client.service.AnalyticsClientService -- Fetching system statistics
+22:54:10.785 [Thread-10] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_SYSTEM_STATS
+22:54:10.785 [Thread-10] ERROR com.jobapp.client.controller.AdminPanelController -- Failed to load system stats: Failed to retrieve complaints: Cannot invoke "com.jobapp.server.service.AdminService.getComplaints()" because "this.adminService" is null
 
-13:08:57.611 [Thread-18] INFO com.jobapp.client.NetworkService -- Sent message and waiting for response: GET_ALL_APPLICATIONS_FOR_HR
-Exception in thread "JavaFX Application Thread" java.lang.NullPointerException: Cannot invoke "java.util.Collection.isEmpty()" because "<parameter1>" is null
-	at javafx.base@21.0.11/javafx.collections.ModifiableObservableListBase.addAll(ModifiableObservableListBase.java:109)
-	at com.jobapp.client.controller.HrApplicationsController.lambda$loadApplications$8(HrApplicationsController.java:205)
-	at javafx.graphics@21.0.11/com.sun.javafx.application.PlatformImpl.lambda$runLater$10(PlatformImpl.java:456)
-	at java.base/java.security.AccessController.doPrivileged(AccessController.java:400)
-	at javafx.graphics@21.0.11/com.sun.javafx.application.PlatformImpl.lambda$runLater$11(PlatformImpl.java:455)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
-	at javafx.graphics@21.0.11/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:190)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
-
-
-
-
-10:07:34.760 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"LOGIN","data":{"password":"123456","email":"test1@gmail.com"}}
-
-10:07:34.762 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: LOGIN from /172.18.0.1
-
-10:07:34.825 [pool-1-thread-7] INFO  c.jobapp.server.service.AuthService - User logged in successfully: test1@gmail.com
-
-10:07:34.825 [pool-1-thread-7] INFO  c.j.server.service.SessionManager - Session added for userId: 12
-
-10:07:34.825 [pool-1-thread-7] INFO  c.jobapp.server.handler.LoginCommand - User 12 logged in, session created
-
-10:07:34.827 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Login successful","data":{"success":true,"message":"Login successful","userId":12,"role":"HR"}}
-
-10:07:34.920 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_PROFILE","data":null}
-
-10:07:34.921 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_PROFILE from /172.18.0.1
-
-10:07:34.921 [pool-1-thread-7] INFO  c.j.server.handler.GetProfileCommand - Executing GET_PROFILE for user: 12
-
-10:07:34.923 [pool-1-thread-7] INFO  c.jobapp.server.service.UserService - Profile retrieved for user: 12
-
-10:07:34.925 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Profile retrieved","data":{"name":"Эйчар","surname":"Тестович","companyId":7,"companyName":"Эйчар's Company","tags":[]}}
-
-10:07:34.962 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_MY_VACANCIES","data":null}
-
-10:07:34.963 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_MY_VACANCIES from /172.18.0.1
-
-10:07:34.963 [pool-1-thread-7] INFO  c.j.s.handler.GetMyVacanciesCommand - Executing GET_MY_VACANCIES for user: 12
-
-10:07:34.965 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Found 0 vacancies","data":[]}
-
-10:07:34.970 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_UNREAD_COUNT","data":null}
-
-10:07:34.970 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_UNREAD_COUNT from /172.18.0.1
-
-10:07:34.970 [pool-1-thread-7] INFO  c.j.s.handler.GetUnreadCountCommand - Executing GET_UNREAD_COUNT for user: 12
-
-10:07:34.972 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Unread count retrieved","data":0}
-
-10:07:34.972 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_NOTIFICATIONS","data":{"offset":0,"limit":100,"unreadOnly":false}}
-
-10:07:34.972 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_NOTIFICATIONS from /172.18.0.1
-
-10:07:34.972 [pool-1-thread-7] INFO  c.j.s.h.GetNotificationsCommand - Executing GET_NOTIFICATIONS for user: 12
-
-10:07:34.973 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Notifications retrieved","data":[]}
-
-10:07:35.250 [main] INFO  com.jobapp.server.Server - New connection from /0:0:0:0:0:0:0:1
-
-10:07:35.408 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_MY_VACANCIES","data":null}
-
-10:07:35.408 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_MY_VACANCIES from /172.18.0.1
-
-10:07:35.408 [pool-1-thread-7] INFO  c.j.s.handler.GetMyVacanciesCommand - Executing GET_MY_VACANCIES for user: 12
-
-10:07:35.411 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Found 0 vacancies","data":[]}
-
-10:07:35.411 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_ALL_APPLICATIONS_FOR_HR","data":null}
-
-10:07:35.412 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_ALL_APPLICATIONS_FOR_HR from /172.18.0.1
-
-10:07:35.412 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Echo: GET_ALL_APPLICATIONS_FOR_HR","data":null}
-
-10:07:35.412 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_COMPANY_PROFILE","data":null}
-
-10:07:35.412 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received command: GET_COMPANY_PROFILE from /172.18.0.1
-
-10:07:35.413 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Sent to /172.18.0.1: {"status":"OK","message":"Echo: GET_COMPANY_PROFILE","data":null}
-
-10:07:41.879 [pool-1-thread-7] INFO  com.jobapp.server.ClientHandler - Received from /172.18.0.1: {"type":"REQUEST","command":"GET_COMPANY_PROFILE","data":null}
+Process finished with exit code 0

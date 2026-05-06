@@ -63,10 +63,6 @@
                 <fx:include source="favorites.fxml"/>
             </Tab>
 
-            <Tab text="История просмотров">
-                <fx:include source="view_history.fxml"/>
-            </Tab>
-
             <Tab text="Рекомендации">
                 <fx:include source="recommendations.fxml"/>
             </Tab>

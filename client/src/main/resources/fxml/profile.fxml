@@ -62,33 +62,7 @@
             </VBox>
         </VBox>
 
-        <VBox fx:id="companySection" spacing="12" visible="false" managed="false">
-            <VBox.margin>
-                <Insets top="16" />
-            </VBox.margin>
-            <Text text="Информация о компании" styleClass="h2">
-                <VBox.margin>
-                    <Insets bottom="8" />
-                </VBox.margin>
-            </Text>
-
-            <VBox spacing="12" maxWidth="500">
-                <VBox spacing="4">
-                    <Label text="Название компании" styleClass="label-secondary" />
-                    <TextField fx:id="companyNameField" promptText="ООО Ромашка" styleClass="text-field" />
-                </VBox>
-
-                <VBox spacing="4">
-                    <Label text="Веб-сайт" styleClass="label-secondary" />
-                    <TextField fx:id="companyWebsiteField" promptText="https://example.com" styleClass="text-field" />
-                </VBox>
-
-                <VBox spacing="4">
-                    <Label text="Описание компании" styleClass="label-secondary" />
-                    <TextArea fx:id="companyDescriptionArea" promptText="Расскажите о вашей компании..." styleClass="text-field" prefRowCount="3" wrapText="true" />
-                </VBox>
-            </VBox>
-        </VBox>
+        
 
         <Label fx:id="statusLabel" styleClass="label-error" text="" visible="false">
             <VBox.margin>
@@ -100,7 +74,6 @@
             <HBox.margin>
                 <Insets top="16" />
             </HBox.margin>
-            <Button fx:id="cancelButton" onAction="#handleCancel" text="Отмена" styleClass="button-secondary" />
             <Button fx:id="saveButton" onAction="#handleSave" text="Сохранить" styleClass="button-primary" />
         </HBox>
     </VBox>

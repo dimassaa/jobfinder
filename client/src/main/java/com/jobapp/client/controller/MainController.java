@@ -86,7 +86,7 @@ public class MainController {
             String tabText = tab.getText();
 
             if ("Мои отклики".equals(tabText) || "Избранное".equals(tabText) ||
-                "История просмотров".equals(tabText) || "Рекомендации".equals(tabText)) {
+                "Рекомендации".equals(tabText)) {
                 tab.setDisable(isHr || isAdmin);
             }
 
