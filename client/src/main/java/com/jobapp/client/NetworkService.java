@@ -3,6 +3,8 @@ package com.jobapp.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
 import com.jobapp.common.dto.NotificationDto;
@@ -31,6 +33,8 @@ public class NetworkService {
 
     public NetworkService() {
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         this.host = AppContext.getServerHost();
         this.port = AppContext.getServerPort();
         logger.info("NetworkService initialized with {}:{}", host, port);
@@ -166,24 +170,34 @@ public class NetworkService {
         logger.info("Disconnected from server");
     }
 
-    public void reconnect(String host, int port) {
+    public boolean reconnect(String host, int port) {
         logger.info("Attempting to reconnect to {}:{}...", host, port);
         disconnect();
 
-        try {
-            Thread.sleep(1000);
-            connect(host, port);
-            logger.info("Reconnected successfully to {}:{}", host, port);
-        } catch (IOException e) {
-            logger.error("Reconnection failed: {}", e.getMessage());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Reconnection interrupted");
+        int maxRetries = 5;
+        int baseDelay = 1000;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                Thread.sleep(baseDelay * (attempt - 1));
+                connect(host, port);
+                logger.info("Reconnected successfully to {}:{}", host, port);
+                return true;
+            } catch (IOException e) {
+                logger.warn("Reconnection attempt {}/{} failed: {}", attempt, maxRetries, e.getMessage());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("Reconnection interrupted");
+                break;
+            }
         }
+
+        logger.error("Reconnection failed after {} attempts", maxRetries);
+        return false;
     }
 
-    public void reconnect() {
-        reconnect(host, port);
+    public boolean reconnect() {
+        return reconnect(host, port);
     }
 
     public void setNotificationCallback(Consumer<NotificationDto> callback) {

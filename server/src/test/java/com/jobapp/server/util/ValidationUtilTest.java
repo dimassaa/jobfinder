@@ -78,7 +78,7 @@ class ValidationUtilTest {
 
     @Test
     void testValidateSalary_tooHigh() {
-        assertEquals("Salary too high (max 100000)", ValidationUtil.validateSalary(200000));
+        assertEquals("Salary too high (max 10000)", ValidationUtil.validateSalary(20000));
     }
 
     @Test
@@ -110,6 +110,6 @@ class ValidationUtilTest {
 
     @Test
     void testValidateRole_invalid() {
-        assertEquals("Invalid role. Must be JOBSEEKER, HR, or ADMIN", ValidationUtil.validateRole("INVALID"));
+        assertEquals("Invalid role. Must be USER, HR, or ADMIN", ValidationUtil.validateRole("INVALID"));
     }
 }

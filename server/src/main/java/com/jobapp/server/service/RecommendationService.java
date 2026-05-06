@@ -15,12 +15,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class RecommendationService {
 
     private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
     private static final long CACHE_DURATION_MS = 5 * 60 * 1000;
+    private static final int MAX_CACHE_SIZE = 1000;
 
     private final VacancyRepository vacancyRepository;
     private final UserRepository userRepository;
@@ -54,7 +56,8 @@ public class RecommendationService {
 
         List<VacancyWithTags> vacanciesWithTags = vacancyRepository.findAllActiveWithTags();
 
-        List<RecommendedVacancyDto> recommendations = new ArrayList<>();
+        List<Integer> matchingVacancyIds = new ArrayList<>();
+        Map<Integer, Double> matchPercents = new HashMap<>();
 
         for (VacancyWithTags vwt : vacanciesWithTags) {
             Set<Integer> vacancyTagIds = vwt.getTagIds();
@@ -68,13 +71,29 @@ public class RecommendationService {
             double matchPercent = (intersection * 2.0 / union) * 100;
 
             if (matchPercent > 0) {
-                Optional<Vacancy> vacancyOpt = vacancyRepository.findById(vwt.getVacancyId());
-                if (vacancyOpt.isPresent()) {
-                    Vacancy vacancy = vacancyOpt.get();
-                    RecommendedVacancyDto dto = toRecommendedVacancyDto(vacancy, matchPercent);
-                    dto.setMatchPercent(matchPercent);
-                    recommendations.add(dto);
-                }
+                matchingVacancyIds.add(vwt.getVacancyId());
+                matchPercents.put(vwt.getVacancyId(), matchPercent);
+            }
+        }
+
+        Map<Integer, Vacancy> vacancyMap = vacancyRepository.findByIds(matchingVacancyIds);
+        Map<Integer, Company> companyMap = companyRepository.findByIds(vacancyMap.values().stream()
+                .map(Vacancy::getCompanyId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+
+        Map<Integer, List<Tag>> tagsMap = tagRepository.findByVacancyIds(matchingVacancyIds);
+
+        List<RecommendedVacancyDto> recommendations = new ArrayList<>();
+
+        for (Integer vacancyId : matchingVacancyIds) {
+            Vacancy vacancy = vacancyMap.get(vacancyId);
+            if (vacancy != null) {
+                Double matchPercent = matchPercents.get(vacancyId);
+                Company company = vacancy.getCompanyId() != null ? companyMap.get(vacancy.getCompanyId()) : null;
+                List<Tag> tags = tagsMap.getOrDefault(vacancyId, Collections.emptyList());
+                RecommendedVacancyDto dto = toRecommendedVacancyDto(vacancy, company, tags, matchPercent);
+                recommendations.add(dto);
             }
         }
 
@@ -83,7 +102,13 @@ public class RecommendationService {
                 a.getMatchPercent() != null ? a.getMatchPercent() : 0.0
         ));
 
-        recommendationCache.put(userId, new CacheEntry(recommendations));
+        synchronized (recommendationCache) {
+            if (recommendationCache.size() >= MAX_CACHE_SIZE) {
+                evictOldestEntries(MAX_CACHE_SIZE / 10);
+                logger.info("Cache eviction performed, current size: {}", recommendationCache.size());
+            }
+            recommendationCache.put(userId, new CacheEntry(recommendations));
+        }
         logger.info("Generated {} recommendations for user: {}", recommendations.size(), userId);
 
         return recommendations;
@@ -92,6 +117,18 @@ public class RecommendationService {
     public void clearCache(int userId) {
         recommendationCache.remove(userId);
         logger.debug("Cleared recommendation cache for user: {}", userId);
+    }
+
+    private void evictOldestEntries(int count) {
+        List<Integer> keysToRemove = recommendationCache.entrySet().stream()
+                .sorted(Comparator.comparingLong(e -> e.getValue().timestamp))
+                .limit(count)
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
+        for (Integer key : keysToRemove) {
+            recommendationCache.remove(key);
+        }
+        logger.debug("Evicted {} oldest cache entries", keysToRemove.size());
     }
 
     private int countIntersection(Set<Integer> set1, Set<Integer> set2) {
@@ -104,14 +141,9 @@ public class RecommendationService {
         return count;
     }
 
-    private RecommendedVacancyDto toRecommendedVacancyDto(Vacancy vacancy, double matchPercent) {
-        String companyName = null;
-        if (vacancy.getCompanyId() != null) {
-            Optional<Company> companyOpt = companyRepository.findById(vacancy.getCompanyId());
-            companyName = companyOpt.map(Company::getCompanyName).orElse(null);
-        }
+    private RecommendedVacancyDto toRecommendedVacancyDto(Vacancy vacancy, Company company, List<Tag> tags, Double matchPercent) {
+        String companyName = company != null ? company.getCompanyName() : null;
 
-        List<Tag> tags = tagRepository.findByVacancyId(vacancy.getId());
         List<TagDto> tagDtos = tags.stream()
                 .map(t -> new TagDto(t.getId(), t.getName(), t.getIsActive()))
                 .collect(Collectors.toList());

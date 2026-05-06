@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.sql.DataSource;
 
 public class CompanyRepository {
@@ -66,6 +64,38 @@ public class CompanyRepository {
             logger.error("Error finding company by id: {}", id, e);
         }
         return Optional.empty();
+    }
+
+    public Map<Integer, Company> findByIds(Collection<Integer> ids) {
+        Map<Integer, Company> result = new HashMap<>();
+        if (ids == null || ids.isEmpty()) {
+            return result;
+        }
+        StringBuilder sql = new StringBuilder("SELECT * FROM companies WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            sql.append("?");
+            if (i < ids.size() - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(")");
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer id : ids) {
+                stmt.setInt(idx++, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Company company = mapRowToCompany(rs);
+                    result.put(company.getId(), company);
+                }
+            }
+            logger.debug("Found {} companies for {} IDs", result.size(), ids.size());
+        } catch (SQLException e) {
+            logger.error("Error finding companies by ids", e);
+        }
+        return result;
     }
 
     public Optional<Company> findByUserId(Integer userId) {

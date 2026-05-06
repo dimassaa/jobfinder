@@ -53,9 +53,9 @@ class ViewHistoryServiceTest {
         vacancy1.setCompanyId(1);
         vacancy1.setTitle("Java Developer");
         vacancy1.setDescription("Backend developer");
-        vacancy1.setCity("Moscow");
-        vacancy1.setSalaryMin(100000);
-        vacancy1.setSalaryMax(200000);
+        vacancy1.setCity("Minsk");
+        vacancy1.setSalaryMin(2000);
+        vacancy1.setSalaryMax(4000);
         vacancy1.setEmploymentType("FULL_TIME");
         vacancy1.setIsActive(true);
         vacancy1.setCreatedAt(LocalDateTime.now());

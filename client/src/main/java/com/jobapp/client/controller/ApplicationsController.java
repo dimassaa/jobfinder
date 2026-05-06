@@ -12,7 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -47,7 +47,7 @@ public class ApplicationsController {
     private TableColumn<ApplicationDto, String> createdAtColumn;
 
     @FXML
-    private ComboBox<String> statusComboBox;
+    private Button refreshButton;
 
     @FXML
     private Label statusLabel;
@@ -66,8 +66,18 @@ public class ApplicationsController {
     private void initialize() {
         logger.info("ApplicationsController initialized");
 
+        NetworkService networkService = AppContext.getNetworkService();
+        if (networkService == null || !networkService.isConnected()) {
+            logger.error("NetworkService not available or disconnected");
+            Platform.runLater(() -> {
+                statusLabel.setText("Ошибка: нет подключения к серверу");
+                statusLabel.setVisible(true);
+            });
+            return;
+        }
+        this.applicationClientService = new ApplicationClientService(networkService);
+
         setupTableColumns();
-        setupStatusComboBox();
         applicationsTable.setItems(applicationsList);
 
         loadApplications();
@@ -83,10 +93,6 @@ public class ApplicationsController {
             return new javafx.beans.property.SimpleStringProperty(
                     dateTime != null ? dateTime.format(DATE_FORMATTER) : "");
         });
-    }
-
-    private void setupStatusComboBox() {
-        statusComboBox.getItems().addAll("PENDING", "INVITED", "ACCEPTED", "REJECTED");
     }
 
     private void loadApplications() {
@@ -128,15 +134,16 @@ public class ApplicationsController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/vacancy_details.fxml"));
 
-            Parent root = loader.load();
-
-            VacancyDetailsController controller = loader.getController();
+            VacancyDetailsController controller = new VacancyDetailsController();
             controller.setVacancyId(vacancyId);
 
             NetworkService networkService = AppContext.getNetworkService();
             if (networkService != null) {
                 controller.setNetworkService(networkService);
             }
+            loader.setController(controller);
+
+            Parent root = loader.load();
 
             Stage detailsStage = new Stage();
             detailsStage.setTitle("Вакансия");
@@ -151,32 +158,9 @@ public class ApplicationsController {
     }
 
     @FXML
-    private void handleUpdateStatus() {
-        ApplicationDto selected = applicationsTable.getSelectionModel().getSelectedItem();
-        String newStatus = statusComboBox.getValue();
-
-        if (selected == null) {
-            showError("Выберите отклик");
-            return;
-        }
-
-        if (newStatus == null || newStatus.isEmpty()) {
-            showError("Выберите новый статус");
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                applicationClientService.updateStatus(selected.getId(), newStatus);
-                Platform.runLater(() -> {
-                    showInfo("Статус обновлён");
-                    loadApplications();
-                });
-            } catch (Exception e) {
-                logger.error("Failed to update status: {}", e.getMessage());
-                Platform.runLater(() -> showError("Ошибка: " + e.getMessage()));
-            }
-        }).start();
+    private void handleRefresh() {
+        logger.info("Refreshing applications list");
+        loadApplications();
     }
 
     private void showError(String message) {

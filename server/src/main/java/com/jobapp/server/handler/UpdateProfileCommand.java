@@ -24,14 +24,19 @@ public class UpdateProfileCommand {
     public Response execute(Message msg) {
         logger.info("Executing UPDATE_PROFILE for user: {}", userId);
         try {
+            if (msg.getData() == null) {
+                logger.error("No data provided for UPDATE_PROFILE");
+                return new Response("ERROR", "No data provided", null);
+            }
             String dataJson = objectMapper.writeValueAsString(msg.getData());
+            logger.debug("Profile data JSON: {}", dataJson);
             ProfileDto profileDto = objectMapper.readValue(dataJson, ProfileDto.class);
 
             userService.updateProfile(userId, profileDto);
             return new Response("OK", "Profile updated successfully", profileDto);
         } catch (Exception e) {
             logger.error("Error updating profile for user: {}", userId, e);
-            return new Response("ERROR", "Failed to update profile", null);
+            return new Response("ERROR", "Failed to update profile: " + e.getMessage(), null);
         }
     }
 }

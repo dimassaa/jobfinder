@@ -51,8 +51,8 @@ public class RegisterController {
     @FXML
     private void initialize() {
         logger.info("RegisterController initialized");
-        roleComboBox.getItems().addAll("APPLICANT", "HR");
-        roleComboBox.setValue("APPLICANT");
+        roleComboBox.getItems().addAll("USER", "HR");
+        roleComboBox.setValue("USER");
     }
 
     @FXML
@@ -114,7 +114,7 @@ public class RegisterController {
                     registerButton.setDisable(false);
                     if ("OK".equals(response.getStatus())) {
                         logger.info("Registration successful for: {}", email);
-                        showSuccess("Регистрация успешна! Теперь вы можете войти.");
+                        showSuccess("Регистрация успешна! После входа зайдите в \"Профиль\" и выберите город и навыки для получения рекомендаций.");
                         new Thread(() -> {
                             try {
                                 Thread.sleep(2000);
@@ -140,8 +140,15 @@ public class RegisterController {
     @FXML
     private void handleBackToLogin() {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/fxml/login.fxml"));
+            logger.info("Loading login.fxml from classpath");
+            java.net.URL fxmlUrl = getClass().getResource("/fxml/login.fxml");
+            if (fxmlUrl == null) {
+                logger.error("login.fxml not found in classpath");
+                showError("Файл входа не найден");
+                return;
+            }
+
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(fxmlUrl);
             javafx.scene.Parent root = loader.load();
             LoginController controller = loader.getController();
             controller.setNetworkService(networkService);
@@ -150,9 +157,10 @@ public class RegisterController {
             stage.setScene(scene);
             stage.setTitle("JobMatch - Вход");
             stage.show();
+            logger.info("Login scene loaded successfully");
         } catch (Exception e) {
-            logger.error("Failed to load login scene: {}", e.getMessage());
-            showError("Не удалось загрузить экран входа");
+            logger.error("Failed to load login scene", e);
+            showError("Не удалось загрузить экран входа: " + e.getMessage());
         }
     }
 

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Orientation?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.SelectionMode?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx"
@@ -19,16 +21,20 @@
 
     <Label text="Выберите ваши навыки" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
-    <Label text="Отметьте все навыки, которые соответствуют вашей квалификации:"
+    <Label text="Можно выбрать от 1 до 5 навыков"
            wrapText="true" style="-fx-text-fill: #666;"/>
 
+    <Label fx:id="selectionCountLabel" text="Выбрано: 0"
+           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+
     <ListView fx:id="tagsListView"
-              prefHeight="300"
-              style="-fx-pref-width: 400;">
-        <selectionMode>
-            <SelectionMode mode="MULTIPLE"/>
-        </selectionMode>
-    </ListView>
+              prefHeight="200"
+              style="-fx-pref-width: 400;"/>
+
+    <Label text="Выбранные навыки:" style="-fx-font-size: 12px; -fx-text-fill: #666;"/>
+
+    <FlowPane fx:id="selectedTagsPane" hgap="8" vgap="8" orientation="HORIZONTAL"
+             prefWrapLength="380" style="-fx-min-height: 60;"/>
 
     <Label fx:id="statusLabel" visible="false" wrapText="true" style="-fx-pref-width: 400;"/>
 

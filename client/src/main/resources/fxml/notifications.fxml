@@ -20,13 +20,9 @@
         <Insets top="16" right="24" bottom="16" left="24"/>
     </padding>
 
-    <Label text="Уведомления" wrapText="true">
-        <font>
-            <Font size="20" weight="BOLD"/>
-        </font>
-    </Label>
+    <Label text="Уведомления" wrapText="true" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
-    <StackPane VBox.vgrow="ALWAYS">
+    <StackPane>
         <TableView fx:id="notificationsTable" onMouseClicked="#handleTableClick">
             <columns>
                 <TableColumn fx:id="typeColumn" text="Тип" prefWidth="100"/>

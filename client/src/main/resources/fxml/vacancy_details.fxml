@@ -16,19 +16,14 @@
 <?import javafx.scene.text.FontWeight?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/fx"
-            fx:controller="com.jobapp.client.controller.VacancyDetailsController"
-            prefWidth="600" prefHeight="700" stylesheets="@/css/styles.css">
+            prefWidth="600" prefHeight="700" stylesheets="@../css/styles.css">
 
     <top>
         <VBox spacing="8" styleClass="card" BorderPane.alignment="CENTER">
             <padding>
                 <Insets top="24" right="24" bottom="16" left="24"/>
             </padding>
-            <Label fx:id="titleLabel" text="Детали вакансии" wrapText="true">
-                <font>
-                    <Font size="24" weight="BOLD"/>
-                </font>
-            </Label>
+            <Label fx:id="titleLabel" text="Детали вакансии" wrapText="true" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
         </VBox>
     </top>
 
@@ -63,19 +58,11 @@
                 <Label fx:id="createdAtLabel" styleClass="text-primary" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
             </GridPane>
 
-            <Label text="Описание:">
-                <font>
-                    <Font size="14" weight="BOLD"/>
-                </font>
-            </Label>
+            <Label text="Описание:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
             <TextArea fx:id="descriptionArea" editable="false" wrapText="true" prefHeight="200"
                       styleClass="text-area"/>
             <FlowPane fx:id="tagsFlowPane" hgap="8" vgap="8">
-                <Label text="Навыки:">
-                    <font>
-                        <Font size="14" weight="BOLD"/>
-                    </font>
-                </Label>
+                <Label text="Навыки:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
             </FlowPane>
         </VBox>
     </center>
@@ -85,10 +72,10 @@
             <padding>
                 <Insets top="16" right="24" bottom="24" left="24"/>
             </padding>
-            <Button fx:id="applyButton" text="Откликнуться" styleClass="button-primary" minWidth="120"/>
-            <Button fx:id="favoriteButton" text="В избранное" styleClass="button-secondary" minWidth="120"/>
-            <Button fx:id="complainButton" text="Пожаловаться" styleClass="button-secondary" minWidth="120"/>
-            <Button fx:id="closeButton" text="Закрыть" styleClass="button-secondary" minWidth="100"/>
+            <Button fx:id="applyButton" text="Откликнуться" onAction="#handleApply" styleClass="button-primary" minWidth="120"/>
+            <Button fx:id="favoriteButton" text="В избранное" onAction="#handleFavorite" styleClass="button-secondary" minWidth="120"/>
+            <Button fx:id="complainButton" text="Пожаловаться" onAction="#handleComplain" styleClass="button-secondary" minWidth="120"/>
+            <Button fx:id="closeButton" text="Закрыть" onAction="#handleClose" styleClass="button-secondary" minWidth="100"/>
         </HBox>
     </bottom>
 

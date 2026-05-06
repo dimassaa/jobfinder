@@ -18,13 +18,9 @@
         <Insets top="16" right="24" bottom="16" left="24"/>
     </padding>
 
-    <Label text="История просмотров" wrapText="true">
-        <font>
-            <Font size="20" weight="BOLD"/>
-        </font>
-    </Label>
+    <Label text="История просмотров" wrapText="true" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
-    <StackPane VBox.vgrow="ALWAYS">
+    <StackPane>
         <TableView fx:id="historyTable" onMouseClicked="#handleTableClick">
             <columns>
                 <TableColumn fx:id="titleColumn" text="Название" prefWidth="200"/>

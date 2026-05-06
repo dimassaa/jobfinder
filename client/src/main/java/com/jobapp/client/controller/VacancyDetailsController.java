@@ -100,7 +100,16 @@ public class VacancyDetailsController {
     private void initialize() {
         logger.info("VacancyDetailsController initialized with vacancyId: {}", vacancyId);
 
-        if (vacancyId != null) {
+        NetworkService networkService = AppContext.getNetworkService();
+        if (networkService != null) {
+            this.vacancyClientService = new VacancyClientService(networkService);
+            this.applicationClientService = new ApplicationClientService(networkService);
+            this.favoriteClientService = new FavoriteClientService(networkService);
+            this.complaintClientService = new ComplaintClientService(networkService);
+            this.viewHistoryClientService = new ViewHistoryClientService(networkService);
+        }
+
+        if (vacancyId != null && vacancyClientService != null) {
             loadVacancyDetails();
         }
 

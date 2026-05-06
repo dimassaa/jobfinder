@@ -8,11 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.sql.DataSource;
 
 public class UserRepository {
@@ -219,27 +215,67 @@ public class UserRepository {
         return tagIds;
     }
 
+    public Map<Integer, Set<Integer>> findUserTagIdsByUserIds(Collection<Integer> userIds) {
+        Map<Integer, Set<Integer>> result = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) {
+            return result;
+        }
+        StringBuilder sql = new StringBuilder("SELECT user_id, tag_id FROM user_tags WHERE user_id IN (");
+        for (int i = 0; i < userIds.size(); i++) {
+            sql.append("?");
+            if (i < userIds.size() - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(")");
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer id : userIds) {
+                stmt.setInt(idx++, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int userId = rs.getInt("user_id");
+                    int tagId = rs.getInt("tag_id");
+                    result.computeIfAbsent(userId, k -> new HashSet<>()).add(tagId);
+                }
+            }
+            logger.debug("Found tags for {} users", result.size());
+        } catch (SQLException e) {
+            logger.error("Error finding user tag IDs for multiple users", e);
+        }
+        return result;
+    }
+
     public void updateUserTags(int userId, List<Integer> tagIds) {
         String deleteSql = "DELETE FROM user_tags WHERE user_id = ?";
         String insertSql = "INSERT INTO user_tags (user_id, tag_id) VALUES (?, ?)";
+        boolean originalAutoCommit;
         try (Connection conn = dataSource.getConnection()) {
+            originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
-                 PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                deleteStmt.setInt(1, userId);
-                deleteStmt.executeUpdate();
-                for (Integer tagId : tagIds) {
-                    insertStmt.setInt(1, userId);
-                    insertStmt.setInt(2, tagId);
-                    insertStmt.addBatch();
+            try {
+                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                    deleteStmt.setInt(1, userId);
+                    deleteStmt.executeUpdate();
                 }
-                insertStmt.executeBatch();
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    for (Integer tagId : tagIds) {
+                        insertStmt.setInt(1, userId);
+                        insertStmt.setInt(2, tagId);
+                        insertStmt.addBatch();
+                    }
+                    insertStmt.executeBatch();
+                }
                 conn.commit();
                 logger.info("User tags updated for user: {}", userId);
             } catch (SQLException e) {
                 conn.rollback();
                 logger.error("Error updating user tags for user: {}", userId, e);
                 throw new RuntimeException("Failed to update user tags", e);
+            } finally {
+                conn.setAutoCommit(originalAutoCommit);
             }
         } catch (SQLException e) {
             logger.error("Error updating user tags for user: {}", userId, e);
@@ -268,6 +304,7 @@ public class UserRepository {
         String sql = "SELECT u.* FROM users u " +
                   "LEFT JOIN user_tags ut ON u.id = ut.user_id " +
                   "WHERE u.role = 'USER' " +
+                  "AND u.is_blocked = false " +
                   "AND u.created_at < NOW() - INTERVAL '1 day' " +
                   "AND (u.city IS NULL OR ut.tag_id IS NULL)";
         List<User> users = new ArrayList<>();
@@ -341,29 +378,33 @@ public class UserRepository {
     public void blockUser(int userId, String reason, LocalDateTime blockedUntil, int adminId) {
         String updateSql = "UPDATE users SET is_blocked = true, blocked_until = ?, updated_at = ? WHERE id = ?";
         String historySql = "INSERT INTO block_history (user_id, blocked_by, reason, blocked_until, created_at) VALUES (?, ?, ?, ?, ?)";
-
+        boolean originalAutoCommit;
         try (Connection conn = dataSource.getConnection()) {
+            originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
-                 PreparedStatement historyStmt = conn.prepareStatement(historySql)) {
-                setTimestampOrNull(updateStmt, 1, blockedUntil);
-                updateStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-                updateStmt.setInt(3, userId);
-                updateStmt.executeUpdate();
-
-                historyStmt.setInt(1, userId);
-                historyStmt.setInt(2, adminId);
-                setStringOrNull(historyStmt, 3, reason);
-                setTimestampOrNull(historyStmt, 4, blockedUntil);
-                historyStmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-                historyStmt.executeUpdate();
-
+            try {
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                    setTimestampOrNull(updateStmt, 1, blockedUntil);
+                    updateStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                    updateStmt.setInt(3, userId);
+                    updateStmt.executeUpdate();
+                }
+                try (PreparedStatement historyStmt = conn.prepareStatement(historySql)) {
+                    historyStmt.setInt(1, userId);
+                    historyStmt.setInt(2, adminId);
+                    setStringOrNull(historyStmt, 3, reason);
+                    setTimestampOrNull(historyStmt, 4, blockedUntil);
+                    historyStmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+                    historyStmt.executeUpdate();
+                }
                 conn.commit();
                 logger.info("User {} blocked by admin {}", userId, adminId);
             } catch (SQLException e) {
                 conn.rollback();
                 logger.error("Error blocking user: {}", userId, e);
                 throw new RuntimeException("Failed to block user", e);
+            } finally {
+                conn.setAutoCommit(originalAutoCommit);
             }
         } catch (SQLException e) {
             logger.error("Error blocking user: {}", userId, e);
@@ -402,6 +443,23 @@ public class UserRepository {
         } catch (SQLException e) {
             logger.error("Error soft deleting user: {}", userId, e);
             throw new RuntimeException("Failed to soft delete user", e);
+        }
+    }
+
+    public void updateBlockedStatus(int userId, boolean isBlocked, LocalDateTime blockedUntil) {
+        String sql = "UPDATE users SET is_blocked = ?, blocked_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setBoolean(1, isBlocked);
+            setTimestampOrNull(stmt, 2, blockedUntil);
+            stmt.setInt(3, userId);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                logger.info("Updated blocked status for user {}: isBlocked={}", userId, isBlocked);
+            }
+        } catch (SQLException e) {
+            logger.error("Error updating blocked status for user: {}", userId, e);
+            throw new RuntimeException("Failed to update blocked status", e);
         }
     }
 

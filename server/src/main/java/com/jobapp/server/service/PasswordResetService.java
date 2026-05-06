@@ -33,11 +33,16 @@ public class PasswordResetService {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            logger.warn("Password reset requested for non-existent email: {}", email);
+            logger.debug("Password reset requested for non-existent email: {}", email);
             return;
         }
 
         User user = userOpt.get();
+        if (tokenRepository.hasActiveToken(user.getId())) {
+            logger.debug("Active reset token already exists for user: {}", email);
+            return;
+        }
+
         String token = UUID.randomUUID().toString();
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(TOKEN_EXPIRY_HOURS);
 
@@ -45,7 +50,7 @@ public class PasswordResetService {
         tokenRepository.save(resetToken);
 
         String emailBody = String.format(
-            "Для восстановления пароля используйте токен: %s%n%nСсылка: http://localhost:8080/reset?token=%s%n%nТокен действителен %d часа.",
+            "Для восстановления пароля используйте токен: %s%n%nСсылка: http://localhost:8081/reset?token=%s%n%nТокен действителен %d часа.",
             token, token, TOKEN_EXPIRY_HOURS
         );
 
@@ -54,23 +59,48 @@ public class PasswordResetService {
     }
 
     public void resetPassword(String token, String newPassword) {
-        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
+        if (token != null && !token.trim().isEmpty()) {
+            Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
 
-        if (tokenOpt.isEmpty()) {
-            logger.warn("Password reset attempted with invalid token");
-            throw new IllegalArgumentException("Invalid or expired token");
+            if (tokenOpt.isEmpty()) {
+                logger.warn("Password reset attempted with invalid token");
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            PasswordResetToken resetToken = tokenOpt.get();
+
+            if (resetToken.isExpired()) {
+                logger.warn("Password reset attempted with expired token");
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            Optional<User> userOpt = userRepository.findById(resetToken.getUserId());
+            if (userOpt.isEmpty()) {
+                logger.error("User not found for password reset token");
+                throw new IllegalArgumentException("User not found");
+            }
+
+            User user = userOpt.get();
+            String hashedPassword = PasswordUtil.hash(newPassword);
+            userRepository.updatePassword(user.getId(), hashedPassword);
+
+            boolean deleted = tokenRepository.deleteByTokenIfValid(token);
+            if (!deleted) {
+                logger.warn("Token was already used or expired: {}", token);
+            }
+            tokenRepository.deleteByUserId(user.getId());
+            logger.info("Password reset completed for user: {}", user.getId());
+        } else {
+            logger.warn("Password reset without token - blocked for security");
+            throw new IllegalArgumentException("Token is required");
         }
+    }
 
-        PasswordResetToken resetToken = tokenOpt.get();
+    public void resetPasswordByEmail(String email, String newPassword) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
 
-        if (resetToken.isExpired()) {
-            logger.warn("Password reset attempted with expired token");
-            throw new IllegalArgumentException("Invalid or expired token");
-        }
-
-        Optional<User> userOpt = userRepository.findById(resetToken.getUserId());
         if (userOpt.isEmpty()) {
-            logger.error("User not found for password reset token");
+            logger.warn("Password reset by email for non-existent email: {}", email);
             throw new IllegalArgumentException("User not found");
         }
 
@@ -78,7 +108,6 @@ public class PasswordResetService {
         String hashedPassword = PasswordUtil.hash(newPassword);
         userRepository.updatePassword(user.getId(), hashedPassword);
 
-        tokenRepository.deleteByToken(token);
-        logger.info("Password reset completed for user: {}", user.getId());
+        logger.info("Password reset by email completed for user: {}", user.getEmail());
     }
 }

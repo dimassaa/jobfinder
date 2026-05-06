@@ -25,14 +25,20 @@ public class ApplyCommand {
     public Response execute(Message msg) {
         logger.info("Executing APPLY for user: {}", userId);
         try {
+            if (msg == null) {
+                return new Response("ERROR", "Invalid request", null);
+            }
+
             Integer vacancyId = null;
             if (msg.getData() != null) {
                 String dataJson = objectMapper.writeValueAsString(msg.getData());
                 FavoriteRequest request = objectMapper.readValue(dataJson, FavoriteRequest.class);
-                vacancyId = request.getVacancyId();
+                if (request != null) {
+                    vacancyId = request.getVacancyId();
+                }
             }
-            if (vacancyId == null) {
-                return new Response("ERROR", "vacancyId is required", null);
+            if (vacancyId == null || vacancyId <= 0) {
+                return new Response("ERROR", "Valid vacancyId is required", null);
             }
 
             ApplicationDto application = applicationService.apply(userId, vacancyId);

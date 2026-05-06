@@ -7,12 +7,20 @@ import com.jobapp.client.service.ToastService;
 import com.jobapp.common.dto.NotificationDto;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Cursor;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainController {
 
@@ -37,26 +45,64 @@ public class MainController {
 
     private NotificationClientService notificationClientService;
     private int unreadCount = 0;
+    private List<Tab> tabsToRemove = new ArrayList<>();
 
     @FXML
     private void initialize() {
         logger.info("MainController initialized");
-        
+
         instance = this;
 
-        String email = AppContext.getCurrentEmail();
-        if (email != null && !email.isEmpty()) {
-            welcomeLabel.setText("Добро пожаловать, " + email);
-        } else {
-            welcomeLabel.setText("Добро пожаловать");
+        try {
+            String email = AppContext.getCurrentEmail();
+            if (email != null && !email.isEmpty()) {
+                welcomeLabel.setText("Добро пожаловать, " + email);
+            } else {
+                welcomeLabel.setText("Добро пожаловать");
+            }
+
+            if (notificationBell != null) {
+                notificationBell.setCursor(Cursor.HAND);
+            }
+
+            registerNotificationCallback();
+            loadUnreadCount();
+
+            setupTabSelectionListener();
+            setupRoleBasedTabs();
+        } catch (Exception e) {
+            logger.error("Error during MainController initialization", e);
         }
+    }
 
-        notificationBell.setCursor(Cursor.HAND);
+    private void setupRoleBasedTabs() {
+        if (mainTabPane == null) return;
 
-        registerNotificationCallback();
-        loadUnreadCount();
+        String role = AppContext.getCurrentRole();
+        boolean isHr = "HR".equals(role);
+        boolean isAdmin = "ADMIN".equals(role);
+
+        for (Tab tab : mainTabPane.getTabs()) {
+            String tabText = tab.getText();
+
+            if ("Мои отклики".equals(tabText) || "Избранное".equals(tabText) ||
+                "История просмотров".equals(tabText) || "Рекомендации".equals(tabText)) {
+                tab.setDisable(isHr || isAdmin);
+            }
+
+            if ("Вакансии".equals(tabText)) {
+                tab.setDisable(false);
+            }
+
+            if ("Администрирование".equals(tabText)) {
+                tab.setDisable(!isAdmin);
+                if (!isAdmin) {
+                    tabsToRemove.add(tab);
+                }
+            }
+        }
         
-        setupTabSelectionListener();
+        mainTabPane.getTabs().removeAll(tabsToRemove);
     }
 
     private void setupTabSelectionListener() {
@@ -125,6 +171,34 @@ public class MainController {
                 updateBadge(unreadCount - 1);
             }
         });
+    }
+
+    @FXML
+    private void handleProfileClick() {
+        logger.info("Opening profile window");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+
+            ProfileController controller = new ProfileController();
+            NetworkService networkService = AppContext.getNetworkService();
+            if (networkService != null) {
+                controller.setNetworkService(networkService);
+            }
+            loader.setController(controller);
+
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Мой профиль");
+            stage.setScene(new Scene(root, 650, 550));
+            stage.initOwner(mainTabPane.getScene().getWindow());
+            stage.setResizable(true);
+            stage.show();
+
+            logger.info("Profile window opened");
+        } catch (Exception e) {
+            logger.error("Failed to open profile: {}", e.getMessage());
+        }
     }
 
     @FXML

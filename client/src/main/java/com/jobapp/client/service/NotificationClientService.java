@@ -1,6 +1,8 @@
 package com.jobapp.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
 import com.jobapp.common.Message;
@@ -23,6 +25,8 @@ public class NotificationClientService {
     public NotificationClientService(NetworkService networkService) {
         this.networkService = networkService;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public List<NotificationDto> getNotifications(boolean unreadOnly, int offset, int limit) throws Exception {
@@ -43,7 +47,10 @@ public class NotificationClientService {
     }
 
     public void markAsRead(int notificationId) throws Exception {
-        Message message = new Message("REQUEST", "MARK_NOTIFICATION_READ", notificationId);
+        Map<String, Object> params = new HashMap<>();
+        params.put("notificationId", notificationId);
+
+        Message message = new Message("REQUEST", "MARK_NOTIFICATION_READ", params);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -54,7 +61,10 @@ public class NotificationClientService {
     }
 
     public void delete(int notificationId) throws Exception {
-        Message message = new Message("REQUEST", "DELETE_NOTIFICATION", notificationId);
+        Map<String, Object> params = new HashMap<>();
+        params.put("notificationId", notificationId);
+
+        Message message = new Message("REQUEST", "DELETE_NOTIFICATION", params);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {

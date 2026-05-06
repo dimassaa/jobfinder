@@ -48,7 +48,7 @@ class AnalyticsServiceTest {
         int userId = 1;
         int periodDays = 30;
         List<ChartDataPointDto> dataPoints = Arrays.asList(
-                new ChartDataPointDto("2024-01-01", 50000),
+                new ChartDataPointDto("2024-01-01", 3000),
                 new ChartDataPointDto("2024-01-02", 55000)
         );
 
@@ -58,7 +58,7 @@ class AnalyticsServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.getDataPoints().size());
-        assertEquals(52500.0, result.getAverage(), 0.01);
+        assertEquals(29000.0, result.getAverage(), 0.01);
         assertEquals("30 days", result.getPeriod());
         verify(analyticsRepository).getSalaryStatsByUserTags(userId, periodDays);
     }
@@ -101,8 +101,8 @@ class AnalyticsServiceTest {
     void getGeoDistributionForVacancies_shouldReturnGeoStats() {
         int periodDays = 30;
         List<CityCountDto> cityData = Arrays.asList(
-                new CityCountDto("Moscow", 50, 80000.0),
-                new CityCountDto("SPb", 30, 70000.0)
+                new CityCountDto("Minsk", 50, 3000.0),
+                new CityCountDto("Grodno", 30, 2500.0)
         );
 
         when(analyticsRepository.getGeoDistribution("VACANCY", periodDays)).thenReturn(cityData);
@@ -118,7 +118,7 @@ class AnalyticsServiceTest {
     void getGeoDistributionForApplicants_shouldReturnGeoStats() {
         int periodDays = 30;
         List<CityCountDto> cityData = List.of(
-                new CityCountDto("Moscow", 100, 0.0)
+                new CityCountDto("Minsk", 100, 0.0)
         );
 
         when(analyticsRepository.getGeoDistribution("APPLICANT", periodDays)).thenReturn(cityData);
@@ -191,8 +191,8 @@ class AnalyticsServiceTest {
     void getSalaryComparisonForTags_shouldReturnComparisonData() {
         List<Integer> tagIds = Arrays.asList(1, 2, 3);
         List<ChartDataPointDto> comparison = Arrays.asList(
-                new ChartDataPointDto("Java", 80000),
-                new ChartDataPointDto("Python", 75000)
+                new ChartDataPointDto("Java", 3000),
+                new ChartDataPointDto("Python", 2500)
         );
 
         when(analyticsRepository.getSalaryStatsByTagIds(tagIds)).thenReturn(comparison);

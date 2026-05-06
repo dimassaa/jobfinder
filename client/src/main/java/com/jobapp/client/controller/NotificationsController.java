@@ -65,6 +65,16 @@ public class NotificationsController {
     private void initialize() {
         logger.info("NotificationsController initialized");
 
+        if (notificationClientService == null) {
+            NetworkService ns = AppContext.getNetworkService();
+            if (ns != null && ns.isConnected()) {
+                notificationClientService = new NotificationClientService(ns);
+            } else {
+                logger.error("NetworkService not available or disconnected");
+                return;
+            }
+        }
+
         setupTableColumns();
         notificationsTable.setItems(notificationsList);
 
@@ -148,15 +158,16 @@ public class NotificationsController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/vacancy_details.fxml"));
 
-            Parent root = loader.load();
-
-            VacancyDetailsController controller = loader.getController();
+            VacancyDetailsController controller = new VacancyDetailsController();
             controller.setVacancyId(vacancyId);
 
             NetworkService networkService = AppContext.getNetworkService();
             if (networkService != null) {
                 controller.setNetworkService(networkService);
             }
+            loader.setController(controller);
+
+            Parent root = loader.load();
 
             Stage detailsStage = new Stage();
             detailsStage.setTitle("Вакансия");

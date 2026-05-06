@@ -47,4 +47,7 @@ class PasswordUtilTest {
         assertTrue(PasswordUtil.verify(plainPassword, hash1));
         assertTrue(PasswordUtil.verify(plainPassword, hash2));
     }
+
+    @Test
+    void hash_shouldGenerateUniqueHashes() {
 }

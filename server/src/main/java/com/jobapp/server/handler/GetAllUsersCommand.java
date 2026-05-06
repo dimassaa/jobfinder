@@ -20,15 +20,22 @@ public class GetAllUsersCommand {
     public Response execute(Map<String, Object> params) {
         try {
             String roleFilter = (String) params.get("roleFilter");
-            Boolean blockFilter = params.containsKey("blockFilter") ? (Boolean) params.get("blockFilter") : null;
+            Boolean blockFilter = null;
+            if (params.containsKey("blockFilter")) {
+                Object bf = params.get("blockFilter");
+                if (bf != null) blockFilter = (Boolean) bf;
+            }
             int page = params.containsKey("page") ? ((Number) params.get("page")).intValue() : 0;
             int size = params.containsKey("size") ? ((Number) params.get("size")).intValue() : 20;
 
+            logger.info("GET_ALL_USERS request: roleFilter={}, blockFilter={}, page={}, size={}", roleFilter, blockFilter, page, size);
+
             var users = adminService.getAllUsers(roleFilter, blockFilter, page, size);
+            logger.info("GET_ALL_USERS found {} users", users.size());
             return new Response("OK", null, users);
         } catch (Exception e) {
             logger.error("Error processing GET_ALL_USERS command", e);
-            return new Response("ERROR", "Failed to retrieve users", null);
+            return new Response("ERROR", "Failed to retrieve users: " + e.getMessage(), null);
         }
     }
 }

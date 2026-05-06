@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
@@ -11,37 +12,47 @@
 <?import javafx.scene.text.Text?>
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jobapp.client.controller.ProfileController">
-    <VBox alignment="TOP_CENTER" spacing="16" styleClass="card" maxWidth="600" StackPane.alignment="TOP_CENTER">
+    <VBox alignment="TOP_CENTER" spacing="16" styleClass="card" maxWidth="600">
         <padding>
             <Insets bottom="24" left="24" right="24" top="24" />
         </padding>
 
-        <Text text="Мой профиль" styleClass="h1" StackPane.alignment="CENTER_LEFT">
-            <StackPane.margin>
+        <Text text="Мой профиль" styleClass="h1">
+            <VBox.margin>
                 <Insets bottom="16" />
-            </StackPane.margin>
+            </VBox.margin>
         </Text>
 
         <VBox spacing="12" maxWidth="500">
             <HBox spacing="16">
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="4">
                     <Label text="Имя" styleClass="label-secondary" />
                     <TextField fx:id="nameField" promptText="Иван" styleClass="text-field" />
                 </VBox>
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="4">
                     <Label text="Фамилия" styleClass="label-secondary" />
                     <TextField fx:id="surnameField" promptText="Иванов" styleClass="text-field" />
                 </VBox>
             </HBox>
 
-            <HBox spacing="16">
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox spacing="4">
                     <Label text="Город" styleClass="label-secondary" />
-                    <TextField fx:id="cityField" promptText="Москва" styleClass="text-field" />
+                    <ComboBox fx:id="cityComboBox" promptText="Выберите город" styleClass="combo-box" />
                 </VBox>
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="4">
                     <Label text="Телефон" styleClass="label-secondary" />
-                    <TextField fx:id="phoneField" promptText="+7 (999) 123-45-67" styleClass="text-field" />
+                    <TextField fx:id="phoneField" promptText="+375 (29) 123-45-67" styleClass="text-field" />
+                </VBox>
+            </HBox>
+
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox spacing="4">
+                    <Label text="Навыки" styleClass="label-secondary" />
+                    <HBox spacing="8">
+                        <Button fx:id="selectTagsButton" text="Выбрать навыки" onAction="#handleSelectTags" styleClass="button-secondary" />
+                        <Label fx:id="tagsCountLabel" text="" styleClass="label-secondary" />
+                    </HBox>
                 </VBox>
             </HBox>
 
@@ -52,13 +63,13 @@
         </VBox>
 
         <VBox fx:id="companySection" spacing="12" visible="false" managed="false">
-            <StackPane.margin>
+            <VBox.margin>
                 <Insets top="16" />
-            </StackPane.margin>
+            </VBox.margin>
             <Text text="Информация о компании" styleClass="h2">
-                <StackPane.margin>
+                <VBox.margin>
                     <Insets bottom="8" />
-                </StackPane.margin>
+                </VBox.margin>
             </Text>
 
             <VBox spacing="12" maxWidth="500">
@@ -80,15 +91,15 @@
         </VBox>
 
         <Label fx:id="statusLabel" styleClass="label-error" text="" visible="false">
-            <StackPane.margin>
+            <VBox.margin>
                 <Insets top="8" />
-            </StackPane.margin>
+            </VBox.margin>
         </Label>
 
         <HBox alignment="CENTER_RIGHT" spacing="12">
-            <StackPane.margin>
+            <HBox.margin>
                 <Insets top="16" />
-            </StackPane.margin>
+            </HBox.margin>
             <Button fx:id="cancelButton" onAction="#handleCancel" text="Отмена" styleClass="button-secondary" />
             <Button fx:id="saveButton" onAction="#handleSave" text="Сохранить" styleClass="button-primary" />
         </HBox>

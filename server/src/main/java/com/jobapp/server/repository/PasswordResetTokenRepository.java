@@ -84,6 +84,54 @@ public class PasswordResetTokenRepository {
         }
     }
 
+    public boolean deleteByTokenIfValid(String token) {
+        String selectSql = "SELECT id FROM password_reset_tokens WHERE token = ? AND expires_at > NOW()";
+        String deleteSql = "DELETE FROM password_reset_tokens WHERE token = ?";
+        boolean originalAutoCommit;
+        try (Connection conn = dataSource.getConnection()) {
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+                    selectStmt.setString(1, token);
+                    var rs = selectStmt.executeQuery();
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                    deleteStmt.setString(1, token);
+                    deleteStmt.executeUpdate();
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(originalAutoCommit);
+            }
+        } catch (SQLException e) {
+            logger.error("Error deleting password reset token: {}", token, e);
+            throw new RuntimeException("Failed to delete password reset token", e);
+        }
+    }
+
+    public boolean hasActiveToken(int userId) {
+        String sql = "SELECT 1 FROM password_reset_tokens WHERE user_id = ? AND expires_at > NOW()";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error checking active token for user: {}", userId, e);
+            return false;
+        }
+    }
+
     private void setTimestampOrNull(PreparedStatement stmt, int index, LocalDateTime value) throws SQLException {
         if (value != null) {
             stmt.setTimestamp(index, Timestamp.valueOf(value));

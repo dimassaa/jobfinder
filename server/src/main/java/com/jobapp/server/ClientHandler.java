@@ -25,6 +25,7 @@ import com.jobapp.server.handler.AddFavoriteCommand;
 import com.jobapp.server.handler.RemoveFavoriteCommand;
 import com.jobapp.server.handler.GetFavoritesCommand;
 import com.jobapp.server.handler.AddViewCommand;
+import com.jobapp.server.handler.GetRecentViewsCommand;
 import com.jobapp.server.handler.CreateComplaintCommand;
 import com.jobapp.server.handler.GetRecommendationsCommand;
 import com.jobapp.server.handler.GetSalaryStatsCommand;
@@ -71,6 +72,10 @@ import com.jobapp.server.service.RecommendationService;
 import com.jobapp.server.service.AdminService;
 import com.jobapp.server.service.PasswordResetService;
 import com.jobapp.server.service.EmailService;
+import com.jobapp.server.service.CompanyService;
+import com.jobapp.server.handler.GetAllApplicationsForHrCommand;
+import com.jobapp.server.handler.GetCompanyProfileCommand;
+import com.jobapp.server.handler.SaveCompanyProfileCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +94,11 @@ public class ClientHandler implements Runnable {
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final TagRepository tagRepository;
+    private final com.jobapp.server.repository.VacancyRepository vacancyRepository;
+    private final com.jobapp.server.repository.NotificationRepository notificationRepository;
+    private final com.jobapp.server.repository.ApplicationRepository applicationRepository;
+    private final com.jobapp.server.repository.AnalyticsRepository analyticsRepository;
+    private final com.jobapp.server.repository.PasswordResetTokenRepository passwordResetTokenRepository;
     private final AuthService authService;
     private final SessionManager sessionManager;
     private final UserService userService;
@@ -120,6 +130,7 @@ public class ClientHandler implements Runnable {
     private RemoveFavoriteCommand removeFavoriteCommand;
     private GetFavoritesCommand getFavoritesCommand;
     private AddViewCommand addViewCommand;
+    private GetRecentViewsCommand getRecentViewsCommand;
     private CreateComplaintCommand createComplaintCommand;
     private GetRecommendationsCommand getRecommendationsCommand;
     private GetSalaryStatsCommand getSalaryStatsCommand;
@@ -139,6 +150,10 @@ public class ClientHandler implements Runnable {
     private PasswordResetService passwordResetService;
     private ForgotPasswordCommand forgotPasswordCommand;
     private ResetPasswordCommand resetPasswordCommand;
+    private CompanyService companyService;
+    private GetAllApplicationsForHrCommand getAllApplicationsForHrCommand;
+    private GetCompanyProfileCommand getCompanyProfileCommand;
+    private SaveCompanyProfileCommand saveCompanyProfileCommand;
     private GetAllUsersCommand getAllUsersCommand;
     private BlockUserCommand blockUserCommand;
     private UnblockUserCommand unblockUserCommand;
@@ -157,25 +172,33 @@ public class ClientHandler implements Runnable {
         this.socket = socket;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
+
         this.userRepository = new UserRepository();
         this.companyRepository = new CompanyRepository();
         this.tagRepository = new TagRepository();
+        this.vacancyRepository = new VacancyRepository();
+        this.notificationRepository = new com.jobapp.server.repository.NotificationRepository();
+        this.applicationRepository = new com.jobapp.server.repository.ApplicationRepository();
+        this.analyticsRepository = new AnalyticsRepository();
+        this.passwordResetTokenRepository = new com.jobapp.server.repository.PasswordResetTokenRepository();
+
         this.sessionManager = SessionManager.getInstance();
         this.authService = new AuthService(userRepository, companyRepository);
         this.userService = new UserService(userRepository, companyRepository, tagRepository);
         this.tagService = new TagService(tagRepository);
 
         NotificationService notificationService = new NotificationService(
-                new com.jobapp.server.repository.NotificationRepository(),
-                new VacancyRepository(),
+                notificationRepository,
+                vacancyRepository,
                 companyRepository,
                 sessionManager);
         this.notificationService = notificationService;
 
         this.vacancyService = new VacancyService(
-                new VacancyRepository(),
+                vacancyRepository,
                 companyRepository,
                 tagRepository,
+                new UserRepository(),
                 notificationService);
         this.loginCommand = new LoginCommand(authService, sessionManager, objectMapper);
         this.registerCommand = new RegisterCommand(authService, objectMapper);
@@ -186,33 +209,36 @@ public class ClientHandler implements Runnable {
         this.viewHistoryService = createViewHistoryService();
         this.complaintService = createComplaintService();
         this.recommendationService = new RecommendationService(
-                new VacancyRepository(),
+                vacancyRepository,
                 userRepository,
                 tagRepository,
                 companyRepository);
         this.analyticsService = new AnalyticsService(
-                new AnalyticsRepository(),
+                analyticsRepository,
                 userRepository,
-                new VacancyRepository(),
+                vacancyRepository,
                 companyRepository);
         this.adminService = new AdminService();
         this.passwordResetService = new PasswordResetService(
                 userRepository,
-                new com.jobapp.server.repository.PasswordResetTokenRepository(),
+                passwordResetTokenRepository,
                 new EmailService());
+
+        this.companyService = new CompanyService(companyRepository);
     }
 
     private ApplicationService createApplicationService() {
+        NotificationService appNotificationService = new NotificationService(
+                notificationRepository,
+                vacancyRepository,
+                companyRepository,
+                sessionManager);
         return new ApplicationService(
-                new com.jobapp.server.repository.ApplicationRepository(),
-                new VacancyRepository(),
+                applicationRepository,
+                vacancyRepository,
                 userRepository,
                 companyRepository,
-                new NotificationService(
-                        new com.jobapp.server.repository.NotificationRepository(),
-                        new VacancyRepository(),
-                        companyRepository,
-                        sessionManager));
+                appNotificationService);
     }
 
     private FavoriteService createFavoriteService() {
@@ -230,15 +256,16 @@ public class ClientHandler implements Runnable {
     }
 
     private ComplaintService createComplaintService() {
+        NotificationService complaintNotificationService = new NotificationService(
+                notificationRepository,
+                vacancyRepository,
+                companyRepository,
+                sessionManager);
         return new ComplaintService(
                 new com.jobapp.server.repository.ComplaintRepository(),
-                new VacancyRepository(),
+                vacancyRepository,
                 userRepository,
-                new NotificationService(
-                        new com.jobapp.server.repository.NotificationRepository(),
-                        new VacancyRepository(),
-                        companyRepository,
-                        sessionManager));
+                complaintNotificationService);
     }
 
     @Override
@@ -348,6 +375,15 @@ public class ClientHandler implements Runnable {
             case "UPDATE_APPLICATION_STATUS":
                 response = checkAuthAndExecute(() -> updateApplicationStatusCommand.execute(msg), "UPDATE_APPLICATION_STATUS");
                 break;
+            case "GET_ALL_APPLICATIONS_FOR_HR":
+                response = checkAuthAndExecute(() -> getAllApplicationsForHrCommand.execute(), "GET_ALL_APPLICATIONS_FOR_HR");
+                break;
+            case "GET_COMPANY_PROFILE":
+                response = checkAuthAndExecute(() -> getCompanyProfileCommand.execute(), "GET_COMPANY_PROFILE");
+                break;
+            case "SAVE_COMPANY_PROFILE":
+                response = checkAuthAndExecute(() -> saveCompanyProfileCommand.execute(msg), "SAVE_COMPANY_PROFILE");
+                break;
             case "ADD_FAVORITE":
                 response = checkAuthAndExecute(() -> addFavoriteCommand.execute(msg), "ADD_FAVORITE");
                 break;
@@ -359,6 +395,9 @@ public class ClientHandler implements Runnable {
                 break;
             case "ADD_VIEW":
                 response = checkAuthAndExecute(() -> addViewCommand.execute(msg), "ADD_VIEW");
+                break;
+            case "GET_RECENT_VIEWS":
+                response = checkAuthAndExecute(() -> getRecentViewsCommand.execute(), "GET_RECENT_VIEWS");
                 break;
             case "CREATE_COMPLAINT":
                 response = checkAuthAndExecute(() -> createComplaintCommand.execute(msg), "CREATE_COMPLAINT");
@@ -473,7 +512,7 @@ public class ClientHandler implements Runnable {
         this.getProfileCommand = new GetProfileCommand(userService, currentUserId);
         this.updateProfileCommand = new UpdateProfileCommand(userService, objectMapper, currentUserId);
         this.getUserTagsCommand = new GetUserTagsCommand(userService, currentUserId);
-        this.updateUserTagsCommand = new UpdateUserTagsCommand(userService, objectMapper, currentUserId);
+        this.updateUserTagsCommand = new UpdateUserTagsCommand(userService, recommendationService, objectMapper, currentUserId);
         this.getAllTagsCommand = new GetAllTagsCommand(tagService);
 
         this.applyCommand = new ApplyCommand(applicationService, objectMapper, currentUserId);
@@ -482,11 +521,15 @@ public class ClientHandler implements Runnable {
         this.removeFavoriteCommand = new RemoveFavoriteCommand(favoriteService, objectMapper, currentUserId);
         this.getFavoritesCommand = new GetFavoritesCommand(favoriteService, currentUserId);
         this.addViewCommand = new AddViewCommand(viewHistoryService, objectMapper, currentUserId);
+        this.getRecentViewsCommand = new GetRecentViewsCommand(viewHistoryService, currentUserId);
         this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
         this.getRecommendationsCommand = new GetRecommendationsCommand(recommendationService, currentUserId);
         this.getSalaryStatsCommand = new GetSalaryStatsCommand(analyticsService, currentUserId);
         this.getTopTagsCommand = new GetTopTagsCommand(analyticsService);
         this.getGeoStatsCommand = new GetGeoStatsCommand(analyticsService);
+
+        this.getCompanyProfileCommand = new GetCompanyProfileCommand(companyService, currentUserId);
+        this.saveCompanyProfileCommand = new SaveCompanyProfileCommand(companyService, currentUserId);
 
         var user = userRepository.findById(currentUserId).orElse(null);
         if (user != null && "HR".equalsIgnoreCase(user.getRole())) {
@@ -500,6 +543,9 @@ public class ClientHandler implements Runnable {
                     companyRepository, currentUserId);
             this.getApplicationsForVacancyCommand = new GetApplicationsForVacancyCommand(applicationService, objectMapper, currentUserId);
             this.updateApplicationStatusCommand = new UpdateApplicationStatusCommand(applicationService, objectMapper, currentUserId);
+            this.getAllApplicationsForHrCommand = new GetAllApplicationsForHrCommand(applicationService, currentUserId);
+            this.getCompanyProfileCommand = new GetCompanyProfileCommand(companyService, currentUserId);
+            this.saveCompanyProfileCommand = new SaveCompanyProfileCommand(companyService, currentUserId);
             this.getConversionCommand = new GetConversionCommand(analyticsService, currentUserId, userRepository);
             this.getSalaryComparisonCommand = new GetSalaryComparisonCommand(analyticsService, currentUserId, userRepository);
         } else if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
@@ -548,6 +594,12 @@ public class ClientHandler implements Runnable {
             logger.warn("Unauthorized attempt to execute: {}", commandName);
             return new Response("ERROR", "Unauthorized. Please login first.", null);
         }
+        if (sessionManager.isSessionExpired(currentUserId)) {
+            logger.warn("Session expired for user: {}", currentUserId);
+            currentUserId = null;
+            return new Response("ERROR", "Session expired. Please login again.", null);
+        }
+        sessionManager.refreshSession(currentUserId);
         return action.get();
     }
 }

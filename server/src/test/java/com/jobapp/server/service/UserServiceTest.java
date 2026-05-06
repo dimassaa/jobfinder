@@ -49,8 +49,8 @@ class UserServiceTest {
         user.setRole("JOBSEEKER");
         user.setName("John");
         user.setSurname("Doe");
-        user.setCity("Moscow");
-        user.setPhone("+79991234567");
+        user.setCity("Minsk");
+        user.setPhone("+375291234567");
         user.setAdditionalInfo("Experienced developer");
 
         Tag tag1 = new Tag("Java");
@@ -69,8 +69,8 @@ class UserServiceTest {
         assertNotNull(result);
         assertEquals("John", result.getName());
         assertEquals("Doe", result.getSurname());
-        assertEquals("Moscow", result.getCity());
-        assertEquals("+79991234567", result.getPhone());
+        assertEquals("Minsk", result.getCity());
+        assertEquals("+375291234567", result.getPhone());
         assertEquals("Experienced developer", result.getAdditionalInfo());
         assertEquals(2, result.getTags().size());
     }
@@ -119,14 +119,14 @@ class UserServiceTest {
         user.setId(1);
         user.setRole("JOBSEEKER");
 
-        ProfileDto dto = new ProfileDto("NewName", "NewSurname", "Spb", "+79991234567", "Info");
+        ProfileDto dto = new ProfileDto("NewName", "NewSurname", "Grodno", "+375291234567", "Info");
 
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
         doNothing().when(userRepository).updateProfile(eq(1), any(), any(), any(), any(), any());
 
         userService.updateProfile(1, dto);
 
-        verify(userRepository).updateProfile(eq(1), eq("NewName"), eq("NewSurname"), eq("Spb"), eq("+79991234567"), eq("Info"));
+        verify(userRepository).updateProfile(eq(1), eq("NewName"), eq("NewSurname"), eq("Grodno"), eq("+375291234567"), eq("Info"));
     }
 
     @Test

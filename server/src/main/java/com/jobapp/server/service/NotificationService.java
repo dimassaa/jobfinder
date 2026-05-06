@@ -1,6 +1,8 @@
 package com.jobapp.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.common.dto.NotificationDto;
 import com.jobapp.server.model.Company;
 import com.jobapp.server.model.Notification;
@@ -19,6 +21,10 @@ public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
     private static NotificationService instance;
 
     private final NotificationRepository notificationRepository;
@@ -159,7 +165,8 @@ public class NotificationService {
 
         Optional<Company> companyOpt = companyRepository.findByVacancyId(vacancyId);
         if (companyOpt.isEmpty()) {
-            logger.warn("Company not found for vacancy: {}", vacancyId);
+            logger.error("CRITICAL: Company not found for vacancy {}. Applicant {} may not receive HR notification. Data integrity issue - vacancy should always have a company.",
+                    vacancyId, applicantUserId);
             return;
         }
 

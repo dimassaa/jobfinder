@@ -1,6 +1,9 @@
 -- Database initialization script for jobfinder
 -- PostgreSQL 15+
 
+-- Enable pg_trgm extension for full-text search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Drop tables if exist (in reverse order due to foreign keys)
 DROP TABLE IF EXISTS block_history CASCADE;
 DROP TABLE IF EXISTS password_reset_tokens CASCADE;
@@ -52,6 +55,20 @@ CREATE TABLE companies (
 );
 
 CREATE INDEX idx_companies_user_id ON companies(user_id);
+
+-- =============================================================================
+-- CITIES table (Belarusian cities)
+-- =============================================================================
+CREATE TABLE cities (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE INDEX idx_cities_name ON cities(name);
+
+INSERT INTO cities (name) VALUES 
+    ('Минск'), ('Гродно'), ('Гомель'), ('Брест'), ('Витебск'), ('Могилёв')
+ON CONFLICT (name) DO NOTHING;
 
 -- =============================================================================
 -- TAGS table (skills/skills)
@@ -228,6 +245,11 @@ CREATE TABLE view_history (
 CREATE INDEX idx_view_history_user_id ON view_history(user_id);
 CREATE INDEX idx_view_history_vacancy_id ON view_history(vacancy_id);
 CREATE INDEX idx_view_history_viewed_at ON view_history(viewed_at);
+
+-- Insert default admin user (password: admin)
+-- BCrypt hash for "admin"
+INSERT INTO users (email, password_hash, role, name, surname) VALUES
+    ('admin@jobfinder.by', '$2a$10$IyuOKMDD1BUKoJz2.FrugeJ5tauvv/YY7llOVQ1YE4awSzM1t8T6C', 'ADMIN', 'Администратор', 'Системный');
 
 -- Insert default tags (skills catalog)
 INSERT INTO tags (name) VALUES

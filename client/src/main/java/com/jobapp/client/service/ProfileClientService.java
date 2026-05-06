@@ -1,6 +1,8 @@
 package com.jobapp.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
 import com.jobapp.client.model.UserProfile;
@@ -26,6 +28,8 @@ public class ProfileClientService {
     public ProfileClientService(NetworkService networkService) {
         this.networkService = networkService;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public UserProfile getProfile() throws Exception {
@@ -52,10 +56,13 @@ public class ProfileClientService {
         }
 
         ProfileDto dto = mapToProfileDto(profile);
+        logger.debug("Sending UPDATE_PROFILE with data: name={}, surname={}, city={}",
+            dto.getName(), dto.getSurname(), dto.getCity());
         Message message = new Message("REQUEST", "UPDATE_PROFILE", dto);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
+            logger.error("Update profile failed: {}", response.getMessage());
             throw new RuntimeException(response.getMessage());
         }
 
@@ -109,6 +116,9 @@ public class ProfileClientService {
     }
 
     private UserProfile mapToUserProfile(ProfileDto dto) {
+        if (dto == null) {
+            return null;
+        }
         UserProfile profile = new UserProfile();
         profile.setName(dto.getName());
         profile.setSurname(dto.getSurname());
@@ -124,6 +134,9 @@ public class ProfileClientService {
     }
 
     private ProfileDto mapToProfileDto(UserProfile profile) {
+        if (profile == null) {
+            return null;
+        }
         ProfileDto dto = new ProfileDto(
             profile.getName(),
             profile.getSurname(),

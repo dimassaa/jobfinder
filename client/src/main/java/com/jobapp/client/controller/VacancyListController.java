@@ -59,8 +59,11 @@ public class VacancyListController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        com.jobapp.client.NetworkService networkService = new com.jobapp.client.NetworkService();
-        com.jobapp.client.AppContext.setNetworkService(networkService);
+        com.jobapp.client.NetworkService networkService = com.jobapp.client.AppContext.getNetworkService();
+        if (networkService == null || !networkService.isConnected()) {
+            logger.error("NetworkService not available or disconnected");
+            return;
+        }
         vacancyClientService = new VacancyClientService(networkService);
 
         setupTableColumns();
@@ -262,15 +265,16 @@ public class VacancyListController implements Initializable {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                 getClass().getResource("/fxml/vacancy_details.fxml"));
 
-            javafx.scene.Parent root = loader.load();
-
-            VacancyDetailsController controller = loader.getController();
+            VacancyDetailsController controller = new VacancyDetailsController();
             controller.setVacancyId(vacancy.getId());
 
             com.jobapp.client.NetworkService networkService = com.jobapp.client.AppContext.getNetworkService();
             if (networkService != null) {
                 controller.setNetworkService(networkService);
             }
+            loader.setController(controller);
+
+            javafx.scene.Parent root = loader.load();
 
             javafx.stage.Stage detailsStage = new javafx.stage.Stage();
             detailsStage.setTitle("Вакансия: " + vacancy.getTitle());

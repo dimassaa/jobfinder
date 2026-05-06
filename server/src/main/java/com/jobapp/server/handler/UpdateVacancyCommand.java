@@ -32,6 +32,10 @@ public class UpdateVacancyCommand {
     public Response execute(Message msg) {
         logger.info("Executing UPDATE_VACANCY for user: {}", userId);
         try {
+            if (msg == null || msg.getData() == null) {
+                return new Response("ERROR", "Invalid request data", null);
+            }
+
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 return new Response("ERROR", "User not found", null);
@@ -42,6 +46,10 @@ public class UpdateVacancyCommand {
             }
 
             var updateRequest = objectMapper.convertValue(msg.getData(), VacancyUpdateRequest.class);
+            if (updateRequest == null || updateRequest.getVacancyId() == 0 || updateRequest.getVacancy() == null) {
+                return new Response("ERROR", "Invalid vacancy update request", null);
+            }
+
             vacancyService.update(updateRequest.getVacancyId(), userId, updateRequest.getVacancy());
             return new Response("OK", "Vacancy updated successfully", null);
         } catch (IllegalArgumentException e) {

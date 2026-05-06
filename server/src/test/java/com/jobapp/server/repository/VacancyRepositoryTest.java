@@ -51,9 +51,9 @@ class VacancyRepositoryTest {
         });
 
         Vacancy vacancy = new Vacancy(1, "Senior Developer", "Description");
-        vacancy.setCity("Moscow");
-        vacancy.setSalaryMin(100000);
-        vacancy.setSalaryMax(200000);
+        vacancy.setCity("Minsk");
+        vacancy.setSalaryMin(2000);
+        vacancy.setSalaryMax(4000);
         vacancy.setEmploymentType("FULL_TIME");
 
         Vacancy result = vacancyRepository.save(vacancy);
@@ -71,10 +71,10 @@ class VacancyRepositoryTest {
             when(mockResultSet.getInt("company_id")).thenReturn(1);
             when(mockResultSet.getString("title")).thenReturn("Developer");
             when(mockResultSet.getString("description")).thenReturn("Test description");
-            when(mockResultSet.getString("city")).thenReturn("Moscow");
-            when(mockResultSet.getInt("salary_min")).thenReturn(100000);
+            when(mockResultSet.getString("city")).thenReturn("Minsk");
+            when(mockResultSet.getInt("salary_min")).thenReturn(2000);
             when(mockResultSet.wasNull()).thenReturn(false);
-            when(mockResultSet.getInt("salary_max")).thenReturn(200000);
+            when(mockResultSet.getInt("salary_max")).thenReturn(4000);
             when(mockResultSet.getString("employment_type")).thenReturn("FULL_TIME");
             when(mockResultSet.getBoolean("is_active")).thenReturn(true);
             when(mockResultSet.getTimestamp("created_at")).thenReturn(null);
@@ -109,10 +109,10 @@ class VacancyRepositoryTest {
             when(mockResultSet.getInt("company_id")).thenReturn(1);
             when(mockResultSet.getString("title")).thenReturn("Developer 1").thenReturn("Developer 2");
             when(mockResultSet.getString("description")).thenReturn("Test description");
-            when(mockResultSet.getString("city")).thenReturn("Moscow");
-            when(mockResultSet.getInt("salary_min")).thenReturn(100000);
+            when(mockResultSet.getString("city")).thenReturn("Minsk");
+            when(mockResultSet.getInt("salary_min")).thenReturn(2000);
             when(mockResultSet.wasNull()).thenReturn(false);
-            when(mockResultSet.getInt("salary_max")).thenReturn(200000);
+            when(mockResultSet.getInt("salary_max")).thenReturn(4000);
             when(mockResultSet.getString("employment_type")).thenReturn("FULL_TIME");
             when(mockResultSet.getBoolean("is_active")).thenReturn(true);
             when(mockResultSet.getTimestamp("created_at")).thenReturn(null);
@@ -181,12 +181,12 @@ class VacancyRepositoryTest {
         });
 
         VacancyFilterDto filter = new VacancyFilterDto();
-        filter.setCity("Moscow");
+        filter.setCity("Minsk");
 
         List<Vacancy> result = vacancyRepository.search(filter);
 
         assertEquals(1, result.size());
-        verify(mockStatement).setString(1, "Moscow");
+        verify(mockStatement).setString(1, "Minsk");
     }
 
     @Test
@@ -198,14 +198,14 @@ class VacancyRepositoryTest {
         });
 
         VacancyFilterDto filter = new VacancyFilterDto();
-        filter.setSalaryFrom(50000);
-        filter.setSalaryTo(150000);
+        filter.setSalaryFrom(1000);
+        filter.setSalaryTo(3000);
 
         List<Vacancy> result = vacancyRepository.search(filter);
 
         assertEquals(1, result.size());
-        verify(mockStatement).setInt(1, 50000);
-        verify(mockStatement).setInt(2, 150000);
+        verify(mockStatement).setInt(1, 1000);
+        verify(mockStatement).setInt(2, 3000);
     }
 
     @Test
@@ -248,14 +248,14 @@ class VacancyRepositoryTest {
     void testSearchWithMultipleFilters() throws SQLException {
         when(mockStatement.executeQuery()).thenAnswer(invocation -> {
             when(mockResultSet.next()).thenReturn(true, false);
-            setupVacancyRowMock(mockResultSet, 1, "Java Developer in Moscow");
+            setupVacancyRowMock(mockResultSet, 1, "Java Developer in Minsk");
             return mockResultSet;
         });
 
         VacancyFilterDto filter = new VacancyFilterDto();
         filter.setKeyword("Java");
-        filter.setCity("Moscow");
-        filter.setSalaryFrom(80000);
+        filter.setCity("Minsk");
+        filter.setSalaryFrom(2500);
         filter.setEmploymentType("FULL_TIME");
 
         List<Vacancy> result = vacancyRepository.search(filter);
@@ -326,10 +326,10 @@ class VacancyRepositoryTest {
         when(rs.getInt("company_id")).thenReturn(1);
         when(rs.getString("title")).thenReturn(title);
         when(rs.getString("description")).thenReturn("Test description");
-        when(rs.getString("city")).thenReturn("Moscow");
-        when(rs.getInt("salary_min")).thenReturn(100000);
+        when(rs.getString("city")).thenReturn("Minsk");
+        when(rs.getInt("salary_min")).thenReturn(2000);
         when(rs.wasNull()).thenReturn(false);
-        when(rs.getInt("salary_max")).thenReturn(200000);
+        when(rs.getInt("salary_max")).thenReturn(4000);
         when(rs.getString("employment_type")).thenReturn("FULL_TIME");
         when(rs.getBoolean("is_active")).thenReturn(true);
         when(rs.getTimestamp("created_at")).thenReturn(null);

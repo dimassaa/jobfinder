@@ -13,7 +13,7 @@ public class AdminDtoSerializationTest {
 
     @Test
     void testAdminUserDtoSerialization() throws Exception {
-        AdminUserDto dto = new AdminUserDto(1, "admin@test.com", "ADMIN", "John", "Doe", "Moscow", false, null, LocalDateTime.now());
+        AdminUserDto dto = new AdminUserDto(1, "admin@test.com", "ADMIN", "John", "Doe", "Minsk", false, null, LocalDateTime.now());
         String json = objectMapper.writeValueAsString(dto);
         assertTrue(json.contains("\"email\":\"admin@test.com\""));
         assertTrue(json.contains("\"role\":\"ADMIN\""));

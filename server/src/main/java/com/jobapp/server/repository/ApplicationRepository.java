@@ -142,6 +142,27 @@ public class ApplicationRepository {
         return applications;
     }
 
+    public List<Application> findByVacancyIds(List<Integer> vacancyIds) {
+        if (vacancyIds == null || vacancyIds.isEmpty()) {
+            return List.of();
+        }
+        String sql = "SELECT * FROM applications WHERE vacancy_id = ANY(?) ORDER BY created_at DESC";
+        List<Application> applications = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            Array array = conn.createArrayOf("INTEGER", vacancyIds.toArray());
+            stmt.setArray(1, array);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    applications.add(mapRowToApplication(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching applications by vacancy ids", e);
+        }
+        return applications;
+    }
+
     public List<Application> findByVacancyId(Integer vacancyId) {
         String sql = "SELECT * FROM applications WHERE vacancy_id = ? ORDER BY created_at DESC";
         List<Application> applications = new ArrayList<>();

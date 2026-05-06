@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.FontWeight?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.layout.Priority?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/fx"
+            fx:controller="com.jobapp.client.controller.HrController"
+            style="-fx-background-color: #F5F7FA;">
+
+    <top>
+        <VBox style="-fx-background-color: #1976D2; -fx-padding: 12 24 12 24;">
+            <HBox fx:id="headerBox" alignment="CENTER_LEFT" spacing="10">
+                <Label fx:id="welcomeLabel" text="Панель работодателя" 
+                       style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <Region>
+                    <HBox.hgrow>
+                        <Priority fx:constant="ALWAYS"/>
+                    </HBox.hgrow>
+                </Region>
+                <StackPane fx:id="notificationBadgeContainer">
+                    <Label fx:id="notificationBell" text="&#x2709;" 
+                           style="-fx-font-size: 24px; -fx-cursor: hand; -fx-text-fill: white;"
+                           onMouseClicked="#handleNotificationClick"/>
+                    <Circle fx:id="badgeCircle" radius="8" fill="#FF5722" 
+                            centerX="18" centerY="-4" visible="false"/>
+                    <Label fx:id="badgeLabel" text="" 
+                           style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: white;"
+                           translateX="18" translateY="-4" visible="false"/>
+                </StackPane>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="hrTabPane" tabClosingPolicy="UNAVAILABLE" 
+                 style="-fx-background-color: white;">
+
+            <Tab text="Мои вакансии">
+                <fx:include source="hr_vacancies.fxml"/>
+            </Tab>
+
+            <Tab text="Отклики">
+                <fx:include source="hr_applications.fxml"/>
+            </Tab>
+
+            <Tab text="Моя компания">
+                <fx:include source="hr_company.fxml"/>
+            </Tab>
+
+            <Tab text="Профиль">
+                <fx:include source="profile.fxml"/>
+            </Tab>
+
+            <Tab text="Аналитика">
+                <fx:include source="analytics.fxml"/>
+            </Tab>
+
+            <Tab text="Уведомления">
+                <fx:include source="notifications.fxml"/>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+</BorderPane>

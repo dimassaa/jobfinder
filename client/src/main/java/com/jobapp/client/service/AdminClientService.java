@@ -1,6 +1,8 @@
 package com.jobapp.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.NetworkService;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
@@ -8,7 +10,7 @@ import com.jobapp.common.dto.AdminUserDto;
 import com.jobapp.common.dto.BlockUserRequest;
 import com.jobapp.common.dto.ComplaintAdminDto;
 import com.jobapp.common.dto.ResolveComplaintRequest;
-import com.jobapp.common.dto.AddTagRequest;
+
 import com.jobapp.common.dto.VacancyDto;
 import com.jobapp.common.dto.TagDto;
 import org.slf4j.Logger;
@@ -28,12 +30,14 @@ public class AdminClientService {
     public AdminClientService(NetworkService networkService) {
         this.networkService = networkService;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public List<AdminUserDto> getAllUsers(String role, Boolean isBlocked, int page, int size) throws Exception {
         Map<String, Object> data = new HashMap<>();
-        data.put("role", role);
-        data.put("isBlocked", isBlocked);
+        data.put("roleFilter", role);
+        data.put("blockFilter", isBlocked);
         data.put("page", page);
         data.put("size", size);
 
@@ -65,7 +69,9 @@ public class AdminClientService {
     }
 
     public void unblockUser(int userId) throws Exception {
-        Message message = new Message("REQUEST", "UNBLOCK_USER", userId);
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userId);
+        Message message = new Message("REQUEST", "UNBLOCK_USER", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -76,7 +82,9 @@ public class AdminClientService {
     }
 
     public void deleteUser(int userId) throws Exception {
-        Message message = new Message("REQUEST", "DELETE_USER", userId);
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userId);
+        Message message = new Message("REQUEST", "DELETE_USER", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -87,7 +95,9 @@ public class AdminClientService {
     }
 
     public List<VacancyDto> getAllVacancies(boolean includeInactive) throws Exception {
-        Message message = new Message("REQUEST", "GET_ALL_VACANCIES_ADMIN", includeInactive);
+        Map<String, Object> data = new HashMap<>();
+        data.put("includeInactive", includeInactive);
+        Message message = new Message("REQUEST", "GET_ALL_VACANCIES_ADMIN", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -99,7 +109,9 @@ public class AdminClientService {
     }
 
     public void deleteVacancy(int vacancyId) throws Exception {
-        Message message = new Message("REQUEST", "DELETE_VACANCY_ADMIN", vacancyId);
+        Map<String, Object> data = new HashMap<>();
+        data.put("vacancyId", vacancyId);
+        Message message = new Message("REQUEST", "DELETE_VACANCY_ADMIN", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -137,10 +149,9 @@ public class AdminClientService {
     }
 
     public void addTag(String name) throws Exception {
-        AddTagRequest request = new AddTagRequest();
-        request.setTagName(name);
-
-        Message message = new Message("REQUEST", "ADD_TAG", request);
+        Map<String, Object> data = new HashMap<>();
+        data.put("tagName", name);
+        Message message = new Message("REQUEST", "ADD_TAG", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {
@@ -151,7 +162,9 @@ public class AdminClientService {
     }
 
     public void deactivateTag(int tagId) throws Exception {
-        Message message = new Message("REQUEST", "DEACTIVATE_TAG", tagId);
+        Map<String, Object> data = new HashMap<>();
+        data.put("tagId", tagId);
+        Message message = new Message("REQUEST", "DEACTIVATE_TAG", data);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {

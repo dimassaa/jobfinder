@@ -7,9 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class TagRepository {
 
@@ -119,6 +118,39 @@ public class TagRepository {
         return tags;
     }
 
+    public Map<Integer, List<Tag>> findByVacancyIds(Collection<Integer> vacancyIds) {
+        Map<Integer, List<Tag>> result = new HashMap<>();
+        if (vacancyIds == null || vacancyIds.isEmpty()) {
+            return result;
+        }
+        String sql = "SELECT t.*, vt.vacancy_id as v_id FROM tags t " +
+                    "JOIN vacancy_tags vt ON t.id = vt.tag_id " +
+                    "WHERE vt.vacancy_id IN (";
+        for (int i = 0; i < vacancyIds.size(); i++) {
+            sql += "?";
+            if (i < vacancyIds.size() - 1) sql += ",";
+        }
+        sql += ") ORDER BY t.name";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            int idx = 1;
+            for (Integer id : vacancyIds) {
+                stmt.setInt(idx++, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Tag tag = mapRowToTag(rs);
+                    int vacancyId = rs.getInt("v_id");
+                    result.computeIfAbsent(vacancyId, k -> new ArrayList<>()).add(tag);
+                }
+            }
+            logger.debug("Found tags for {} vacancies", result.size());
+        } catch (SQLException e) {
+            logger.error("Error finding tags by vacancy ids", e);
+        }
+        return result;
+    }
+
     private Tag mapRowToTag(ResultSet rs) throws SQLException {
         Tag tag = new Tag();
         tag.setId(rs.getInt("id"));
@@ -129,5 +161,34 @@ public class TagRepository {
             tag.setCreatedAt(createdAt.toLocalDateTime());
         }
         return tag;
+    }
+
+    public Map<Integer, Tag> findByIds(Collection<Integer> ids) {
+        Map<Integer, Tag> result = new HashMap<>();
+        if (ids == null || ids.isEmpty()) {
+            return result;
+        }
+        StringBuilder sql = new StringBuilder("SELECT * FROM tags WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            sql.append("?");
+            if (i < ids.size() - 1) sql.append(",");
+        }
+        sql.append(")");
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer id : ids) {
+                stmt.setInt(idx++, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Tag tag = mapRowToTag(rs);
+                    result.put(tag.getId(), tag);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding tags by ids", e);
+        }
+        return result;
     }
 }

@@ -5,17 +5,28 @@ import com.jobapp.client.NetworkService;
 import com.jobapp.client.service.AdminClientService;
 import com.jobapp.client.service.ToastService;
 import com.jobapp.common.dto.AdminUserDto;
+import com.jobapp.common.dto.ChartDataPointDto;
 import com.jobapp.common.dto.ComplaintAdminDto;
+import com.jobapp.common.dto.NotificationDto;
 import com.jobapp.common.dto.TagDto;
+import com.jobapp.common.dto.TagUsageDto;
 import com.jobapp.common.dto.VacancyDto;
+import com.jobapp.client.service.AnalyticsClientService;
+import com.jobapp.client.service.NotificationClientService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.shape.Circle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class AdminPanelController {
 
@@ -54,32 +65,81 @@ public class AdminPanelController {
     @FXML
     private Label statusLabel;
 
+    @FXML
+    private ComboBox<String> analyticsPeriodCombo;
+
+    @FXML
+    private Label adminTotalUsersLabel;
+
+    @FXML
+    private Label adminTotalVacanciesLabel;
+
+    @FXML
+    private Label adminTotalApplicationsLabel;
+
+    @FXML
+    private Label adminTotalApplicantsLabel;
+
+    @FXML
+    private Label adminTotalHrLabel;
+
+    @FXML
+    private PieChart adminUsersPieChart;
+
+    @FXML
+    private BarChart<String, Number> adminTagsBarChart;
+
+    @FXML
+    private BarChart<String, Number> adminActivityChart;
+
+    @FXML
+    private TableView<NotificationDto> adminNotificationsTable;
+
+    @FXML
+    private Circle adminBadgeCircle;
+
+    @FXML
+    private Label adminBadgeLabel;
+
     private AdminClientService adminClientService;
+    private AnalyticsClientService analyticsClientService;
+    private NotificationClientService notificationClientService;
     private ObservableList<AdminUserDto> usersData = FXCollections.observableArrayList();
     private ObservableList<VacancyDto> vacanciesData = FXCollections.observableArrayList();
     private ObservableList<ComplaintAdminDto> complaintsData = FXCollections.observableArrayList();
     private ObservableList<TagDto> tagsData = FXCollections.observableArrayList();
+    private ObservableList<NotificationDto> notificationsData = FXCollections.observableArrayList();
+    private int unreadCount = 0;
 
     @FXML
     private void initialize() {
         logger.info("AdminPanelController initialized");
 
         NetworkService networkService = AppContext.getNetworkService();
-        if (networkService != null) {
+        if (networkService != null && networkService.isConnected()) {
             adminClientService = new AdminClientService(networkService);
+            notificationClientService = new NotificationClientService(networkService);
         } else {
-            logger.warn("NetworkService not available");
+            logger.error("NetworkService not available or disconnected");
+            return;
         }
 
         setupUsersTable();
         setupVacanciesTable();
         setupComplaintsTable();
         setupTagsTable();
+        setupNotificationsTable();
 
         roleFilterCombo.getItems().addAll("Все", "USER", "HR", "ADMIN");
         roleFilterCombo.getSelectionModel().selectFirst();
+        blockFilterCombo.getItems().addAll("Все", "Активные", "Заблокированные");
         blockFilterCombo.getSelectionModel().selectFirst();
+        vacancyFilterCombo.getItems().addAll("Активные", "Все");
         vacancyFilterCombo.getSelectionModel().selectFirst();
+        analyticsPeriodCombo.getItems().addAll("Неделя", "Месяц", "Год");
+        analyticsPeriodCombo.getSelectionModel().select("Месяц");
+
+        loadNotifications();
     }
 
     private void setupUsersTable() {
@@ -215,6 +275,42 @@ public class AdminPanelController {
         activeCol.setPrefWidth(100);
 
         tagsTable.getColumns().addAll(idCol, nameCol, activeCol);
+    }
+
+    private void setupNotificationsTable() {
+        adminNotificationsTable.setItems(notificationsData);
+        adminNotificationsTable.getColumns().clear();
+
+        TableColumn<NotificationDto, String> typeCol = new TableColumn<>("Тип");
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeCol.setPrefWidth(100);
+
+        TableColumn<NotificationDto, String> titleCol = new TableColumn<>("Заголовок");
+        titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleCol.setPrefWidth(200);
+
+        TableColumn<NotificationDto, String> contentCol = new TableColumn<>("Содержание");
+        contentCol.setCellValueFactory(new PropertyValueFactory<>("content"));
+        contentCol.setPrefWidth(300);
+
+        TableColumn<NotificationDto, String> dateCol = new TableColumn<>("Дата");
+        dateCol.setCellValueFactory(cellData -> {
+            if (cellData.getValue().getCreatedAt() != null) {
+                return new javafx.beans.property.SimpleStringProperty(
+                    cellData.getValue().getCreatedAt().toString().substring(0, 16));
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+        dateCol.setPrefWidth(150);
+
+        TableColumn<NotificationDto, String> statusCol = new TableColumn<>("Статус");
+        statusCol.setCellValueFactory(cellData -> {
+            Boolean isRead = cellData.getValue().getIsRead();
+            return new javafx.beans.property.SimpleStringProperty(isRead != null && isRead ? "Прочитано" : "Новое");
+        });
+        statusCol.setPrefWidth(80);
+
+        adminNotificationsTable.getColumns().addAll(typeCol, titleCol, contentCol, dateCol, statusCol);
     }
 
     @FXML
@@ -660,5 +756,200 @@ public class AdminPanelController {
         loadVacancies();
         loadComplaints();
         loadTags();
+    }
+
+    @FXML
+    private void handleLoadAnalytics() {
+        loadSystemStats();
+    }
+
+    private void loadSystemStats() {
+        if (analyticsClientService == null) {
+            NetworkService networkService = AppContext.getNetworkService();
+            if (networkService != null) {
+                analyticsClientService = new AnalyticsClientService(networkService);
+            } else {
+                showError("Сервис недоступен");
+                return;
+            }
+        }
+
+        int periodDays = getAnalyticsPeriodDays();
+
+        new Thread(() -> {
+            try {
+                com.jobapp.common.dto.SystemStatsDto stats = analyticsClientService.getSystemStats();
+                List<ChartDataPointDto> timeline = analyticsClientService.getActivityTimeline(periodDays);
+                List<TagUsageDto> topTags = analyticsClientService.getTopTags(periodDays, 10);
+
+                Platform.runLater(() -> {
+                    updateAdminStatsCards(stats);
+                    updateAdminPieChart(stats);
+                    updateAdminTagsChart(topTags);
+                    updateAdminActivityChart(timeline);
+                });
+            } catch (Exception e) {
+                logger.error("Failed to load system stats: {}", e.getMessage());
+                Platform.runLater(() -> showError("Ошибка загрузки статистики: " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    private int getAnalyticsPeriodDays() {
+        String period = analyticsPeriodCombo.getValue();
+        if (period == null) return 30;
+        return switch (period) {
+            case "Неделя" -> 7;
+            case "Месяц" -> 30;
+            case "Год" -> 365;
+            default -> 30;
+        };
+    }
+
+    private void updateAdminStatsCards(com.jobapp.common.dto.SystemStatsDto stats) {
+        if (stats == null) return;
+
+        adminTotalUsersLabel.setText(String.valueOf(stats.getTotalUsers() != null ? stats.getTotalUsers() : 0));
+        adminTotalVacanciesLabel.setText(String.valueOf(stats.getTotalVacancies() != null ? stats.getTotalVacancies() : 0));
+        adminTotalApplicationsLabel.setText(String.valueOf(stats.getTotalApplications() != null ? stats.getTotalApplications() : 0));
+        adminTotalApplicantsLabel.setText(String.valueOf(stats.getTotalApplicants() != null ? stats.getTotalApplicants() : 0));
+        adminTotalHrLabel.setText(String.valueOf(stats.getTotalHr() != null ? stats.getTotalHr() : 0));
+    }
+
+    private void updateAdminPieChart(com.jobapp.common.dto.SystemStatsDto stats) {
+        adminUsersPieChart.getData().clear();
+
+        if (stats == null) return;
+
+        javafx.collections.ObservableList<PieChart.Data> data = javafx.collections.FXCollections.observableArrayList(
+            new PieChart.Data("Соискатели", stats.getTotalApplicants() != null ? stats.getTotalApplicants() : 0),
+            new PieChart.Data("HR", stats.getTotalHr() != null ? stats.getTotalHr() : 0),
+            new PieChart.Data("Админы", stats.getTotalAdmins() != null ? stats.getTotalAdmins() : 0)
+        );
+
+        adminUsersPieChart.setData(data);
+    }
+
+    private void updateAdminTagsChart(List<TagUsageDto> tags) {
+        adminTagsBarChart.getData().clear();
+
+        if (tags == null || tags.isEmpty()) return;
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Теги");
+
+        for (TagUsageDto tag : tags) {
+            series.getData().add(new XYChart.Data<>(tag.getName(), tag.getCount()));
+        }
+
+        adminTagsBarChart.getData().add(series);
+    }
+
+    private void updateAdminActivityChart(List<ChartDataPointDto> timeline) {
+        adminActivityChart.getData().clear();
+
+        if (timeline == null || timeline.isEmpty()) return;
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Активность");
+
+        for (ChartDataPointDto point : timeline) {
+            series.getData().add(new XYChart.Data<>(point.getLabel(), point.getValue()));
+        }
+
+        adminActivityChart.getData().add(series);
+    }
+
+    @FXML
+    private void handleRefreshNotifications() {
+        loadNotifications();
+    }
+
+    private void loadNotifications() {
+        if (notificationClientService == null) {
+            showError("Сервис уведомлений недоступен");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                List<NotificationDto> notifications = notificationClientService.getNotifications(false, 0, 50);
+                int unreadCount = notificationClientService.getUnreadCount();
+                Platform.runLater(() -> {
+                    notificationsData.clear();
+                    notificationsData.addAll(notifications);
+                    updateAdminBadge(unreadCount);
+                });
+            } catch (Exception e) {
+                logger.error("Failed to load notifications: {}", e.getMessage());
+                Platform.runLater(() -> showError("Ошибка загрузки уведомлений: " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    private void updateAdminBadge(int count) {
+        unreadCount = count;
+        if (count > 0) {
+            adminBadgeCircle.setVisible(true);
+            adminBadgeLabel.setVisible(true);
+            adminBadgeLabel.setText(count > 99 ? "99+" : String.valueOf(count));
+        } else {
+            adminBadgeCircle.setVisible(false);
+            adminBadgeLabel.setVisible(false);
+        }
+    }
+
+    @FXML
+    private void handleMarkNotificationRead() {
+        NotificationDto selected = adminNotificationsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Выберите уведомление");
+            return;
+        }
+
+        if (notificationClientService == null) {
+            showError("Сервис уведомлений недоступен");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                notificationClientService.markAsRead(selected.getId());
+                Platform.runLater(() -> {
+                    showSuccess("Уведомление отмечено прочитанным");
+                    loadNotifications();
+                });
+            } catch (Exception e) {
+                logger.error("Failed to mark notification as read: {}", e.getMessage());
+                Platform.runLater(() -> showError("Ошибка: " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    @FXML
+    private void handleDeleteNotification() {
+        NotificationDto selected = adminNotificationsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Выберите уведомление");
+            return;
+        }
+
+        if (notificationClientService == null) {
+            showError("Сервис уведомлений недоступен");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                notificationClientService.delete(selected.getId());
+                Platform.runLater(() -> {
+                    showSuccess("Уведомление удалено");
+                    loadNotifications();
+                });
+            } catch (Exception e) {
+                logger.error("Failed to delete notification: {}", e.getMessage());
+                Platform.runLater(() -> showError("Ошибка: " + e.getMessage()));
+            }
+        }).start();
     }
 }

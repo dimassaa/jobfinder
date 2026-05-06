@@ -1,6 +1,8 @@
 package com.jobapp.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.AppContext;
 import com.jobapp.client.NetworkService;
 import com.jobapp.common.Message;
@@ -22,6 +24,8 @@ public class FavoriteClientService {
     public FavoriteClientService(NetworkService networkService) {
         this.networkService = networkService;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public void add(int vacancyId) throws Exception {
@@ -30,7 +34,10 @@ public class FavoriteClientService {
             throw new IllegalStateException("User not logged in");
         }
 
-        Message message = new Message("REQUEST", "ADD_FAVORITE", vacancyId);
+        FavoriteRequest request = new FavoriteRequest();
+        request.setVacancyId(vacancyId);
+
+        Message message = new Message("REQUEST", "ADD_FAVORITE", request);
         Response response = networkService.sendAndReceive(message);
 
         if (!"OK".equals(response.getStatus())) {

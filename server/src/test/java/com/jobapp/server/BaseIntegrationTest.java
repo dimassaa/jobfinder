@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -41,6 +42,18 @@ abstract class BaseIntegrationTest {
         }
     }
 
+    private void waitForServer(int port, int timeoutMs) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            try (Socket testSocket = new Socket("localhost", port)) {
+                return;
+            } catch (IOException e) {
+                Thread.sleep(50);
+            }
+        }
+        throw new RuntimeException("Server did not start within " + timeoutMs + "ms");
+    }
+
     @BeforeEach
     void setUpBase() throws Exception {
         objectMapper = new ObjectMapper();
@@ -51,16 +64,13 @@ abstract class BaseIntegrationTest {
 
         Server server = new Server(testPort);
         serverThread = new Thread(() -> server.start());
-        serverThread.setDaemon(true);
         serverThread.start();
 
-        Thread.sleep(200);
+        waitForServer(testPort, 5000);
 
         socket = new Socket("localhost", testPort);
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        Thread.sleep(100);
     }
 
     @AfterEach

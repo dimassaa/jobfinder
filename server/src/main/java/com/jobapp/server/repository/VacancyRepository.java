@@ -10,13 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class VacancyRepository {
 
@@ -139,10 +134,13 @@ public class VacancyRepository {
     }
 
     public List<Vacancy> search(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return findAllActive();
+        }
         String sql = "SELECT * FROM vacancies WHERE is_active = true AND " +
                     "(title ILIKE ? OR description ILIKE ? OR city ILIKE ?) ORDER BY created_at DESC";
         List<Vacancy> vacancies = new ArrayList<>();
-        String searchPattern = "%" + query + "%";
+        String searchPattern = "%" + query.trim() + "%";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, searchPattern);
@@ -394,5 +392,37 @@ public class VacancyRepository {
             logger.error("Error soft deleting vacancy by admin: {}", vacancyId, e);
             throw new RuntimeException("Failed to soft delete vacancy", e);
         }
+    }
+
+    public Map<Integer, Vacancy> findByIds(Collection<Integer> ids) {
+        Map<Integer, Vacancy> result = new HashMap<>();
+        if (ids == null || ids.isEmpty()) {
+            return result;
+        }
+        StringBuilder sql = new StringBuilder("SELECT * FROM vacancies WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            sql.append("?");
+            if (i < ids.size() - 1) {
+                sql.append(",");
+            }
+        }
+        sql.append(")");
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Integer id : ids) {
+                stmt.setInt(idx++, id);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Vacancy vacancy = mapRowToVacancy(rs);
+                    result.put(vacancy.getId(), vacancy);
+                }
+            }
+            logger.debug("Found {} vacancies for {} IDs", result.size(), ids.size());
+        } catch (SQLException e) {
+            logger.error("Error finding vacancies by ids", e);
+        }
+        return result;
     }
 }

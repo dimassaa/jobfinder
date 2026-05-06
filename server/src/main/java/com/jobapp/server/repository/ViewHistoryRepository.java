@@ -31,6 +31,34 @@ public class ViewHistoryRepository {
         }
     }
 
+    public boolean exists(int userId, int vacancyId) {
+        String sql = "SELECT 1 FROM view_history WHERE user_id = ? AND vacancy_id = ?";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, vacancyId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error checking view history exists: user {} vacancy {}", userId, vacancyId, e);
+            return false;
+        }
+    }
+
+    public void updateTimestamp(int userId, int vacancyId) {
+        String sql = "UPDATE view_history SET viewed_at = ? WHERE user_id = ? AND vacancy_id = ?";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setInt(2, userId);
+            stmt.setInt(3, vacancyId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error updating view history timestamp: user {} vacancy {}", userId, vacancyId, e);
+        }
+    }
+
     public List<Vacancy> getRecentViews(int userId, int limit) {
         String sql = "SELECT v.* FROM vacancies v " +
                     "INNER JOIN view_history vh ON v.id = vh.vacancy_id " +

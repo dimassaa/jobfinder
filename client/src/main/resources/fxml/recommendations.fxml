@@ -5,7 +5,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -20,23 +19,19 @@
         <Insets top="16" right="24" bottom="16" left="24"/>
     </padding>
 
-    <HBox spacing="12" alignment="CENTER_LEFT">
-        <Label text="Рекомендованные вакансии" wrapText="true">
-            <font>
-                <Font size="20" weight="BOLD"/>
-            </font>
-        </Label>
+<HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Рекомендованные вакансии" wrapText="true" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
         <Button fx:id="refreshButton" text="Обновить" onAction="#handleRefresh" styleClass="button-secondary"/>
     </HBox>
 
-    <StackPane VBox.vgrow="ALWAYS">
+    <StackPane>
         <TableView fx:id="recommendationsTable" onMouseClicked="#handleTableClick">
             <columns>
                 <TableColumn fx:id="titleColumn" text="Название" prefWidth="200"/>
                 <TableColumn fx:id="companyColumn" text="Компания" prefWidth="150"/>
                 <TableColumn fx:id="cityColumn" text="Город" prefWidth="120"/>
                 <TableColumn fx:id="salaryColumn" text="Зарплата" prefWidth="120"/>
-                <TableColumn fx:id="matchPercentColumn" text="% совпадения" prefWidth="120"/>
+                <TableColumn fx:id="matchPercentColumn" text="Процент совпадения" prefWidth="120"/>
             </columns>
         </TableView>
     </StackPane>

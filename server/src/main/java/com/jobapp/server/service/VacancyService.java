@@ -17,11 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VacancyService {
@@ -44,10 +40,18 @@ public class VacancyService {
                           CompanyRepository companyRepository,
                           TagRepository tagRepository,
                           NotificationService notificationService) {
+        this(vacancyRepository, companyRepository, tagRepository, null, notificationService);
+    }
+
+    public VacancyService(VacancyRepository vacancyRepository,
+                          CompanyRepository companyRepository,
+                          TagRepository tagRepository,
+                          UserRepository userRepository,
+                          NotificationService notificationService) {
         this.vacancyRepository = vacancyRepository;
         this.companyRepository = companyRepository;
         this.tagRepository = tagRepository;
-        this.userRepository = new UserRepository();
+        this.userRepository = userRepository != null ? userRepository : new UserRepository();
         this.notificationService = notificationService;
     }
 
@@ -64,6 +68,16 @@ public class VacancyService {
         if (company.getUserId() != userId) {
             logger.warn("User {} is not owner of company {}", userId, companyId);
             throw new IllegalArgumentException("User is not the owner of this company");
+        }
+
+        if (req.getTitle() == null || req.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Title is required");
+        }
+        if (req.getDescription() == null || req.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Description is required");
+        }
+        if (req.getSalaryMin() != null && req.getSalaryMax() != null && req.getSalaryMin() > req.getSalaryMax()) {
+            throw new IllegalArgumentException("Salary minimum cannot be greater than maximum");
         }
 
         Vacancy vacancy = new Vacancy();
@@ -93,7 +107,7 @@ public class VacancyService {
 
     public void checkAndNotifyMatchingUsers(int vacancyId) {
         if (notificationService == null) {
-            logger.debug("NotificationService not available, skipping notifications for vacancy {}", vacancyId);
+            logger.warn("CRITICAL: NotificationService is null for vacancy {}. Users will not receive matching vacancy notifications.", vacancyId);
             return;
         }
 
@@ -114,6 +128,10 @@ public class VacancyService {
         }
 
         List<User> allUsers = userRepository.findAllUsersWithTags();
+        Set<Integer> userIds = allUsers.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        Map<Integer, Set<Integer>> userTagIdsMap = userRepository.findUserTagIdsByUserIds(userIds);
         int notificationCount = 0;
 
         for (User user : allUsers) {
@@ -121,8 +139,8 @@ public class VacancyService {
                 continue;
             }
 
-            Set<Integer> userTagIds = userRepository.findUserTagIds(user.getId());
-            if (userTagIds.isEmpty()) {
+            Set<Integer> userTagIds = userTagIdsMap.get(user.getId());
+            if (userTagIds == null || userTagIds.isEmpty()) {
                 continue;
             }
 
@@ -239,11 +257,21 @@ public class VacancyService {
     public List<VacancyDto> search(VacancyFilterDto filter) {
         logger.debug("Searching vacancies with filter");
         List<Vacancy> vacancies = vacancyRepository.search(filter);
+        Set<Integer> companyIds = vacancies.stream()
+                .map(Vacancy::getCompanyId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Set<Integer> vacancyIds = vacancies.stream()
+                .map(Vacancy::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Integer, Company> companyMap = companyRepository.findByIds(companyIds);
+        Map<Integer, List<Tag>> tagsMap = tagRepository.findByVacancyIds(vacancyIds);
         return vacancies.stream()
                 .map(v -> {
-                    Optional<Company> companyOpt = companyRepository.findById(v.getCompanyId());
-                    Company company = companyOpt.orElse(null);
-                    return toDto(v, company);
+                    Company company = companyMap.get(v.getCompanyId());
+                    List<Tag> tags = tagsMap.getOrDefault(v.getId(), Collections.emptyList());
+                    return toDto(v, company, tags);
                 })
                 .collect(Collectors.toList());
     }
@@ -253,19 +281,30 @@ public class VacancyService {
         List<Vacancy> vacancies = vacancyRepository.findByCompanyId(companyId);
         Optional<Company> companyOpt = companyRepository.findById(companyId);
         Company company = companyOpt.orElse(null);
+        Set<Integer> vacancyIds = vacancies.stream()
+                .map(Vacancy::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Integer, List<Tag>> tagsMap = tagRepository.findByVacancyIds(vacancyIds);
         return vacancies.stream()
-                .map(v -> toDto(v, company))
+                .map(v -> {
+                    List<Tag> tags = tagsMap.getOrDefault(v.getId(), Collections.emptyList());
+                    return toDto(v, company, tags);
+                })
                 .collect(Collectors.toList());
     }
 
     private void validateTags(List<Integer> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return;
+        }
+        Map<Integer, Tag> tagMap = tagRepository.findByIds(tagIds);
         for (Integer tagId : tagIds) {
-            Optional<Tag> tagOpt = tagRepository.findById(tagId);
-            if (tagOpt.isEmpty()) {
+            Tag tag = tagMap.get(tagId);
+            if (tag == null) {
                 logger.warn("Tag not found: {}", tagId);
                 throw new IllegalArgumentException("Tag not found: " + tagId);
             }
-            Tag tag = tagOpt.get();
             if (!Boolean.TRUE.equals(tag.getIsActive())) {
                 logger.warn("Tag is not active: {}", tagId);
                 throw new IllegalArgumentException("Tag is not active: " + tagId);
@@ -274,6 +313,11 @@ public class VacancyService {
     }
 
     private VacancyDto toDto(Vacancy vacancy, Company company) {
+        List<Tag> tags = tagRepository.findByVacancyId(vacancy.getId());
+        return toDto(vacancy, company, tags);
+    }
+
+    private VacancyDto toDto(Vacancy vacancy, Company company, List<Tag> tags) {
         VacancyDto dto = new VacancyDto(
                 vacancy.getId(),
                 vacancy.getCompanyId(),
@@ -289,7 +333,6 @@ public class VacancyService {
                 new ArrayList<>()
         );
 
-        List<Tag> tags = tagRepository.findByVacancyId(vacancy.getId());
         List<TagDto> tagDtos = tags.stream()
                 .map(tag -> new TagDto(tag.getId(), tag.getName(), tag.getIsActive()))
                 .collect(Collectors.toList());

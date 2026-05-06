@@ -65,6 +65,16 @@ public class ViewHistoryController {
     private void initialize() {
         logger.info("ViewHistoryController initialized");
 
+        if (viewHistoryClientService == null) {
+            NetworkService ns = AppContext.getNetworkService();
+            if (ns != null && ns.isConnected()) {
+                viewHistoryClientService = new ViewHistoryClientService(ns);
+            } else {
+                logger.error("NetworkService not available or disconnected");
+                return;
+            }
+        }
+
         setupTableColumns();
         historyTable.setItems(historyList);
 
@@ -117,10 +127,11 @@ public class ViewHistoryController {
         new Thread(() -> {
             try {
                 List<VacancyDto> views = viewHistoryClientService.getRecentViews();
+                final List<VacancyDto> viewList = views != null ? views : new java.util.ArrayList<>();
                 Platform.runLater(() -> {
                     historyList.clear();
-                    historyList.addAll(views);
-                    statusLabel.setText("Просмотрено вакансий: " + views.size());
+                    historyList.addAll(viewList);
+                    statusLabel.setText("Просмотрено вакансий: " + viewList.size());
                     statusLabel.setVisible(true);
                 });
             } catch (Exception e) {
@@ -150,15 +161,16 @@ public class ViewHistoryController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/vacancy_details.fxml"));
 
-            Parent root = loader.load();
-
-            VacancyDetailsController controller = loader.getController();
+            VacancyDetailsController controller = new VacancyDetailsController();
             controller.setVacancyId(vacancy.getId());
 
             NetworkService networkService = AppContext.getNetworkService();
             if (networkService != null) {
                 controller.setNetworkService(networkService);
             }
+            loader.setController(controller);
+
+            Parent root = loader.load();
 
             Stage detailsStage = new Stage();
             detailsStage.setTitle("Вакансия: " + vacancy.getTitle());

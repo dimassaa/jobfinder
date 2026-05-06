@@ -48,6 +48,12 @@ public class AdminService {
     }
 
     public List<AdminUserDto> getAllUsers(String roleFilter, Boolean blockFilter, int page, int size) {
+        if (size <= 0 || size > 100) {
+            size = 20;
+        }
+        if (page < 0) {
+            page = 0;
+        }
         int offset = page * size;
         List<User> users = userRepository.findAllWithFilters(roleFilter, blockFilter, offset, size);
         List<AdminUserDto> dtos = new ArrayList<>();
@@ -180,7 +186,7 @@ public class AdminService {
         }
         var existing = tagRepository.findByName(name.trim());
         if (existing.isPresent()) {
-            throw new RuntimeException("Tag already exists: " + name);
+            throw new IllegalArgumentException("Tag already exists: " + name);
         }
         var tag = new com.jobapp.server.model.Tag();
         tag.setName(name.trim());

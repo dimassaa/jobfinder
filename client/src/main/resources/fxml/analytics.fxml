@@ -35,13 +35,7 @@
             <Tab text="Зарплаты" fx:id="salariesTab">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <ComboBox fx:id="salaryPeriodCombo" promptText="Выберите период"
-                              onAction="#onSalaryPeriodChanged">
-                        <items>
-                            <String fx:value="Неделя"/>
-                            <String fx:value="Месяц"/>
-                            <String fx:value="Год"/>
-                        </items>
-                    </ComboBox>
+                              onAction="#onSalaryPeriodChanged"/>
                     <LineChart fx:id="salaryChart" legendVisible="true">
                         <xAxis>
                             <CategoryAxis label="Период"/>
@@ -56,13 +50,7 @@
             <Tab text="Тренды навыков" fx:id="tagsTab">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <ComboBox fx:id="tagsPeriodCombo" promptText="Выберите период"
-                              onAction="#onTagsPeriodChanged">
-                        <items>
-                            <String fx:value="Неделя"/>
-                            <String fx:value="Месяц"/>
-                            <String fx:value="Год"/>
-                        </items>
-                    </ComboBox>
+                              onAction="#onTagsPeriodChanged"/>
                     <BarChart fx:id="tagsChart">
                         <xAxis>
                             <CategoryAxis label="Навык"/>
@@ -77,13 +65,7 @@
             <Tab text="География" fx:id="geoTab">
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <ComboBox fx:id="geoPeriodCombo" promptText="Выберите период"
-                              onAction="#onGeoPeriodChanged">
-                        <items>
-                            <String fx:value="Неделя"/>
-                            <String fx:value="Месяц"/>
-                            <String fx:value="Год"/>
-                        </items>
-                    </ComboBox>
+                              onAction="#onGeoPeriodChanged"/>
                     <BarChart fx:id="geoChart">
                         <xAxis>
                             <CategoryAxis label="Город"/>
@@ -133,28 +115,62 @@
             </Tab>
 
             <Tab text="Общая статистика" fx:id="systemStatsTab">
-                <VBox spacing="10" style="-fx-padding: 10;">
+                <VBox spacing="15" style="-fx-padding: 15;">
                     <ComboBox fx:id="systemPeriodCombo" promptText="Выберите период"
-                              onAction="#onSystemPeriodChanged">
-                        <items>
-                            <String fx:value="Неделя"/>
-                            <String fx:value="Месяц"/>
-                            <String fx:value="Год"/>
-                        </items>
-                    </ComboBox>
-                    <PieChart fx:id="usersPieChart" labelLineSide="RIGHT" legendVisible="true">
-                        <title>
-                            <Label text="Пользователи по ролям" font="$FONT_BOLD_14"/>
-                        </title>
-                    </PieChart>
-                    <BarChart fx:id="activityChart">
-                        <xAxis>
-                            <CategoryAxis label="Дата"/>
-                        </xAxis>
-                        <yAxis>
-                            <NumberAxis label="Активность"/>
-                        </yAxis>
-                    </BarChart>
+                              onAction="#onSystemPeriodChanged" prefWidth="150"/>
+
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-min-width: 120;">
+                            <Label fx:id="totalUsersLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+                            <Label text="Всего пользователей" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                        </VBox>
+                        <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-min-width: 120;">
+                            <Label fx:id="totalVacanciesLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
+                            <Label text="Всего вакансий" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                        </VBox>
+                        <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-min-width: 120;">
+                            <Label fx:id="totalApplicationsLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
+                            <Label text="Всего откликов" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                        </VBox>
+                        <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-min-width: 120;">
+                            <Label fx:id="totalApplicantsLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;"/>
+                            <Label text="Соискателей" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                        </VBox>
+                        <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-min-width: 120;">
+                            <Label fx:id="totalHrLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #00BCD4;"/>
+                            <Label text="Работодателей" style="-fx-font-size: 12px; -fx-text-fill: #757575;"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="15" VBox.vgrow="ALWAYS">
+                        <VBox spacing="10" HBox.hgrow="ALWAYS">
+                            <Label text="Пользователи по ролям" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                            <PieChart fx:id="usersPieChart" legendVisible="true" minHeight="200"/>
+                        </VBox>
+                        <VBox spacing="10" HBox.hgrow="ALWAYS">
+                            <Label text="Топ-10 тегов" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                            <BarChart fx:id="adminTagsChart" minHeight="200">
+                                <xAxis>
+                                    <CategoryAxis label="Тег"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Количество"/>
+                                </yAxis>
+                            </BarChart>
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="10" VBox.vgrow="ALWAYS">
+                        <Label text="Активность по дням" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        <BarChart fx:id="activityChart" minHeight="200">
+                            <xAxis>
+                                <CategoryAxis label="Дата"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Активность"/>
+                            </yAxis>
+                        </BarChart>
+                    </VBox>
                 </VBox>
             </Tab>
 

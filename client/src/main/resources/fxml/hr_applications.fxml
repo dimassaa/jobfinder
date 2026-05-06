@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.FontWeight?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/fx"
+           fx:controller="com.jobapp.client.controller.HrApplicationsController">
+    <VBox spacing="16" styleClass="card">
+        <padding>
+            <Insets top="16" right="24" bottom="16" left="24"/>
+        </padding>
+
+        <Label text="Отклики на мои вакансии" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+        <Label fx:id="statusLabel" styleClass="label-secondary" wrapText="true" visible="false"/>
+
+        <TableView fx:id="applicationsTable" onMouseClicked="#handleTableClick">
+            <columns>
+                <TableColumn fx:id="vacancyTitleColumn" text="Вакансия" prefWidth="180"/>
+                <TableColumn fx:id="candidateColumn" text="Соискатель" prefWidth="200"/>
+                <TableColumn fx:id="statusColumn" text="Статус" prefWidth="140"/>
+                <TableColumn fx:id="createdAtColumn" text="Дата отклика" prefWidth="160"/>
+            </columns>
+        </TableView>
+
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="refreshButton" text="Обновить" onAction="#handleRefresh" styleClass="button-secondary"/>
+            <Label text="Изменить статус:" styleClass="label-secondary"/>
+            <ComboBox fx:id="statusCombo" styleClass="combo-box" promptText="Выберите статус"/>
+            <Button fx:id="updateStatusButton" text="Применить" onAction="#handleUpdateStatus" styleClass="button-primary"/>
+        </HBox>
+    </VBox>
+</StackPane>

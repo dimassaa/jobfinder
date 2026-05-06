@@ -31,14 +31,18 @@ public class ResetPasswordCommand {
             String token = (String) data.get("token");
             String newPassword = (String) data.get("newPassword");
 
-            if (token == null || token.trim().isEmpty()) {
-                return new Response("ERROR", "Token is required", null);
-            }
             if (newPassword == null || newPassword.length() < 6) {
                 return new Response("ERROR", "Password must be at least 6 characters", null);
             }
 
-            passwordResetService.resetPassword(token.trim(), newPassword);
+            if (token != null && token.contains("@")) {
+                passwordResetService.resetPasswordByEmail(token.trim(), newPassword);
+            } else if (token != null && !token.trim().isEmpty()) {
+                passwordResetService.resetPassword(token.trim(), newPassword);
+            } else {
+                return new Response("ERROR", "Email or token is required", null);
+            }
+
             return new Response("OK", "Password has been reset successfully", null);
         } catch (IllegalArgumentException e) {
             logger.warn("Password reset failed: {}", e.getMessage());

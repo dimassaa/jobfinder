@@ -1,6 +1,8 @@
 package com.jobapp.client.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.NetworkService;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
@@ -22,6 +24,8 @@ public class AnalyticsClientService {
     public AnalyticsClientService(NetworkService networkService) {
         this.networkService = networkService;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public SalaryStatsDto getSalaryStats(int periodDays) throws Exception {

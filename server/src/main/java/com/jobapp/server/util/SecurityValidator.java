@@ -18,6 +18,7 @@ public class SecurityValidator {
     private static final Set<String> HR_COMMANDS = Set.of(
             "CREATE_VACANCY", "UPDATE_VACANCY", "CLOSE_VACANCY", "GET_MY_VACANCIES",
             "GET_APPLICATIONS_FOR_VACANCY", "UPDATE_APPLICATION_STATUS",
+            "GET_ALL_APPLICATIONS_FOR_HR", "GET_COMPANY_PROFILE", "SAVE_COMPANY_PROFILE",
             "GET_CONVERSION", "GET_SALARY_COMPARISON"
     );
 

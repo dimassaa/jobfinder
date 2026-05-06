@@ -34,7 +34,11 @@ public class ViewHistoryService {
 
     public void addView(int userId, int vacancyId) {
         logger.debug("Recording view of vacancy {} by user {}", vacancyId, userId);
-        viewHistoryRepository.add(userId, vacancyId);
+        if (viewHistoryRepository.exists(userId, vacancyId)) {
+            viewHistoryRepository.updateTimestamp(userId, vacancyId);
+        } else {
+            viewHistoryRepository.add(userId, vacancyId);
+        }
     }
 
     public List<VacancyDto> getRecentViews(int userId) {

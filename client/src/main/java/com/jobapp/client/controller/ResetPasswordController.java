@@ -44,12 +44,17 @@ public class ResetPasswordController {
 
     @FXML
     private void handleResetPassword() {
-        String token = tokenField.getText().trim();
+        String emailOrToken = tokenField.getText().trim();
         String newPassword = newPasswordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        if (token.isEmpty()) {
-            showError("Пожалуйста, введите код из email");
+        if (emailOrToken.isEmpty()) {
+            showError("Пожалуйста, введите email");
+            return;
+        }
+
+        if (!emailOrToken.contains("@")) {
+            showError("Пожалуйста, введите корректный email");
             return;
         }
 
@@ -72,7 +77,7 @@ public class ResetPasswordController {
 
         new Thread(() -> {
             try {
-                passwordResetService.resetPassword(token, newPassword);
+                passwordResetService.resetPassword(emailOrToken, newPassword);
                 Platform.runLater(() -> {
                     showSuccess("Пароль успешно сброшен!");
                     openLoginScene();

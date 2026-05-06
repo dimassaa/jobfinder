@@ -13,6 +13,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import org.slf4j.Logger;
@@ -79,6 +80,24 @@ public class AnalyticsController {
     private BarChart<String, Number> activityChart;
 
     @FXML
+    private BarChart<String, Number> adminTagsChart;
+
+    @FXML
+    private Label totalUsersLabel;
+
+    @FXML
+    private Label totalVacanciesLabel;
+
+    @FXML
+    private Label totalApplicationsLabel;
+
+    @FXML
+    private Label totalApplicantsLabel;
+
+    @FXML
+    private Label totalHrLabel;
+
+    @FXML
     private ComboBox<VacancyDto> vacancySelectCombo;
 
     @FXML
@@ -104,6 +123,11 @@ public class AnalyticsController {
         userRole = AppContext.getCurrentRole();
         analyticsService = new AnalyticsClientService(AppContext.getNetworkService());
         vacancyService = new VacancyClientService(AppContext.getNetworkService());
+
+        salaryPeriodCombo.getItems().addAll("Неделя", "Месяц", "Год");
+        tagsPeriodCombo.getItems().addAll("Неделя", "Месяц", "Год");
+        geoPeriodCombo.getItems().addAll("Неделя", "Месяц", "Год");
+        systemPeriodCombo.getItems().addAll("Неделя", "Месяц", "Год");
 
         configureTabsByRole();
         setDefaultPeriods();
@@ -133,21 +157,39 @@ public class AnalyticsController {
         loadSystemStats(systemPeriod);
 
         int tagsPeriod = getPeriodDays(tagsPeriodCombo.getValue());
-        loadTagsDataForAdmin(tagsPeriod);
+        loadAdminTopTags(tagsPeriod);
 
         int geoPeriod = getPeriodDays(geoPeriodCombo.getValue());
         loadGeoDataForAdmin(geoPeriod);
     }
 
-    private void loadTagsDataForAdmin(int periodDays) {
+    private void loadAdminTopTags(int periodDays) {
         new Thread(() -> {
             try {
                 List<TagUsageDto> tags = analyticsService.getTopTags(periodDays, 10);
-                Platform.runLater(() -> updateTagsChart(tags));
+                Platform.runLater(() -> updateAdminTagsChart(tags));
             } catch (Exception e) {
                 logger.error("Failed to load top tags for admin: {}", e.getMessage());
             }
         }).start();
+    }
+
+    private void updateAdminTagsChart(List<TagUsageDto> tags) {
+        adminTagsChart.getData().clear();
+
+        if (tags == null || tags.isEmpty()) {
+            logger.info("No admin tags data available");
+            return;
+        }
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Теги");
+
+        for (TagUsageDto tag : tags) {
+            series.getData().add(new XYChart.Data<>(tag.getName(), tag.getCount()));
+        }
+
+        adminTagsChart.getData().add(series);
     }
 
     private void loadGeoDataForAdmin(int periodDays) {
@@ -439,14 +481,37 @@ public class AnalyticsController {
             try {
                 SystemStatsDto stats = analyticsService.getSystemStats();
                 List<ChartDataPointDto> timeline = analyticsService.getActivityTimeline(periodDays);
+                List<TagUsageDto> topTags = analyticsService.getTopTags(periodDays, 10);
                 Platform.runLater(() -> {
+                    updateStatsCards(stats);
                     updateSystemPieChart(stats);
                     updateActivityChart(timeline);
+                    updateAdminTagsChart(topTags);
                 });
             } catch (Exception e) {
                 logger.error("Failed to load system stats: {}", e.getMessage());
             }
         }).start();
+    }
+
+    private void updateStatsCards(SystemStatsDto stats) {
+        if (stats == null) return;
+
+        if (totalUsersLabel != null) {
+            totalUsersLabel.setText(String.valueOf(stats.getTotalUsers() != null ? stats.getTotalUsers() : 0));
+        }
+        if (totalVacanciesLabel != null) {
+            totalVacanciesLabel.setText(String.valueOf(stats.getTotalVacancies() != null ? stats.getTotalVacancies() : 0));
+        }
+        if (totalApplicationsLabel != null) {
+            totalApplicationsLabel.setText(String.valueOf(stats.getTotalApplications() != null ? stats.getTotalApplications() : 0));
+        }
+        if (totalApplicantsLabel != null) {
+            totalApplicantsLabel.setText(String.valueOf(stats.getTotalApplicants() != null ? stats.getTotalApplicants() : 0));
+        }
+        if (totalHrLabel != null) {
+            totalHrLabel.setText(String.valueOf(stats.getTotalHr() != null ? stats.getTotalHr() : 0));
+        }
     }
 
     private void updateSystemPieChart(SystemStatsDto stats) {

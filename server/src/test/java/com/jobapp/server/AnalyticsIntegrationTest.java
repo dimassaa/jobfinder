@@ -104,9 +104,9 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy1 = new VacancyCreateRequest(
             "Java Senior Developer",
             "Senior Java developer needed",
-            "Moscow",
-            150000,
-            200000,
+            "Minsk",
+            2500,
+            4000,
             "FULL_TIME",
             Arrays.asList(javaTagId)
         );
@@ -119,9 +119,9 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy2 = new VacancyCreateRequest(
             "Python Developer",
             "Python developer needed",
-            "Saint Petersburg",
-            100000,
-            150000,
+            "Grodno",
+            2000,
+            3000,
             "FULL_TIME",
             Arrays.asList(pythonTagId)
         );
@@ -134,9 +134,9 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy3 = new VacancyCreateRequest(
             "Java Python Developer",
             "Full stack developer",
-            "Moscow",
-            120000,
-            180000,
+            "Minsk",
+            2500,
+            3500,
             "FULL_TIME",
             Arrays.asList(javaTagId, pythonTagId)
         );
@@ -258,9 +258,9 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy = new VacancyCreateRequest(
             "Test Vacancy",
             "Description",
-            "Moscow",
-            100000,
-            150000,
+            "Minsk",
+            2000,
+            3000,
             "FULL_TIME",
             Arrays.asList(tagId)
         );

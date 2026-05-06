@@ -43,7 +43,14 @@ public class CreateVacancyCommand {
 
             var company = companyRepository.findByUserId(userId).orElse(null);
             if (company == null) {
-                return new Response("ERROR", "Company not found for this user", null);
+                logger.info("No company found for user {}, creating new company", userId);
+                var newCompany = new com.jobapp.server.model.Company();
+                newCompany.setUserId(userId);
+                newCompany.setCompanyName(user.getName() + " Company");
+                newCompany.setWebsite("");
+                newCompany.setDescription("");
+                company = companyRepository.save(newCompany);
+                logger.info("Auto-created company with id {} for user {}", company.getId(), userId);
             }
 
             VacancyCreateRequest request = objectMapper.convertValue(msg.getData(), VacancyCreateRequest.class);

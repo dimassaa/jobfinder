@@ -63,6 +63,16 @@ public class RecommendationsController {
     private void initialize() {
         logger.info("RecommendationsController initialized");
 
+        if (recommendationClientService == null) {
+            NetworkService ns = AppContext.getNetworkService();
+            if (ns != null && ns.isConnected()) {
+                recommendationClientService = new RecommendationClientService(ns);
+            } else {
+                logger.error("NetworkService not available or disconnected");
+                return;
+            }
+        }
+
         setupTableColumns();
         recommendationsTable.setItems(recommendationsList);
 
@@ -169,15 +179,16 @@ public class RecommendationsController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/vacancy_details.fxml"));
 
-            Parent root = loader.load();
-
-            VacancyDetailsController controller = loader.getController();
+            VacancyDetailsController controller = new VacancyDetailsController();
             controller.setVacancyId(vacancy.getId());
 
             NetworkService networkService = AppContext.getNetworkService();
             if (networkService != null) {
                 controller.setNetworkService(networkService);
             }
+            loader.setController(controller);
+
+            Parent root = loader.load();
 
             Stage detailsStage = new Stage();
             detailsStage.setTitle("Вакансия: " + vacancy.getTitle());

@@ -112,6 +112,11 @@ public class UserService {
     public void updateUserTags(int userId, List<Integer> tagIds) {
         logger.debug("Updating tags for user: {}", userId);
 
+        if (tagIds == null) {
+            logger.warn("TagIds is null for user: {}", userId);
+            throw new IllegalArgumentException("Tag list cannot be null");
+        }
+
         for (Integer tagId : tagIds) {
             Optional<Tag> tagOpt = tagRepository.findById(tagId);
             if (tagOpt.isEmpty()) {

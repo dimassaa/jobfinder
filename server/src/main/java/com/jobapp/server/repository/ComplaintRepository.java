@@ -214,4 +214,20 @@ public class ComplaintRepository {
         updateStatus(complaintId, status, adminId);
         logger.info("Complaint {} resolved with action: {}", complaintId, action);
     }
+
+    public boolean existsByUserAndTarget(int userId, String targetType, int targetId) {
+        String sql = "SELECT 1 FROM complaints WHERE user_id = ? AND target_type = ? AND target_id = ? AND status = 'PENDING'";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, targetType.toUpperCase());
+            stmt.setInt(3, targetId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error checking existing complaint: user {} target {} {}", userId, targetType, targetId, e);
+            return false;
+        }
+    }
 }

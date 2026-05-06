@@ -32,6 +32,10 @@ public class FavoriteService {
 
     public void add(int userId, int vacancyId) {
         logger.debug("Adding vacancy {} to favorites for user {}", vacancyId, userId);
+        if (favoriteRepository.exists(userId, vacancyId)) {
+            logger.debug("Vacancy {} already in favorites for user {}", vacancyId, userId);
+            return;
+        }
         favoriteRepository.add(userId, vacancyId);
     }
 

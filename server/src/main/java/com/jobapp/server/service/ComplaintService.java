@@ -35,6 +35,10 @@ public class ComplaintService {
             throw new IllegalArgumentException("targetType and targetId are required");
         }
 
+        if (complaintRepository.existsByUserAndTarget(userId, targetType, targetId)) {
+            throw new IllegalStateException("You have already filed a complaint for this " + targetType);
+        }
+
         boolean targetExists;
         if ("VACANCY".equalsIgnoreCase(targetType)) {
             targetExists = vacancyRepository.findById(targetId).isPresent();

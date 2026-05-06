@@ -23,14 +23,20 @@ public class GetAllVacanciesAdminCommand {
             boolean includeInactive = false;
             Map<String, Object> data = (Map<String, Object>) msg.getData();
             if (data != null && data.containsKey("includeInactive")) {
-                includeInactive = (Boolean) data.get("includeInactive");
+                Object val = data.get("includeInactive");
+                if (val != null) {
+                    includeInactive = (Boolean) val;
+                }
             }
 
+            logger.info("GET_ALL_VACANCIES_ADMIN request: includeInactive={}", includeInactive);
+
             var vacancies = adminService.getAllVacancies(includeInactive);
+            logger.info("GET_ALL_VACANCIES_ADMIN found {} vacancies", vacancies.size());
             return new Response("OK", null, vacancies);
         } catch (Exception e) {
             logger.error("Error processing GET_ALL_VACANCIES_ADMIN command", e);
-            return new Response("ERROR", "Failed to retrieve vacancies", null);
+            return new Response("ERROR", "Failed to retrieve vacancies: " + e.getMessage(), null);
         }
     }
 }

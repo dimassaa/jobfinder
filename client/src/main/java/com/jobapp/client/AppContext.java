@@ -1,11 +1,14 @@
 package com.jobapp.client;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class AppContext {
 
-    private static int currentUserId;
-    private static String currentRole;
-    private static String currentEmail;
-    private static NetworkService networkService;
+    private static final AtomicInteger currentUserId = new AtomicInteger(0);
+    private static final AtomicReference<String> currentRole = new AtomicReference<>();
+    private static final AtomicReference<String> currentEmail = new AtomicReference<>();
+    private static volatile NetworkService networkService;
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int LOCAL_PORT = 8081;
@@ -43,27 +46,27 @@ public class AppContext {
     }
 
     public static int getCurrentUserId() {
-        return currentUserId;
+        return currentUserId.get();
     }
 
     public static void setCurrentUserId(int userId) {
-        currentUserId = userId;
+        currentUserId.set(userId);
     }
 
     public static String getCurrentRole() {
-        return currentRole;
+        return currentRole.get();
     }
 
     public static void setCurrentRole(String role) {
-        currentRole = role;
+        currentRole.set(role);
     }
 
     public static String getCurrentEmail() {
-        return currentEmail;
+        return currentEmail.get();
     }
 
     public static void setCurrentEmail(String email) {
-        currentEmail = email;
+        currentEmail.set(email);
     }
 
     public static void setNetworkService(NetworkService ns) {
@@ -75,17 +78,21 @@ public class AppContext {
     }
 
     public static boolean isLoggedIn() {
-        return currentUserId > 0;
+        return currentUserId.get() > 0;
     }
 
     public static boolean isHr() {
-        return "HR".equals(currentRole);
+        return "HR".equals(currentRole.get());
+    }
+
+    public static boolean isAdmin() {
+        return "ADMIN".equals(currentRole.get());
     }
 
     public static void clear() {
-        currentUserId = 0;
-        currentRole = null;
-        currentEmail = null;
+        currentUserId.set(0);
+        currentRole.set(null);
+        currentEmail.set(null);
     }
 
     public static String getServerConfigInfo() {

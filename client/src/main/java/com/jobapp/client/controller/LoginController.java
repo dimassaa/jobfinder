@@ -1,6 +1,8 @@
 package com.jobapp.client.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jobapp.client.AppContext;
 import com.jobapp.common.Message;
 import com.jobapp.common.Response;
@@ -54,6 +56,8 @@ public class LoginController {
 
     public LoginController() {
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     public void setNetworkService(NetworkService networkService) {
@@ -66,7 +70,7 @@ public class LoginController {
         updateConnectionStatus();
     }
 
-    private void updateConnectionStatus() {
+    public void updateConnectionStatus() {
         if (networkService != null && networkService.isConnected()) {
             connectionStatusLabel.setText("Подключено");
             connectionStatusLabel.setStyle("-fx-text-fill: #388E3C;");
@@ -85,27 +89,42 @@ public class LoginController {
         connectionStatusLabel.setText("Подключение...");
         connectionStatusLabel.setStyle("-fx-text-fill: #FFA000;");
 
+        final boolean[] successHolder = {false};
+
         new Thread(() -> {
             try {
                 if (networkService != null) {
-                    networkService.reconnect();
+                    successHolder[0] = networkService.reconnect();
                 }
             } finally {
-                Platform.runLater(this::updateConnectionStatus);
-                Platform.runLater(() -> reconnectButton.setDisable(false));
+                boolean finalSuccess = successHolder[0];
+                Platform.runLater(() -> {
+                    if (finalSuccess) {
+                        connectionStatusLabel.setText("Подключено");
+                        connectionStatusLabel.setStyle("-fx-text-fill: #388E3C;");
+                        reconnectButton.setVisible(false);
+                    } else {
+                        connectionStatusLabel.setText("Не подключено");
+                        connectionStatusLabel.setStyle("-fx-text-fill: #D32F2F;");
+                        reconnectButton.setVisible(true);
+                    }
+                    reconnectButton.setDisable(false);
+                });
             }
         }).start();
     }
 
     @FXML
     private void handleLogin() {
-        String email = emailField.getText().trim();
+        String emailInput = emailField.getText();
         String password = passwordField.getText();
 
-        if (email.isEmpty() || password.isEmpty()) {
+        if (emailInput == null || emailInput.isBlank() || password == null || password.isEmpty()) {
             showError("Пожалуйста, заполните все поля");
             return;
         }
+
+        String email = emailInput.trim();
 
         if (!isValidEmail(email)) {
             showError("Неверный формат email");
@@ -167,8 +186,17 @@ public class LoginController {
     }
 
     private void handleLoginSuccess(Response response) {
+        AuthResponse authResponse = null;
+        
         if (response.getData() instanceof AuthResponse) {
-            AuthResponse authResponse = (AuthResponse) response.getData();
+            authResponse = (AuthResponse) response.getData();
+        } else if (response.getData() instanceof java.util.Map) {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> dataMap = (java.util.Map<String, Object>) response.getData();
+            authResponse = objectMapper.convertValue(dataMap, AuthResponse.class);
+        }
+        
+        if (authResponse != null && authResponse.isSuccess()) {
             AppContext.setCurrentUserId(authResponse.getUserId());
             AppContext.setCurrentRole(authResponse.getRole());
             AppContext.setCurrentEmail(emailField.getText().trim());
@@ -179,6 +207,9 @@ public class LoginController {
             if ("HR".equals(authResponse.getRole())) {
                 showSuccess("Вход выполнен (HR). Открытие панели работодателя...");
                 switchToHrScene();
+            } else if ("ADMIN".equals(authResponse.getRole())) {
+                showSuccess("Вход выполнен (ADMIN). Открытие панели администратора...");
+                switchToAdminScene();
             } else {
                 showSuccess("Вход выполнен (Соискатель). Открытие главного окна...");
                 switchToMainScene();
@@ -191,7 +222,14 @@ public class LoginController {
     private void switchToMainScene() {
         try {
             logger.info("Switching to main scene for USER");
-            Parent mainRoot = javafx.fxml.FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
+            AppContext.setNetworkService(networkService);
+            java.net.URL fxmlUrl = getClass().getResource("/fxml/main.fxml");
+            logger.info("FXML URL: {}", fxmlUrl);
+            if (fxmlUrl == null) {
+                showError("Файл main.fxml не найден в classpath");
+                return;
+            }
+            Parent mainRoot = javafx.fxml.FXMLLoader.load(fxmlUrl);
             javafx.scene.Scene scene = new javafx.scene.Scene(mainRoot, 800, 600);
             javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
             stage.setScene(scene);
@@ -199,12 +237,12 @@ public class LoginController {
             stage.setResizable(true);
             stage.show();
         } catch (Exception e) {
-            logger.error("Failed to switch to main scene: {}", e.getMessage());
-            showError("Не удалось загрузить главное окно");
+            logger.error("Failed to switch to main scene", e);
+            showError("Не удалось загрузить главное окно: " + e.getMessage());
         }
     }
 
-    private void switchToHrScene() {
+private void switchToHrScene() {
         try {
             logger.info("Switching to HR scene");
             Parent hrRoot = javafx.fxml.FXMLLoader.load(getClass().getResource("/fxml/hr_main.fxml"));
@@ -215,8 +253,24 @@ public class LoginController {
             stage.setResizable(true);
             stage.show();
         } catch (Exception e) {
-            logger.error("Failed to switch to HR scene: {}", e.getMessage());
+            logger.error("Failed to switch to HR scene: " + e.getMessage());
             showError("Не удалось загрузить панель HR");
+        }
+    }
+
+    private void switchToAdminScene() {
+        try {
+            logger.info("Switching to admin scene");
+            Parent adminRoot = javafx.fxml.FXMLLoader.load(getClass().getResource("/fxml/admin_panel.fxml"));
+            javafx.scene.Scene scene = new javafx.scene.Scene(adminRoot, 900, 650);
+            javafx.stage.Stage stage = (javafx.stage.Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("JobMatch - Панель администратора");
+            stage.setResizable(true);
+            stage.show();
+        } catch (Exception e) {
+            logger.error("Failed to switch to admin scene: " + e.getMessage());
+            showError("Не удалось загрузить панель администратора");
         }
     }
 
@@ -228,8 +282,16 @@ public class LoginController {
 
     private void openRegisterScene() {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/fxml/register.fxml"));
+            logger.info("Loading register.fxml from classpath");
+            java.net.URL fxmlUrl = getClass().getResource("/fxml/register.fxml");
+            if (fxmlUrl == null) {
+                logger.error("register.fxml not found in classpath");
+                showError("Файл регистрации не найден");
+                return;
+            }
+            logger.info("Found register.fxml: {}", fxmlUrl);
+
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(fxmlUrl);
             javafx.scene.Parent root = loader.load();
             RegisterController controller = loader.getController();
             controller.setNetworkService(networkService);
@@ -238,9 +300,10 @@ public class LoginController {
             stage.setScene(scene);
             stage.setTitle("JobMatch - Регистрация");
             stage.show();
+            logger.info("Register scene loaded successfully");
         } catch (Exception e) {
-            logger.error("Failed to load register scene: {}", e.getMessage());
-            showError("Не удалось загрузить экран регистрации");
+            logger.error("Failed to load register scene", e);
+            showError("Не удалось загрузить экран регистрации: " + e.getMessage());
         }
     }
 
@@ -269,7 +332,10 @@ public class LoginController {
     }
 
     private boolean isValidEmail(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     }
 
     private void showError(String message) {

@@ -68,9 +68,9 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Java Developer",
             "Looking for Java developer",
-            "Moscow",
-            100000,
-            150000,
+            "Minsk",
+            2000,
+            3000,
             "FULL_TIME",
             Arrays.asList(tag1Id, tag2Id)
         );
@@ -189,9 +189,9 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Test Vacancy",
             "Description",
-            "Moscow",
-            50000,
-            100000,
+            "Minsk",
+            1500,
+            2500,
             "FULL_TIME",
             Arrays.asList(tagId)
         );
@@ -263,9 +263,9 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Dup Test Vacancy",
             "Description",
-            "Moscow",
-            50000,
-            100000,
+            "Minsk",
+            2000,
+            3000,
             "FULL_TIME",
             Arrays.asList(tagId)
         );

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.FontWeight?>
+
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/fx"
+           fx:controller="com.jobapp.client.controller.HrCompanyController">
+    <VBox spacing="16" styleClass="card">
+        <padding>
+            <Insets top="16" right="24" bottom="16" left="24"/>
+        </padding>
+
+        <Label text="Профиль компании" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+        <VBox spacing="12" maxWidth="500">
+            <VBox spacing="4">
+                <Label text="Название компании *" styleClass="label-secondary"/>
+                <TextField fx:id="companyNameField" promptText="Например: ООО 'Ромашка'" styleClass="text-field"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Веб-сайт" styleClass="label-secondary"/>
+                <TextField fx:id="websiteField" promptText="https://example.com" styleClass="text-field"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Описание компании" styleClass="label-secondary"/>
+                <TextArea fx:id="descriptionArea" promptText="Расскажите о вашей компании..." 
+                          styleClass="text-field" prefRowCount="5" wrapText="true"/>
+            </VBox>
+        </VBox>
+
+        <Label fx:id="statusLabel" styleClass="label-secondary" wrapText="true" visible="false"/>
+
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="saveButton" text="Сохранить" onAction="#handleSave" styleClass="button-primary"/>
+            <Button fx:id="refreshButton" text="Загрузить данные" onAction="#handleRefresh" styleClass="button-secondary"/>
+        </HBox>
+    </VBox>
+</StackPane>

@@ -12,7 +12,7 @@ public class ValidationUtil {
     private static final int MAX_NAME_LENGTH = 100;
     private static final int MAX_TEXT_LENGTH = 5000;
     private static final int MIN_VACANCY_SALARY = 0;
-    private static final int MAX_VACANCY_SALARY = 100000;
+    private static final int MAX_VACANCY_SALARY = 10000;
 
     public static String validateEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -100,8 +100,8 @@ public class ValidationUtil {
             return "Role is required";
         }
         String normalizedRole = role.trim().toUpperCase();
-        if (!"JOBSEEKER".equals(normalizedRole) && !"HR".equals(normalizedRole) && !"ADMIN".equals(normalizedRole)) {
-            return "Invalid role. Must be JOBSEEKER, HR, or ADMIN";
+        if (!"USER".equals(normalizedRole) && !"HR".equals(normalizedRole) && !"ADMIN".equals(normalizedRole)) {
+            return "Invalid role. Must be USER, HR, or ADMIN";
         }
         return null;
     }

@@ -8,6 +8,7 @@ import com.jobapp.server.repository.VacancyRepository;
 import com.jobapp.server.service.NotificationService;
 import com.jobapp.server.service.ProfileReminderTask;
 import com.jobapp.server.service.SessionManager;
+import com.jobapp.server.util.PasswordUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ public class Server {
     private final ExecutorService threadPool;
     private ServerSocket serverSocket;
     private volatile boolean running;
+    private ScheduledExecutorService profileScheduler;
 
     public Server() {
         this(parsePortFromEnv());
@@ -116,8 +118,8 @@ public class Server {
 
         ProfileReminderTask profileReminderTask = new ProfileReminderTask(userRepository, notificationService);
 
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(profileReminderTask, 1, 24, TimeUnit.HOURS);
+        profileScheduler = Executors.newSingleThreadScheduledExecutor();
+        profileScheduler.scheduleAtFixedRate(profileReminderTask, 1, 24, TimeUnit.HOURS);
 
         logger.info("Profile reminder task scheduled to run every 24 hours");
     }
@@ -137,12 +139,36 @@ public class Server {
         logger.info("Shutting down server...");
         DatabaseConfig.close();
         threadPool.shutdown();
+        if (profileScheduler != null) {
+            profileScheduler.shutdown();
+        }
         logger.info("Server stopped");
     }
 
     public static void main(String[] args) {
         DatabaseConfig.getDataSource();
+        createDefaultAdmin();
         Server server = new Server();
         server.start();
+    }
+
+    private static void createDefaultAdmin() {
+        logger.info("Checking for default admin user...");
+        UserRepository userRepository = new UserRepository();
+        String adminEmail = "admin@jobfinder.by";
+
+        if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            logger.info("Creating default admin user: {}", adminEmail);
+            var user = new com.jobapp.server.model.User();
+            user.setEmail(adminEmail);
+            user.setPasswordHash(PasswordUtil.hash("admin"));
+            user.setRole("ADMIN");
+            user.setName("Администратор");
+            user.setSurname("Системный");
+            userRepository.save(user);
+            logger.info("Default admin created with password: admin");
+        } else {
+            logger.info("Default admin already exists");
+        }
     }
 }

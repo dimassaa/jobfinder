@@ -20,6 +20,8 @@ public class ApplicationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
     private static final int SPAM_THRESHOLD = 10;
+    private static final java.util.Set<String> VALID_STATUSES = java.util.Set.of(
+            "PENDING", "INVITED", "ACCEPTED", "REJECTED", "WITHDRAWN");
 
     private final ApplicationRepository applicationRepository;
     private final VacancyRepository vacancyRepository;
@@ -92,6 +94,37 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ApplicationDto> getAllApplicationsForHr(int hrUserId) {
+        logger.debug("Getting all applications for HR user: {}", hrUserId);
+
+        Optional<Company> companyOpt = companyRepository.findByUserId(hrUserId);
+        if (companyOpt.isEmpty()) {
+            logger.warn("Company not found for HR user: {}", hrUserId);
+            return List.of();
+        }
+
+        Company company = companyOpt.get();
+        List<Vacancy> vacancies = vacancyRepository.findByCompanyId(company.getId());
+
+        if (vacancies.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> vacancyIds = vacancies.stream()
+                .map(Vacancy::getId)
+                .collect(Collectors.toList());
+
+        return applicationRepository.findByVacancyIds(vacancyIds).stream()
+                .map(app -> {
+                    Optional<Vacancy> vacancyOpt = vacancyRepository.findById(app.getVacancyId());
+                    String vacancyTitle = vacancyOpt.map(Vacancy::getTitle).orElse("Вакансия");
+                    Optional<User> userOpt = userRepository.findById(app.getUserId());
+                    String userName = userOpt.map(u -> formatUserName(u.getName(), u.getSurname())).orElse("Соискатель");
+                    return toDto(app, vacancyTitle, userName, null);
+                })
+                .collect(Collectors.toList());
+    }
+
     public List<ApplicationDto> getApplicationsForVacancy(int vacancyId, int hrUserId) {
         logger.debug("Getting applications for vacancy: {} by HR: {}", vacancyId, hrUserId);
 
@@ -151,10 +184,13 @@ public class ApplicationService {
             throw new IllegalArgumentException("You do not have permission to update this application");
         }
 
-        int applicationUserId = application.getUserId();
-        notificationService.createApplicantNotification(applicationId, newStatus, applicationUserId);
+        if (newStatus == null || !VALID_STATUSES.contains(newStatus)) {
+            throw new IllegalArgumentException("Invalid status. Must be one of: PENDING, INVITED, ACCEPTED, REJECTED, WITHDRAWN");
+        }
 
+        int applicationUserId = application.getUserId();
         applicationRepository.updateStatus(applicationId, newStatus);
+        notificationService.createApplicantNotification(applicationId, newStatus, applicationUserId);
     }
 
     private ApplicationDto toDto(Application application, String vacancyTitle, String userName, String userSurname) {

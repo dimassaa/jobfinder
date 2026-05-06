@@ -73,6 +73,11 @@ public class AuthService {
             if (user.getBlockedUntil() != null && user.getBlockedUntil().isAfter(LocalDateTime.now())) {
                 logger.warn("Login attempt for blocked user: {}", req.getEmail());
                 return new AuthResponse(false, "Account is blocked until " + user.getBlockedUntil(), null, null);
+            } else if (user.getBlockedUntil() != null && user.getBlockedUntil().isBefore(LocalDateTime.now())) {
+                userRepository.updateBlockedStatus(user.getId(), false, null);
+                user.setIsBlocked(false);
+                user.setBlockedUntil(null);
+                logger.info("Auto-unblocked user: {}", req.getEmail());
             }
         }
 
