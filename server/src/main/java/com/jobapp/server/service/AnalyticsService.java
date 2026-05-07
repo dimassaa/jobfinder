@@ -102,4 +102,17 @@ public class AnalyticsService {
         logger.info("Getting activity timeline for {} days", days);
         return analyticsRepository.getActivityTimeline(days);
     }
+
+    public SalaryStatsDto getAllSalaryStats(int periodDays) {
+        logger.info("Getting all salary stats, period: {} days", periodDays);
+        List<ChartDataPointDto> dataPoints = analyticsRepository.getAllSalaryStats(periodDays);
+
+        double average = dataPoints.stream()
+                .mapToDouble(ChartDataPointDto::getValue)
+                .average()
+                .orElse(0.0);
+
+        String period = periodDays + " days";
+        return new SalaryStatsDto(dataPoints, period, average);
+    }
 }

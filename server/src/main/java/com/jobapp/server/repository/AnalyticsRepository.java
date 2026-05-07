@@ -293,4 +293,32 @@ public class AnalyticsRepository {
         }
         return result;
     }
+
+    public List<ChartDataPointDto> getAllSalaryStats(int days) {
+        List<ChartDataPointDto> result = new ArrayList<>();
+        String sql = "SELECT DATE(v.created_at) as date, AVG((v.salary_min + v.salary_max)/2.0) as avg_salary " +
+                    "FROM vacancies v " +
+                    "WHERE v.created_at >= NOW() - (? || ' days')::interval " +
+                    "AND v.salary_min IS NOT NULL AND v.salary_max IS NOT NULL " +
+                    "GROUP BY DATE(v.created_at) " +
+                    "ORDER BY date";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, days);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Date date = rs.getDate("date");
+                    double avgSalary = rs.getDouble("avg_salary");
+                    if (!rs.wasNull()) {
+                        result.add(new ChartDataPointDto(date != null ? date.toString() : null, avgSalary));
+                    }
+                }
+            }
+            logger.debug("All salary stats returned {} points", result.size());
+        } catch (SQLException e) {
+            logger.error("Error getting all salary stats", e);
+            throw new RuntimeException("Failed to get all salary stats", e);
+        }
+        return result;
+    }
 }

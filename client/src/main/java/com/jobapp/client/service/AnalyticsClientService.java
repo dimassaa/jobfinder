@@ -134,4 +134,32 @@ public class AnalyticsClientService {
         return objectMapper.convertValue(response.getData(),
             objectMapper.getTypeFactory().constructCollectionType(List.class, ChartDataPointDto.class));
     }
+
+    public List<TagDto> getAllTags() throws Exception {
+        logger.info("Fetching all tags");
+        Message message = new Message("REQUEST", "GET_ALL_TAGS", null);
+        Response response = networkService.sendAndReceive(message);
+
+        if (!"OK".equals(response.getStatus())) {
+            throw new RuntimeException(response.getMessage());
+        }
+
+        return objectMapper.convertValue(response.getData(),
+            objectMapper.getTypeFactory().constructCollectionType(List.class, TagDto.class));
+    }
+
+    public SalaryStatsDto getAllSalariesStats(int periodDays) throws Exception {
+        logger.info("Fetching all salaries statistics, period: {} days", periodDays);
+        Map<String, Object> data = new HashMap<>();
+        data.put("periodDays", periodDays);
+
+        Message message = new Message("REQUEST", "GET_ALL_SALARY_STATS", data);
+        Response response = networkService.sendAndReceive(message);
+
+        if (!"OK".equals(response.getStatus())) {
+            throw new RuntimeException(response.getMessage());
+        }
+
+        return objectMapper.convertValue(response.getData(), SalaryStatsDto.class);
+    }
 }

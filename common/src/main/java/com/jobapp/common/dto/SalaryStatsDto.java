@@ -1,9 +1,11 @@
 package com.jobapp.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SalaryStatsDto {
     private List<ChartDataPointDto> dataPoints;
     private String period;

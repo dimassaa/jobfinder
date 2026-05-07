@@ -104,7 +104,7 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy1 = new VacancyCreateRequest(
             "Java Senior Developer",
             "Senior Java developer needed",
-            "Minsk",
+            "Минск",
             2500,
             4000,
             "FULL_TIME",
@@ -119,7 +119,7 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy2 = new VacancyCreateRequest(
             "Python Developer",
             "Python developer needed",
-            "Grodno",
+            "Гродно",
             2000,
             3000,
             "FULL_TIME",
@@ -134,7 +134,7 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy3 = new VacancyCreateRequest(
             "Java Python Developer",
             "Full stack developer",
-            "Minsk",
+            "Минск",
             2500,
             3500,
             "FULL_TIME",
@@ -258,7 +258,7 @@ class AnalyticsIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancy = new VacancyCreateRequest(
             "Test Vacancy",
             "Description",
-            "Minsk",
+            "Минск",
             2000,
             3000,
             "FULL_TIME",

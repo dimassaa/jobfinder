@@ -101,8 +101,8 @@ class AnalyticsServiceTest {
     void getGeoDistributionForVacancies_shouldReturnGeoStats() {
         int periodDays = 30;
         List<CityCountDto> cityData = Arrays.asList(
-                new CityCountDto("Minsk", 50, 3000.0),
-                new CityCountDto("Grodno", 30, 2500.0)
+                new CityCountDto("Минск", 50, 3000.0),
+                new CityCountDto("Гродно", 30, 2500.0)
         );
 
         when(analyticsRepository.getGeoDistribution("VACANCY", periodDays)).thenReturn(cityData);
@@ -118,7 +118,7 @@ class AnalyticsServiceTest {
     void getGeoDistributionForApplicants_shouldReturnGeoStats() {
         int periodDays = 30;
         List<CityCountDto> cityData = List.of(
-                new CityCountDto("Minsk", 100, 0.0)
+                new CityCountDto("Минск", 100, 0.0)
         );
 
         when(analyticsRepository.getGeoDistribution("APPLICANT", periodDays)).thenReturn(cityData);

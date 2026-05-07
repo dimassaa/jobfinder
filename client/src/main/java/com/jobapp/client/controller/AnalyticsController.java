@@ -206,6 +206,35 @@ public class AnalyticsController {
     private void loadInitialHrData() {
         logger.info("Loading initial analytics data for HR");
         loadHrVacancies();
+        loadAllTagsForComparison();
+        loadAllSalaryData();
+    }
+
+    private void loadAllTagsForComparison() {
+        new Thread(() -> {
+            try {
+                List<TagDto> tags = analyticsService.getAllTags();
+                Platform.runLater(() -> {
+                    availableTags.setAll(tags);
+                    tagCompareCombo1.setItems(availableTags);
+                    tagCompareCombo2.setItems(availableTags);
+                });
+            } catch (Exception e) {
+                logger.error("Failed to load tags for comparison: {}", e.getMessage());
+            }
+        }).start();
+    }
+
+    private void loadAllSalaryData() {
+        int periodDays = getPeriodDays(salaryPeriodCombo.getValue());
+        new Thread(() -> {
+            try {
+                SalaryStatsDto stats = analyticsService.getAllSalariesStats(periodDays);
+                Platform.runLater(() -> updateSalaryChart(stats));
+            } catch (Exception e) {
+                logger.error("Failed to load salary stats: {}", e.getMessage());
+            }
+        }).start();
     }
 
     private void loadHrVacancies() {
@@ -317,7 +346,11 @@ public class AnalyticsController {
     @FXML
     private void onSalaryPeriodChanged() {
         int periodDays = getPeriodDays(salaryPeriodCombo.getValue());
-        loadSalaryData(periodDays);
+        if ("HR".equals(userRole)) {
+            loadAllSalaryData();
+        } else {
+            loadSalaryData(periodDays);
+        }
     }
 
     @FXML

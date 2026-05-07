@@ -48,7 +48,7 @@ class UserRepositoryTest {
         when(mockResultSet.getString("role")).thenReturn("USER");
         when(mockResultSet.getString("name")).thenReturn("John");
         when(mockResultSet.getString("surname")).thenReturn("Doe");
-        when(mockResultSet.getString("city")).thenReturn("Minsk");
+        when(mockResultSet.getString("city")).thenReturn("Минск");
         when(mockResultSet.getString("phone")).thenReturn("+375291234567");
         when(mockResultSet.getString("additional_info")).thenReturn("info");
         when(mockResultSet.getBoolean("is_blocked")).thenReturn(false);
@@ -177,11 +177,11 @@ class UserRepositoryTest {
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
         when(mockStatement.executeUpdate()).thenReturn(1);
 
-        userRepository.updateProfile(1, "John", "Doe", "Minsk", "+375291234567", "Some info");
+        userRepository.updateProfile(1, "John", "Doe", "Минск", "+375291234567", "Some info");
 
         verify(mockStatement).setString(1, "John");
         verify(mockStatement).setString(2, "Doe");
-        verify(mockStatement).setString(3, "Minsk");
+        verify(mockStatement).setString(3, "Минск");
         verify(mockStatement).setString(4, "+375291234567");
         verify(mockStatement).setString(5, "Some info");
         verify(mockStatement).setInt(7, 1);

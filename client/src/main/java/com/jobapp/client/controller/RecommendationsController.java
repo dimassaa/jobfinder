@@ -132,7 +132,7 @@ public class RecommendationsController {
 
     private String formatNumber(Integer number) {
         if (number == null) return "";
-        return String.format("%,d", number).replace(",", " ") + " ₽";
+        return String.format("%,d", number).replace(",", " ") + " $";
     }
 
     private void loadRecommendations() {

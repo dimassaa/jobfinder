@@ -55,7 +55,7 @@ class VacancyServiceTest {
         VacancyCreateRequest req = new VacancyCreateRequest(
 "Java Developer",
                 "Description",
-                "Minsk",
+                "Минск",
                 2000,
                 4000,
                 "FULL_TIME",
@@ -68,7 +68,7 @@ class VacancyServiceTest {
         savedVacancy.setCompanyId(1);
         savedVacancy.setTitle("Java Developer");
         savedVacancy.setDescription("Description");
-        savedVacancy.setCity("Minsk");
+        savedVacancy.setCity("Минск");
         savedVacancy.setSalaryMin(2000);
         savedVacancy.setSalaryMax(4000);
         savedVacancy.setEmploymentType("FULL_TIME");
@@ -107,7 +107,7 @@ class VacancyServiceTest {
         company.setUserId(100);
 
         VacancyCreateRequest req = new VacancyCreateRequest(
-                "Java Developer", "Description", "Minsk", 2000, 4000, "FULL_TIME", null
+                "Java Developer", "Description", "Минск", 2000, 4000, "FULL_TIME", null
         );
 
         when(companyRepository.findById(1)).thenReturn(Optional.of(company));
@@ -120,7 +120,7 @@ class VacancyServiceTest {
     @Test
     void create_shouldThrowExceptionForNonExistentCompany() {
         VacancyCreateRequest req = new VacancyCreateRequest(
-                "Java Developer", "Description", "Minsk", 2000, 4000, "FULL_TIME", null
+                "Java Developer", "Description", "Минск", 2000, 4000, "FULL_TIME", null
         );
 
         when(companyRepository.findById(999)).thenReturn(Optional.empty());
@@ -144,7 +144,7 @@ class VacancyServiceTest {
         vacancy.setIsActive(true);
 
         VacancyCreateRequest req = new VacancyCreateRequest(
-                "New Title", "New Description", "Minsk", 2500, 4000, "PART_TIME", null
+                "New Title", "New Description", "Минск", 2500, 4000, "PART_TIME", null
         );
 
         when(vacancyRepository.findById(10)).thenReturn(Optional.of(vacancy));
@@ -235,7 +235,7 @@ class VacancyServiceTest {
         vacancy.setCompanyId(1);
         vacancy.setTitle("Java Developer");
         vacancy.setDescription("Description");
-        vacancy.setCity("Minsk");
+        vacancy.setCity("Минск");
         vacancy.setSalaryMin(2000);
         vacancy.setSalaryMax(4000);
         vacancy.setEmploymentType("FULL_TIME");
@@ -271,7 +271,7 @@ class VacancyServiceTest {
     @Test
     void search_shouldReturnListOfVacancies() {
         VacancyFilterDto filter = new VacancyFilterDto();
-        filter.setCity("Minsk");
+        filter.setCity("Минск");
         filter.setKeyword("Java");
 
         Vacancy vacancy1 = new Vacancy();
@@ -336,7 +336,7 @@ class VacancyServiceTest {
         company.setUserId(100);
 
         VacancyCreateRequest req = new VacancyCreateRequest(
-                "Java Developer", "Description", "Minsk", 2000, 4000, "FULL_TIME",
+                "Java Developer", "Description", "Минск", 2000, 4000, "FULL_TIME",
                 Arrays.asList(1, 999)
         );
 
@@ -366,7 +366,7 @@ class VacancyServiceTest {
         company.setUserId(100);
 
         VacancyCreateRequest req = new VacancyCreateRequest(
-                "Java Developer", "Description", "Minsk", 2000, 4000, "FULL_TIME",
+                "Java Developer", "Description", "Минск", 2000, 4000, "FULL_TIME",
                 Arrays.asList(1)
         );
 

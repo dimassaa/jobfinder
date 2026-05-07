@@ -114,7 +114,7 @@ private Response userMessage(String command, Object data) throws Exception {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Cached Vacancy",
             "Description",
-            "Minsk",
+            "Минск",
             1500,
             2500,
             "FULL_TIME",

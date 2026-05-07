@@ -59,7 +59,7 @@ class ProfileIntegrationTest extends BaseIntegrationTest {
         assertEquals("User", profileData.get("surname"));
 
         Message updateProfileMsg = new Message("REQUEST", "UPDATE_PROFILE",
-            new ProfileDto("UpdatedName", "UpdatedSurname", "Minsk", "+375291234567", "Additional info"));
+            new ProfileDto("UpdatedName", "UpdatedSurname", "Минск", "+375291234567", "Additional info"));
         out.println(objectMapper.writeValueAsString(updateProfileMsg));
 
         String updateProfileResponse = in.readLine();
@@ -79,7 +79,7 @@ class ProfileIntegrationTest extends BaseIntegrationTest {
         LinkedHashMap<String, Object> profileData2 = (LinkedHashMap<String, Object>) getProfileResp2.getData();
         assertEquals("UpdatedName", profileData2.get("name"));
         assertEquals("UpdatedSurname", profileData2.get("surname"));
-        assertEquals("Minsk", profileData2.get("city"));
+        assertEquals("Минск", profileData2.get("city"));
         assertEquals("+375291234567", profileData2.get("phone"));
         assertEquals("Additional info", profileData2.get("additionalInfo"));
 

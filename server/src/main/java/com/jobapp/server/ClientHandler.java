@@ -28,6 +28,7 @@ import com.jobapp.server.handler.CheckFavoriteCommand;
 import com.jobapp.server.handler.CreateComplaintCommand;
 import com.jobapp.server.handler.GetRecommendationsCommand;
 import com.jobapp.server.handler.GetSalaryStatsCommand;
+import com.jobapp.server.handler.GetAllSalaryStatsCommand;
 import com.jobapp.server.handler.GetTopTagsCommand;
 import com.jobapp.server.handler.GetGeoStatsCommand;
 import com.jobapp.server.handler.GetConversionCommand;
@@ -130,6 +131,7 @@ public class ClientHandler implements Runnable {
     private CreateComplaintCommand createComplaintCommand;
     private GetRecommendationsCommand getRecommendationsCommand;
     private GetSalaryStatsCommand getSalaryStatsCommand;
+    private GetAllSalaryStatsCommand getAllSalaryStatsCommand;
     private GetTopTagsCommand getTopTagsCommand;
     private GetGeoStatsCommand getGeoStatsCommand;
     private GetConversionCommand getConversionCommand;
@@ -437,6 +439,9 @@ this.favoriteService = createFavoriteService();
             case "GET_SALARY_STATS":
                 response = checkAuthAndExecute(() -> getSalaryStatsCommand.execute(msg), "GET_SALARY_STATS");
                 break;
+            case "GET_ALL_SALARY_STATS":
+                response = checkAuthAndExecute(() -> getAllSalaryStatsCommand.execute(msg), "GET_ALL_SALARY_STATS");
+                break;
             case "GET_TOP_TAGS":
                 response = getTopTagsCommand.execute(msg);
                 break;
@@ -566,6 +571,7 @@ this.favoriteService = createFavoriteService();
         this.createComplaintCommand = new CreateComplaintCommand(complaintService, objectMapper, currentUserId);
         this.getRecommendationsCommand = new GetRecommendationsCommand(recommendationService, currentUserId);
         this.getSalaryStatsCommand = new GetSalaryStatsCommand(analyticsService, currentUserId);
+        this.getAllSalaryStatsCommand = new GetAllSalaryStatsCommand(analyticsService, currentUserId);
         this.getTopTagsCommand = new GetTopTagsCommand(analyticsService);
         this.getGeoStatsCommand = new GetGeoStatsCommand(analyticsService);
 

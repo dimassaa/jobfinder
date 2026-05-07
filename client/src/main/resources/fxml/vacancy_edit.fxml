@@ -38,7 +38,7 @@
             <HBox spacing="16">
                 <VBox spacing="4">
                     <Label text="Город *" styleClass="label-secondary" />
-                    <TextField fx:id="cityField" promptText="Москва" styleClass="text-field" />
+                    <TextField fx:id="cityField" promptText="Минск" styleClass="text-field" />
                 </VBox>
                 <VBox spacing="4">
                     <Label text="Тип занятости *" styleClass="label-secondary" />
@@ -49,11 +49,11 @@
             <HBox spacing="16">
                 <VBox spacing="4">
                     <Label text="Зарплата от" styleClass="label-secondary" />
-                    <TextField fx:id="salaryMinField" promptText="100000" styleClass="text-field" />
+                    <TextField fx:id="salaryMinField" promptText="1000" styleClass="text-field" />
                 </VBox>
                 <VBox spacing="4">
                     <Label text="Зарплата до" styleClass="label-secondary" />
-                    <TextField fx:id="salaryMaxField" promptText="200000" styleClass="text-field" />
+                    <TextField fx:id="salaryMaxField" promptText="2000" styleClass="text-field" />
                 </VBox>
             </HBox>
 

@@ -41,7 +41,7 @@
                             <CategoryAxis label="Период"/>
                         </xAxis>
                         <yAxis>
-                            <NumberAxis label="Средняя зарплата (руб)"/>
+                            <NumberAxis label="Средняя зарплата ($)"/>
                         </yAxis>
                     </LineChart>
                 </VBox>
@@ -108,7 +108,7 @@
                             <CategoryAxis label="Тег"/>
                         </xAxis>
                         <yAxis>
-                            <NumberAxis label="Средняя зарплата (руб)"/>
+                            <NumberAxis label="Средняя зарплата ($)"/>
                         </yAxis>
                     </BarChart>
                 </VBox>

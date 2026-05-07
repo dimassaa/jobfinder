@@ -54,7 +54,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest createReq = new VacancyCreateRequest(
             "Java Developer",
             "Looking for an experienced Java developer",
-            "Minsk",
+            "Минск",
             2000,
             3000,
             "FULL_TIME",
@@ -74,7 +74,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         assertNotNull(createdVacancy);
         int vacancyId = ((Number) createdVacancy.get("id")).intValue();
         assertEquals("Java Developer", createdVacancy.get("title"));
-        assertEquals("Minsk", createdVacancy.get("city"));
+        assertEquals("Минск", createdVacancy.get("city"));
 
         Message getMyVacanciesMsg = new Message("REQUEST", "GET_MY_VACANCIES", null);
         out.println(objectMapper.writeValueAsString(getMyVacanciesMsg));
@@ -99,7 +99,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         assertTrue(found, "Created vacancy should be in my vacancies list");
 
         VacancyFilterDto searchFilter = new VacancyFilterDto();
-        searchFilter.setCity("Minsk");
+        searchFilter.setCity("Минск");
         searchFilter.setKeyword("Java");
         Message searchMsg = new Message("REQUEST", "SEARCH_VACANCIES", searchFilter);
         out.println(objectMapper.writeValueAsString(searchMsg));
@@ -124,7 +124,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         assertTrue(foundInSearch, "Vacancy should be found in search by keyword");
 
         VacancyFilterDto cityFilter = new VacancyFilterDto();
-        cityFilter.setCity("Minsk");
+        cityFilter.setCity("Минск");
         Message citySearchMsg = new Message("REQUEST", "SEARCH_VACANCIES", cityFilter);
         out.println(objectMapper.writeValueAsString(citySearchMsg));
 
@@ -141,7 +141,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest updateReq = new VacancyCreateRequest(
             "Senior Java Developer",
             "Looking for an experienced Java developer",
-            "Minsk",
+            "Минск",
             2500,
             3500,
             "FULL_TIME",
@@ -181,7 +181,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         assertEquals("OK", closeResp.getStatus());
 
         VacancyFilterDto searchAfterClose = new VacancyFilterDto();
-        searchAfterClose.setCity("Minsk");
+        searchAfterClose.setCity("Минск");
         searchAfterClose.setKeyword("Java");
         Message searchAfterCloseMsg = new Message("REQUEST", "SEARCH_VACANCIES", searchAfterClose);
         out.println(objectMapper.writeValueAsString(searchAfterCloseMsg));
@@ -244,7 +244,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest createReq = new VacancyCreateRequest(
             "Test Vacancy",
             "Description",
-            "Minsk",
+            "Минск",
             1500,
             2500,
             "FULL_TIME",
@@ -271,7 +271,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest highSalaryReq = new VacancyCreateRequest(
             "High Salary Dev",
             "High salary position",
-            "Grodno",
+            "Гродно",
             3000,
             5000,
             "FULL_TIME",
@@ -301,7 +301,7 @@ class VacancyIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest partTimeReq = new VacancyCreateRequest(
             "Part Time Dev",
             "Part time position",
-            "Minsk",
+            "Минск",
             500,
             1000,
             "PART_TIME",

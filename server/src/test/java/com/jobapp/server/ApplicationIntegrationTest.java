@@ -68,7 +68,7 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Java Developer",
             "Looking for Java developer",
-            "Minsk",
+            "Минск",
             2000,
             3000,
             "FULL_TIME",
@@ -189,7 +189,7 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Test Vacancy",
             "Description",
-            "Minsk",
+            "Минск",
             1500,
             2500,
             "FULL_TIME",
@@ -263,7 +263,7 @@ class ApplicationIntegrationTest extends BaseIntegrationTest {
         VacancyCreateRequest vacancyReq = new VacancyCreateRequest(
             "Dup Test Vacancy",
             "Description",
-            "Minsk",
+            "Минск",
             2000,
             3000,
             "FULL_TIME",

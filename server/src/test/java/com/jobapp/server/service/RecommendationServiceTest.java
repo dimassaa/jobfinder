@@ -70,7 +70,7 @@ class RecommendationServiceTest {
         vacancy.setCompanyId(1);
         vacancy.setTitle("Java Developer");
         vacancy.setDescription("Backend developer");
-        vacancy.setCity("Minsk");
+        vacancy.setCity("Минск");
         vacancy.setIsActive(true);
         vacancy.setCreatedAt(LocalDateTime.now());
 
@@ -210,7 +210,7 @@ class RecommendationServiceTest {
         vacancy.setCompanyId(companyId);
         vacancy.setTitle(title);
         vacancy.setDescription("Description");
-        vacancy.setCity("Minsk");
+        vacancy.setCity("Минск");
         vacancy.setIsActive(true);
         vacancy.setCreatedAt(LocalDateTime.now());
         return vacancy;

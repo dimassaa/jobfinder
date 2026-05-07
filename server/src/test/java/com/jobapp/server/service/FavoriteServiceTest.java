@@ -60,7 +60,7 @@ class FavoriteServiceTest {
         vacancy1.setCompanyId(1);
         vacancy1.setTitle("Java Developer");
         vacancy1.setDescription("Backend developer");
-        vacancy1.setCity("Minsk");
+        vacancy1.setCity("Минск");
         vacancy1.setSalaryMin(2000);
         vacancy1.setSalaryMax(4000);
         vacancy1.setEmploymentType("FULL_TIME");

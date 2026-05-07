@@ -159,7 +159,7 @@ class NotificationSystemIntegrationTest extends BaseIntegrationTest {
             VacancyCreateRequest vacancyRequest = new VacancyCreateRequest();
             vacancyRequest.setTitle("Java Developer");
             vacancyRequest.setDescription("Test vacancy");
-            vacancyRequest.setCity("Minsk");
+            vacancyRequest.setCity("Минск");
             vacancyRequest.setEmploymentType("FULL_TIME");
             vacancyRequest.setTagIds(List.of(1));
 

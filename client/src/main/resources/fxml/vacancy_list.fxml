@@ -37,7 +37,7 @@
             <HBox spacing="12" alignment="CENTER_LEFT">
                 <VBox spacing="4">
                     <Label text="Город" styleClass="label-secondary" />
-                    <TextField fx:id="cityField" promptText="Москва" styleClass="text-field" />
+                    <TextField fx:id="cityField" promptText="Минск" styleClass="text-field" />
                 </VBox>
 
                 <VBox spacing="4">
