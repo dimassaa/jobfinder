@@ -89,4 +89,9 @@ public class VacancyDto {
 
     public List<TagDto> getTags() { return tags; }
     public void setTags(List<TagDto> tags) { this.tags = tags; }
+
+    @Override
+    public String toString() {
+        return title != null ? title : "";
+    }
 }
